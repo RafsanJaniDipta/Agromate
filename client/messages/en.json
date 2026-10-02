@@ -1,0 +1,308 @@
+{
+  "metadata": {
+    "title": "Agromate",
+    "description": "Smart farming solutions, market prices and weather updates for farmers.",
+    "aboutTitle": "About | Agromate",
+    "supportTitle": "Support | Agromate",
+    "loginTitle": "Log in | Agromate",
+    "registerTitle": "Create account | Agromate"
+  },
+  "languageSwitcher": {
+    "label": "Language"
+  },
+  "nav": {
+    "label": "Main",
+    "home": "Home",
+    "services": "Services",
+    "stories": "Success Stories",
+    "about": "About Us",
+    "support": "Support",
+    "expertAdvice": "Get Expert Advice",
+    "login": "Log in"
+  },
+  "hero": {
+    "titleLine1": "Smart Farming",
+    "titleLine2": "for a Greener Future",
+    "subtitle": "Traditional values meet modern agriculture technology to help you grow more.",
+    "cta": "Explore Farming Solutions"
+  },
+  "market": {
+    "title": "Market prices",
+    "today": "Today",
+    "groups": {
+      "crops": "Crops",
+      "fertilizer": "Fertilizer"
+    },
+    "items": {
+      "rice": "Rice (Coarse)",
+      "wheat": "Wheat",
+      "potato": "Potato",
+      "urea": "Urea",
+      "tsp": "TSP",
+      "mop": "MoP"
+    },
+    "pricePerKg": "৳{price, number}/kg"
+  },
+  "weather": {
+    "title": "Weather forecast",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "temperature": "{value, number}°C"
+  },
+  "about": {
+    "trustedBy": "Trusted by over",
+    "farmersCount": "50K+",
+    "farmersLabel": "Farmers worldwide",
+    "harvestAlt": "Farmer harvesting greens by hand",
+    "produceAlt": "Fresh cauliflower harvest",
+    "caption": "Smart, data-driven agricultural solutions helping farmers improve yields while using fewer resources.",
+    "heading": "We are committed to empowering farmers through <image></image> smart sustainable <muted>agricultural solutions that improve productivity and protect the land.</muted>",
+    "intro": "We empower farmers with smart, data-driven agricultural solutions that improve crop performance, reduce resource waste and promote sustainable farming practices for long-term success.",
+    "stats": {
+      "acres": {
+        "title": "Acres Farmed",
+        "value": "10K+",
+        "caption": "Supporting efficient farming at scale"
+      },
+      "yield": {
+        "title": "Yield Improvement",
+        "value": "30%",
+        "caption": "Growing more with smarter farming"
+      },
+      "farmers": {
+        "title": "Farmers Trust Us",
+        "value": "50K+",
+        "caption": "Proven results farmers trust"
+      }
+    }
+  },
+  "solutions": {
+    "titleLine1": "Complete Solutions for",
+    "titleLine2": "Modern Agriculture",
+    "learnMore": "Learn more about {title}",
+    "items": {
+      "precision": {
+        "title": "Precision Farming",
+        "tag": "Smart Input",
+        "stat": "500+ acres support",
+        "description": "GPS-guided equipment and sensors for accurate field management and resource allocation."
+      },
+      "irrigation": {
+        "title": "Smart Irrigation Systems",
+        "tag": "Water Saving",
+        "stat": "40% less water used",
+        "description": "Sensor-driven sprinklers give each zone the right amount of water, right when crops need it."
+      },
+      "monitoring": {
+        "title": "Pest & Disease Monitoring",
+        "tag": "Early Alerts",
+        "stat": "24/7 field watch",
+        "description": "Field sensors and weather stations flag pest and disease risks before they spread."
+      },
+      "machinery": {
+        "title": "Autonomous Machinery",
+        "tag": "Automation",
+        "stat": "2x faster field work",
+        "description": "Self-driving sprayers and tractors handle repetitive work with steady precision."
+      }
+    }
+  },
+  "slider": {
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "whyChoose": {
+    "featureTitle": "Sustainable Practices",
+    "featureText": "Eco-friendly farming solutions that protect soil, water and crops.",
+    "featureAlt": "Aerial view of green terraced rice fields",
+    "tags": {
+      "agriTech": "Agri Tech",
+      "smartFields": "Smart Fields",
+      "ecoFarming": "Eco Farming"
+    },
+    "badge": "Why Choose Us",
+    "title": "Farming Made Easy.",
+    "intro": "We provide comprehensive, innovative solutions tailored to address the unique challenges faced by modern farmers today.",
+    "reasons": {
+      "farmer": "Farmer Approach",
+      "tech": "Smart Technology",
+      "yield": "More Yield",
+      "support": "Expert Support"
+    }
+  },
+  "footer": {
+    "blurb": "Smart and practical solutions to help farmers grow better, work easier and build a stronger future for agriculture.",
+    "columns": {
+      "navigation": "Navigation",
+      "resources": "Resources",
+      "company": "Company"
+    },
+    "links": {
+      "home": "Home",
+      "services": "Services",
+      "whyUs": "Why Us",
+      "about": "About Us",
+      "support": "Support",
+      "helpCenter": "Help Center",
+      "marketPrices": "Market Prices",
+      "weatherUpdates": "Weather Updates",
+      "farmingGuides": "Farming Guides",
+      "faq": "FAQ",
+      "careers": "Careers",
+      "press": "Press",
+      "sustainability": "Sustainability",
+      "contact": "Contact",
+      "privacy": "Privacy Policy",
+      "terms": "Terms & Conditions"
+    },
+    "copyright": "© {year} Agromate. All rights reserved."
+  },
+  "aboutPage": {
+    "heroTitle": "About Agromate",
+    "heroSubtitle": "We bring modern farming knowledge, live market prices and weather updates to every farmer in Bangladesh.",
+    "storyBadge": "Our Story",
+    "storyTitle": "Built for the farmers who feed the nation",
+    "storyP1": "Agromate started with a simple question: why should a farmer have to guess the price of their crop, or find out about a storm too late? Good information exists, but it rarely reaches the field in time.",
+    "storyP2": "So we built one place where farmers can check daily market prices, plan around the weather and get advice from agriculture experts, in Bangla, on any phone.",
+    "storyImageAlt": "Farmer checking his tablet in the field",
+    "mission": {
+      "title": "Our Mission",
+      "text": "Give every farmer the information and expert support they need to grow more, waste less and earn a fair price."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "text": "A Bangladesh where farming is profitable, sustainable and respected, powered by simple technology that works for everyone."
+    },
+    "valuesBadge": "What We Value",
+    "valuesTitle": "The principles behind our work",
+    "values": {
+      "farmers": {
+        "title": "Farmers First",
+        "text": "Every feature starts with a real problem a farmer faces in the field."
+      },
+      "data": {
+        "title": "Data You Can Trust",
+        "text": "Prices and forecasts come from reliable sources and are updated every day."
+      },
+      "sustainability": {
+        "title": "Sustainable Growth",
+        "text": "We promote methods that protect soil and water for the next generation."
+      },
+      "trust": {
+        "title": "Honest Advice",
+        "text": "Our experts recommend what works for your farm, not what sells."
+      }
+    }
+  },
+  "supportPage": {
+    "heroTitle": "How can we help?",
+    "heroSubtitle": "Talk to our agriculture experts by phone, WhatsApp or email, or send us your question below.",
+    "channels": {
+      "phone": {
+        "title": "Helpline",
+        "note": "Sat–Thu, 9am–6pm"
+      },
+      "whatsapp": {
+        "title": "WhatsApp",
+        "note": "Send photos of your crop for quick advice"
+      },
+      "email": {
+        "title": "Email",
+        "note": "We reply within 24 hours"
+      },
+      "office": {
+        "title": "Office",
+        "value": "Dhaka, Bangladesh",
+        "note": "Visits by appointment"
+      }
+    },
+    "form": {
+      "title": "Send us a message",
+      "subtitle": "Tell us about your problem and an expert will get back to you.",
+      "name": "Your name",
+      "phone": "Phone number",
+      "topic": "Topic",
+      "topics": {
+        "crop": "Crop advice",
+        "market": "Market prices",
+        "weather": "Weather",
+        "account": "Account or app help",
+        "other": "Something else"
+      },
+      "message": "Message",
+      "messagePlaceholder": "For example: my rice leaves are turning yellow…",
+      "submit": "Send message",
+      "sending": "Sending…",
+      "sent": "Thank you! Your message has been sent. We will contact you soon.",
+      "error": "Sorry, the message could not be sent. Please call our helpline instead."
+    },
+    "faqBadge": "FAQ",
+    "faqTitle": "Common questions",
+    "faq": {
+      "cost": {
+        "q": "Is Agromate free to use?",
+        "a": "Market prices and weather updates are free for every farmer. If an expert service has a fee, we will always tell you before you use it."
+      },
+      "advice": {
+        "q": "How do I get advice from an expert?",
+        "a": "Call our helpline, message us on WhatsApp or fill in the form on this page. An agriculture expert will get back to you within 24 hours."
+      },
+      "prices": {
+        "q": "Where do the market prices come from?",
+        "a": "Prices are collected every day from major markets. Prices in your local market may be a little different."
+      },
+      "language": {
+        "q": "Can I use Agromate in Bangla?",
+        "a": "Yes. Use the EN | বাং button at the top of any page to switch between English and Bangla."
+      },
+      "crops": {
+        "q": "Which crops do you cover?",
+        "a": "Rice, wheat, potato, vegetables and the most common fertilizers, with more crops being added."
+      }
+    }
+  },
+  "cta": {
+    "title": "Need help with your farm?",
+    "text": "Our agriculture experts are ready to answer your questions.",
+    "button": "Contact Support"
+  },
+  "auth": {
+    "panelTitle": "Grow smarter with Agromate",
+    "panelText": "Daily market prices, weather updates and expert advice for your fields, all in one place.",
+    "panelStat": "50K+",
+    "panelStatLabel": "farmers already use Agromate",
+    "backHome": "Back to home",
+    "fields": {
+      "name": "Full name",
+      "phone": "Phone number",
+      "phoneHint": "Your 11-digit mobile number, e.g. 017XXXXXXXX",
+      "password": "Password",
+      "passwordHint": "At least {min, number} characters",
+      "confirmPassword": "Confirm password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Log in to see today's prices, weather and your saved advice.",
+      "remember": "Keep me logged in",
+      "forgot": "Forgot password?",
+      "submit": "Log in",
+      "submitting": "Logging in…",
+      "error": "Could not log in. Check your phone number and password, then try again.",
+      "noAccount": "New to Agromate?",
+      "registerLink": "Create an account"
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Join thousands of farmers getting smart, free farming advice.",
+      "terms": "I agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "passwordMismatch": "The two passwords do not match.",
+      "error": "Sorry, we could not create your account. Please try again.",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Log in"
+    }
+  }
+}

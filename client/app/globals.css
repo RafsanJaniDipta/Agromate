@@ -3,12 +3,15 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --brand: #038a1c; /* Agromate primary green */
 }
 
 @theme inline {
+  --color-brand: var(--brand);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  /* Latin text uses Poppins; Bangla letters fall through to Anek Bangla */
+  --font-sans: var(--font-poppins), var(--font-anek-bangla);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -19,8 +22,84 @@
   }
 }
 
+/* Shared page width: every section's content lines up on the same left and right edges */
+@utility site-container {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 90rem; /* 1440px */
+  padding-inline: --spacing(6);
+
+  @variant md {
+    padding-inline: --spacing(10);
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+@theme {
+  --animate-blur-in: blur-in 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-hero-zoom: hero-zoom 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-marquee: marquee 30s linear infinite;
+
+  @keyframes blur-in {
+    from {
+      opacity: 0;
+      filter: blur(12px);
+      translate: 0 2rem;
+    }
+  }
+
+  @keyframes hero-zoom {
+    from {
+      scale: 1.15;
+    }
+  }
+
+  @keyframes marquee {
+    to {
+      translate: -50% 0;
+    }
+  }
+}
+
+/* Scroll reveal: [data-reveal] elements stay blurred, faded and lowered until
+   ScrollReveal marks them [data-revealed]. Set --i on siblings to stagger them.
+   This sets transition-property, so don't put it on an element with its own transition-* class. */
+[data-reveal] {
+  transition-property: opacity, filter, translate;
+  transition-duration: 0.9s;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--i, 0) * 120ms);
+}
+
+[data-reveal]:not([data-revealed]) {
+  opacity: 0;
+  filter: blur(12px);
+  translate: 0 2.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal]:not([data-revealed]) {
+    opacity: 1;
+    filter: none;
+    translate: none;
+  }
+
+  .animate-blur-in,
+  .animate-hero-zoom,
+  .animate-marquee {
+    animation: none;
+  }
+}
+
+/* Letter spacing breaks Bangla conjuncts, so keep it normal in Bangla text.
+   Matched on the element's own language, so lang="en" text keeps its tracking. */
+.tracking-tighter:lang(bn),
+.tracking-tight:lang(bn),
+.tracking-wider:lang(bn) {
+  letter-spacing: normal;
 }
