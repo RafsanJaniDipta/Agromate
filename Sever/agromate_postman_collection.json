@@ -1,0 +1,320 @@
+{
+  "info": {
+    "name": "Agromate API v1 Collection",
+    "description": "Complete Postman collection for testing all CRUD operations in Agromate Backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rahim Farmer\",\n  \"phone\": \"+8801700000000\",\n  \"password\": \"password123\",\n  \"locale\": \"bn\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+8801700000000\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Current User Profile",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rahim Uddin\",\n  \"location\": \"Bogura\",\n  \"phone\": \"+8801700000000\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Farms",
+      "item": [
+        {
+          "name": "Create Farm",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Green Valley Farm\",\n  \"location\": \"Jessore\",\n  \"areaInAcres\": 5.5,\n  \"soilType\": \"Loam\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/farms", "host": ["{{baseUrl}}"], "path": ["farms"] }
+          }
+        },
+        {
+          "name": "Get User Farms",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/farms", "host": ["{{baseUrl}}"], "path": ["farms"] }
+          }
+        },
+        {
+          "name": "Get Farm By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/farms/:id", "host": ["{{baseUrl}}"], "path": ["farms", ":id"] }
+          }
+        },
+        {
+          "name": "Update Farm",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Green Valley Farm\",\n  \"areaInAcres\": 6.0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/farms/:id", "host": ["{{baseUrl}}"], "path": ["farms", ":id"] }
+          }
+        },
+        {
+          "name": "Delete Farm",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/farms/:id", "host": ["{{baseUrl}}"], "path": ["farms", ":id"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fields",
+      "item": [
+        {
+          "name": "Create Field for Farm",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"North Field A\",\n  \"areaInAcres\": 2.5,\n  \"soilType\": \"Clay Loam\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/farms/:farmId/fields", "host": ["{{baseUrl}}"], "path": ["farms", ":farmId", "fields"] }
+          }
+        },
+        {
+          "name": "Get Fields for Farm",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/farms/:farmId/fields", "host": ["{{baseUrl}}"], "path": ["farms", ":farmId", "fields"] }
+          }
+        },
+        {
+          "name": "Get Field By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/fields/:id", "host": ["{{baseUrl}}"], "path": ["fields", ":id"] }
+          }
+        },
+        {
+          "name": "Update Field",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"North Field A Updated\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/fields/:id", "host": ["{{baseUrl}}"], "path": ["fields", ":id"] }
+          }
+        },
+        {
+          "name": "Delete Field",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/fields/:id", "host": ["{{baseUrl}}"], "path": ["fields", ":id"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Crops & Crop Cycles",
+      "item": [
+        {
+          "name": "Get All Crops",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/crops", "host": ["{{baseUrl}}"], "path": ["crops"] }
+          }
+        },
+        {
+          "name": "Create Crop Cycle",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fieldId\": \"<FIELD_ID>\",\n  \"cropId\": \"<CROP_ID>\",\n  \"plantingDate\": \"2026-10-01T00:00:00.000Z\",\n  \"expectedHarvestDate\": \"2026-12-31T00:00:00.000Z\",\n  \"growthStage\": \"Sowing\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/crop-cycles", "host": ["{{baseUrl}}"], "path": ["crop-cycles"] }
+          }
+        },
+        {
+          "name": "Get Crop Cycles",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/crop-cycles", "host": ["{{baseUrl}}"], "path": ["crop-cycles"] }
+          }
+        },
+        {
+          "name": "Get Crop Cycle Calendar",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/crop-cycles/calendar", "host": ["{{baseUrl}}"], "path": ["crop-cycles", "calendar"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Harvests & Expenses",
+      "item": [
+        {
+          "name": "Create Harvest Record",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cropCycleId\": \"<CROP_CYCLE_ID>\",\n  \"quantity\": 500,\n  \"unit\": \"kg\",\n  \"qualityGrade\": \"Grade A\",\n  \"notes\": \"Bumper harvest\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/harvests", "host": ["{{baseUrl}}"], "path": ["harvests"] }
+          }
+        },
+        {
+          "name": "Get Harvests",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/harvests", "host": ["{{baseUrl}}"], "path": ["harvests"] }
+          }
+        },
+        {
+          "name": "Create Expense Record",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cropCycleId\": \"<CROP_CYCLE_ID>\",\n  \"category\": \"Fertilizer\",\n  \"amount\": 2500,\n  \"description\": \"Purchased Urea fertilizer\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/expenses", "host": ["{{baseUrl}}"], "path": ["expenses"] }
+          }
+        },
+        {
+          "name": "Get Expenses",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/expenses", "host": ["{{baseUrl}}"], "path": ["expenses"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Weather & Market Prices",
+      "item": [
+        {
+          "name": "Get Current Weather",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/weather/current?location=Dhaka", "host": ["{{baseUrl}}"], "path": ["weather", "current"], "query": [{"key": "location", "value": "Dhaka"}] }
+          }
+        },
+        {
+          "name": "Get Weather Forecast",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/weather/forecast?location=Dhaka&days=7", "host": ["{{baseUrl}}"], "path": ["weather", "forecast"] }
+          }
+        },
+        {
+          "name": "Get Market Prices",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/market-prices", "host": ["{{baseUrl}}"], "path": ["market-prices"] }
+          }
+        },
+        {
+          "name": "Get Price Trends",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/market-prices/trends?cropName=Rice&days=30", "host": ["{{baseUrl}}"], "path": ["market-prices", "trends"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Summary",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/dashboard/summary", "host": ["{{baseUrl}}"], "path": ["dashboard", "summary"] }
+          }
+        },
+        {
+          "name": "Get Crop Distribution",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/dashboard/crop-distribution", "host": ["{{baseUrl}}"], "path": ["dashboard", "crop-distribution"] }
+          }
+        },
+        {
+          "name": "Get Financial Summary",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/dashboard/financial-summary", "host": ["{{baseUrl}}"], "path": ["dashboard", "financial-summary"] }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -8,7 +8,7 @@ generator client {
   output   = "../src/generated/prisma"
 }
 
-// Prisma 7 reads connection string from prisma.config.ts / database.ts
+// Prisma 7 reads connection string from database.ts
 datasource db {
   provider = "postgresql"
 }
@@ -25,7 +25,7 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  role          String?   @default("FARMER") // "FARMER" | "EXPERT" | "ADMIN"
+  role          String    @default("FARMER") // "FARMER" | "EXPERT" | "ADMIN"
   banned        Boolean?  @default(false)
   banReason     String?
   banExpires    DateTime?
@@ -33,7 +33,6 @@ model User {
   phone         String?
   language      String?   @default("en")
   locale        String?   @default("bn")
-  isActive      Boolean   @default(true)
 
   sessions                  Session[]
   accounts                  Account[]
@@ -106,12 +105,6 @@ model Verification {
 // Enums
 // -------------------------------------------------------------
 
-enum Role {
-  FARMER
-  EXPERT
-  ADMIN
-}
-
 enum ExpertStatus {
   PENDING
   VERIFIED
@@ -150,6 +143,11 @@ enum NotificationType {
   ALERT
 }
 
+enum MessageSender {
+  USER
+  ASSISTANT
+}
+
 // -------------------------------------------------------------
 // AgroMate Core Domain Models
 // -------------------------------------------------------------
@@ -158,7 +156,6 @@ model Farm {
   id          String   @id @default(uuid(7)) @db.Uuid
   name        String
   location    String
-  totalArea   Float?
   areaInAcres Float?   @default(0)
   soilType    String?
   userId      String   @db.Uuid
@@ -179,7 +176,6 @@ model Field {
   name        String
   farmId      String   @db.Uuid
   farm        Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  area        Float?
   areaInAcres Float?   @default(0)
   soilType    String?
   createdAt   DateTime @default(now())
@@ -197,8 +193,6 @@ model Crop {
   nameBn          String?  @map("name_bn")
   category        String?
   season          String?
-  growthDays      Int?
-  soilTypes       String?
   idealSoil       String?
   optimalTemp     Float?
   optimalRainfall Float?
@@ -208,8 +202,9 @@ model Crop {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  cropCycles CropCycle[]
-  questions  Question[]
+  cropCycles   CropCycle[]
+  questions    Question[]
+  marketPrices MarketPrice[]
 
   @@map("crop")
 }
@@ -247,9 +242,8 @@ model CropCycle {
   fieldId             String          @db.Uuid
   field               Field           @relation(fields: [fieldId], references: [id], onDelete: Cascade)
   cropId              String          @db.Uuid
-  crop                Crop            @relation(fields: [cropId], references: [id], onDelete: Cascade)
+  crop                Crop            @relation(fields: [cropId], references: [id], onDelete: Restrict)
   plantingDate        DateTime        @default(now())
-  startDate           DateTime        @default(now())
   expectedHarvestDate DateTime?
   actualHarvestDate   DateTime?
   growthStage         String?
@@ -312,8 +306,7 @@ model Harvest {
   harvestDate  DateTime  @default(now())
   quantity     Float
   unit         String    @default("KG")
-  pricePerUnit Float?
-  totalRevenue Float?
+  pricePerUnit Float
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -323,11 +316,9 @@ model Harvest {
 
 model MarketPrice {
   id           String   @id @default(uuid(7)) @db.Uuid
-  cropId       String?  @db.Uuid
-  cropName     String
+  cropId       String   @db.Uuid
+  crop         Crop     @relation(fields: [cropId], references: [id], onDelete: Cascade)
   district     String   @default("General")
-  location     String   @default("General")
-  price        Float?   @default(0)
   pricePerUnit Float    @default(0)
   unit         String   @default("KG")
   date         DateTime @default(now())
@@ -335,7 +326,8 @@ model MarketPrice {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  @@index([cropName])
+  @@unique([cropId, district, date])
+  @@index([cropId])
   @@index([district])
   @@map("market_price")
 }
@@ -347,9 +339,7 @@ model DiseaseDetection {
   cropCycleId     String?    @db.Uuid
   cropCycle       CropCycle? @relation(fields: [cropCycleId], references: [id], onDelete: SetNull)
   imageUrl        String
-  disease         String?
   detectedDisease String     @default("Unknown")
-  confidence      Float?     @default(0)
   confidenceScore Float      @default(0)
   symptoms        String?
   recommendations String?
@@ -418,7 +408,7 @@ model AIMessage {
   id             String         @id @default(uuid(7)) @db.Uuid
   conversationId String         @db.Uuid
   conversation   AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         String // "USER" | "ASSISTANT"
+  sender         MessageSender
   content        String
   createdAt      DateTime       @default(now())
 
@@ -434,8 +424,6 @@ model Question {
   crop        Crop?          @relation(fields: [cropId], references: [id], onDelete: SetNull)
   title       String
   description String?
-  content     String
-  category    String?
   imageUrl    String?
   status      QuestionStatus @default(OPEN)
   createdAt   DateTime       @default(now())
@@ -445,20 +433,19 @@ model Question {
 
   @@index([userId])
   @@index([cropId])
+  @@index([status])
   @@map("question")
 }
 
 model Answer {
-  id             String   @id @default(uuid(7)) @db.Uuid
-  questionId     String   @db.Uuid
-  question       Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  userId         String   @db.Uuid
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content        String
-  isExpertAnswer Boolean  @default(false)
-  isAccepted     Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id         String   @id @default(uuid(7)) @db.Uuid
+  questionId String   @db.Uuid
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([questionId])
   @@index([userId])
@@ -474,27 +461,28 @@ model ExpertProfile {
   experienceYears Int          @default(0)
   bio             String?
   qualifications  String?
-  rating          Float?       @default(5.0)
   status          ExpertStatus @default(PENDING)
   rejectionReason String?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
+  @@index([status])
   @@map("expert_profile")
 }
 
 model Notification {
-  id        String           @id @default(uuid(7)) @db.Uuid
-  userId    String           @db.Uuid
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title     String
-  message   String
-  type      NotificationType @default(INFO)
-  isRead    Boolean          @default(false)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id          String           @id @default(uuid(7)) @db.Uuid
+  userId      String           @db.Uuid
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  message     String
+  type        NotificationType @default(INFO)
+  isRead      Boolean          @default(false)
+  referenceId String?          @db.Uuid
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   @@index([userId])
+  @@index([userId, isRead])
   @@map("notification")
 }
-
