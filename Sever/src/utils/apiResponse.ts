@@ -41,6 +41,21 @@ export function sendSuccess<T>(
   });
 }
 
+export function sendPaginatedSuccess<T>(
+  res: Response,
+  statusCode: number,
+  message: string,
+  data: T[],
+  meta: { page: number; limit: number; total: number },
+): Response {
+  return res.status(statusCode).json({
+    success: true,
+    message,
+    data,
+    meta,
+  });
+}
+
 export function sendError(
   res: Response,
   statusCode: number,

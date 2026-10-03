@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { healthRouter } from "../modules/health/health.routes.js";
+import { userRouter } from "../modules/user/user.routes.js";
 import { farmRouter } from "../modules/farm/farm.routes.js";
 import { fieldRouter } from "../modules/field/field.routes.js";
 import { cropRouter } from "../modules/crop/crop.routes.js";
@@ -15,27 +16,17 @@ import { questionRouter } from "../modules/question/question.routes.js";
 import { expertRouter } from "../modules/expert/expert.routes.js";
 import { aiRouter } from "../modules/aiAssistant/ai.routes.js";
 import { adminRouter } from "../modules/admin/admin.routes.js";
+import { reminderRouter } from "../modules/reminder/reminder.routes.js";
 
-/**
- * Root route table (Masud).
- *
- * Every module router is mounted under its documented prefix. Modules that are
- * not implemented yet export an empty router, so the URL surface stays stable
- * and integration never 404s on a missing import.
- *
- * Ownership map: auth/users → Masud · farm/field/crop/cropCycle/expense/harvest/
- * dashboard → Masud (API) + Sondip (logic) · weather/market/ai → Irfan ·
- * admin → Rahul · question/notification → Masud + Sondip.
- */
 export const routes = Router();
 
 routes.use("/health", healthRouter);
-// /api/auth/* is mounted directly in app.ts, BEFORE the body parsers — it must
-// not be registered here or the body parser would consume the request stream.
+routes.use("/users", userRouter);
 routes.use("/farms", farmRouter);
 routes.use("/fields", fieldRouter);
 routes.use("/crops", cropRouter);
 routes.use("/crop-cycles", cropCycleRouter);
+routes.use("/reminders", reminderRouter);
 routes.use("/expenses", expenseRouter);
 routes.use("/harvests", harvestRouter);
 routes.use("/dashboard", dashboardRouter);
@@ -46,3 +37,4 @@ routes.use("/questions", questionRouter);
 routes.use("/experts", expertRouter);
 routes.use("/ai", aiRouter);
 routes.use("/admin", adminRouter);
+
