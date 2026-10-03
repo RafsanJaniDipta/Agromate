@@ -1,134 +1,110 @@
 import type { Request, Response } from "express";
-import { HarvestService } from "./harvest.service.js";
-import { sendSuccess, sendError } from "../../utils/apiResponse.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { sendSuccess } from "../../utils/apiResponse.js";
+import { AppError } from "../../utils/AppError.js";
+import {
+  createHarvest as createHarvestService,
+  getHarvests as getHarvestsService,
+  getHarvestById as getHarvestByIdService,
+  updateHarvest as updateHarvestService,
+  deleteHarvest as deleteHarvestService,
+} from "./harvest.service.js";
 
-const createHarvest = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const { cropCycleId, harvestDate, quantity, unit, qualityGrade, notes } = req.body;
-    if (!cropCycleId || quantity === undefined) {
-      sendError(res, 422, "cropCycleId and quantity are required");
-      return;
-    }
-
-    const harvest = await HarvestService.createHarvest({
-      cropCycleId,
-      harvestDate,
-      quantity: Number(quantity),
-      unit,
-      qualityGrade,
-      notes,
-      userId,
-    });
-
-    if (!harvest) {
-      sendError(res, 404, "Crop cycle not found or unauthorized");
-      return;
-    }
-
-    sendSuccess(res, 201, "Harvest recorded successfully", harvest);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to record harvest");
+export const createHarvest = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const getHarvests = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const { cropCycleId, from, to, page, limit } = req.query;
-
-    const result = await HarvestService.getHarvests(userId, {
-      cropCycleId: typeof cropCycleId === "string" ? cropCycleId : undefined,
-      from: typeof from === "string" ? from : undefined,
-      to: typeof to === "string" ? to : undefined,
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "Harvests fetched successfully",
-      data: result.items,
-      meta: result.meta,
-      summary: result.summary,
-    });
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch harvests");
+  const { cropCycleId, harvestDate, quantity, unit, qualityGrade, notes } = req.body;
+  if (!cropCycleId || quantity === undefined) {
+    throw AppError.unprocessable("cropCycleId and quantity are required");
   }
-};
 
-const getHarvestById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const harvest = await createHarvestService({
+    cropCycleId,
+    harvestDate,
+    quantity: Number(quantity),
+    unit,
+    qualityGrade,
+    notes,
+    userId,
+  });
 
-    const id = String(req.params.id || "");
-    const harvest = await HarvestService.getHarvestById(id, userId);
-    if (!harvest) {
-      sendError(res, 404, "Harvest not found or unauthorized");
-      return;
-    }
-
-    sendSuccess(res, 200, "Harvest details fetched successfully", harvest);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch harvest details");
+  if (!harvest) {
+    throw AppError.notFound("Crop cycle not found or unauthorized");
   }
-};
 
-const updateHarvest = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  sendSuccess(res, 201, "Harvest recorded successfully", harvest);
+});
 
-    const id = String(req.params.id || "");
-    const updated = await HarvestService.updateHarvest(id, userId, req.body);
-    if (!updated) {
-      sendError(res, 404, "Harvest not found or unauthorized");
-      return;
-    }
-
-    sendSuccess(res, 200, "Harvest updated successfully", updated);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to update harvest");
+export const getHarvests = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const deleteHarvest = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const { cropCycleId, from, to, page, limit } = req.query;
 
-    const id = String(req.params.id || "");
-    const deleted = await HarvestService.deleteHarvest(id, userId);
-    if (!deleted) {
-      sendError(res, 404, "Harvest not found or unauthorized");
-      return;
-    }
+  const result = await getHarvestsService(userId, {
+    cropCycleId: typeof cropCycleId === "string" ? cropCycleId : undefined,
+    from: typeof from === "string" ? from : undefined,
+    to: typeof to === "string" ? to : undefined,
+    page: page ? Number(page) : undefined,
+    limit: limit ? Number(limit) : undefined,
+  });
 
-    sendSuccess(res, 200, "Harvest deleted successfully", { message: "Harvest deleted successfully" });
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to delete harvest");
+  sendSuccess(res, 200, "Harvests fetched successfully", {
+    items: result.items,
+    meta: result.meta,
+    summary: result.summary,
+  });
+});
+
+export const getHarvestById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
+
+  const id = String(req.params.id || "");
+  const harvest = await getHarvestByIdService(id, userId);
+  if (!harvest) {
+    throw AppError.notFound("Harvest not found or unauthorized");
+  }
+
+  sendSuccess(res, 200, "Harvest details fetched successfully", harvest);
+});
+
+export const updateHarvest = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
+  }
+
+  const id = String(req.params.id || "");
+  const updated = await updateHarvestService(id, userId, req.body);
+  if (!updated) {
+    throw AppError.notFound("Harvest not found or unauthorized");
+  }
+
+  sendSuccess(res, 200, "Harvest updated successfully", updated);
+});
+
+export const deleteHarvest = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
+  }
+
+  const id = String(req.params.id || "");
+  const deleted = await deleteHarvestService(id, userId);
+  if (!deleted) {
+    throw AppError.notFound("Harvest not found or unauthorized");
+  }
+
+  sendSuccess(res, 200, "Harvest deleted successfully", { message: "Harvest deleted successfully" });
+});
 
 export const HarvestController = {
   createHarvest,
@@ -137,5 +113,3 @@ export const HarvestController = {
   updateHarvest,
   deleteHarvest,
 };
-
-

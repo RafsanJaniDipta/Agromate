@@ -1,76 +1,66 @@
 import type { Request, Response } from "express";
-import { AdminService } from "./admin.service";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { sendPaginatedSuccess, sendSuccess } from "../../utils/apiResponse.js";
+import {
+  getAllUsersFromDB,
+  updateUserRoleStatusInDB,
+  getPlatformStatistics,
+  getDeliveryAgentsFromDB,
+} from "./admin.service.js";
 
-const getAllUsers = async (req: Request, res: Response) => {
-  try {
-    const result = await AdminService.getAllUsersFromDB();
-    res.status(200).json({
-      success: true,
-      message: "Users retrieved successfully",
-      data: result,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-      error,
-    });
-  }
-};
+export const getAllUsers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const page = req.query.page ? Number(req.query.page) : undefined;
+  const limit = req.query.limit ? Number(req.query.limit) : undefined;
 
-const updateUserStatus = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { status, role } = req.body;
+  const result = await getAllUsersFromDB({ page, limit });
+  sendPaginatedSuccess(
+    res,
+    200,
+    "Users retrieved successfully",
+    result.data,
+    result.meta
+  );
+});
 
-    const adminId = (req as any).user?.id as string;
+export const updateUserStatus = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { status, role } = req.body;
 
-    const result = await AdminService.updateUserRoleStatusInDB(
-      id as string,
-      { status, role },
-      adminId
-    );
+  const adminId = (req as any).user?.id as string;
 
-    res.status(200).json({
-      success: true,
-      message: "User updated successfully",
-      data: result,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-      error,
-    });
-  }
-};
+  const result = await updateUserRoleStatusInDB(
+    id as string,
+    { status, role },
+    adminId
+  );
 
-const getStatistics = async (req: Request, res: Response) => {
-  try {
-    const result = await AdminService.getPlatformStatistics();
+  sendSuccess(res, 200, "User updated successfully", result);
+});
 
-    res.status(200).json({
-      success: true,
-      message: "Platform statistics retrieved successfully",
-      data: result,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-      error,
-    });
-  }
-};
+export const getStatistics = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
+  const result = await getPlatformStatistics();
 
-const getDeliveryAgents = async (req: Request, res: Response) => {
-  try {
-    const result = await AdminService.getDeliveryAgentsFromDB();
-    res.status(200).json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, message: (error as any).message });
-  }
-};
+  sendSuccess(
+    res,
+    200,
+    "Platform statistics retrieved successfully",
+    result
+  );
+});
+
+export const getDeliveryAgents = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const page = req.query.page ? Number(req.query.page) : undefined;
+  const limit = req.query.limit ? Number(req.query.limit) : undefined;
+
+  const result = await getDeliveryAgentsFromDB({ page, limit });
+  sendPaginatedSuccess(
+    res,
+    200,
+    "Delivery agents retrieved successfully",
+    result.data,
+    result.meta
+  );
+});
 
 export const AdminController = {
   getAllUsers,

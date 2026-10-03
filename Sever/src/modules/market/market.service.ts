@@ -1,4 +1,5 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
 export interface CreateMarketPriceInput {
   cropName: string;
@@ -18,7 +19,7 @@ export interface UpdateMarketPriceInput {
   date?: Date | string;
 }
 
-const createMarketPrice = async (data: CreateMarketPriceInput) => {
+export const createMarketPrice = serviceHandler(async (data: CreateMarketPriceInput) => {
   const price = data.pricePerKg ?? data.pricePerUnit ?? 0;
   return await prisma.marketPrice.create({
     data: {
@@ -30,9 +31,9 @@ const createMarketPrice = async (data: CreateMarketPriceInput) => {
       date: data.date ? new Date(data.date) : new Date(),
     } as any,
   });
-};
+});
 
-const getMarketPrices = async (params: {
+export const getMarketPrices = serviceHandler(async (params: {
   cropName?: string;
   location?: string;
   page?: number;
@@ -61,9 +62,9 @@ const getMarketPrices = async (params: {
     items,
     meta: { page, limit, total },
   };
-};
+});
 
-const getTrends = async (cropName: string, days: number = 30) => {
+export const getTrends = serviceHandler(async (cropName: string, days: number = 30) => {
   const fromDate = new Date();
   fromDate.setDate(fromDate.getDate() - days);
 
@@ -84,15 +85,15 @@ const getTrends = async (cropName: string, days: number = 30) => {
     cropName,
     priceHistory,
   };
-};
+});
 
-const getMarketPriceById = async (id: string) => {
+export const getMarketPriceById = serviceHandler(async (id: string) => {
   return await prisma.marketPrice.findUnique({
     where: { id },
   });
-};
+});
 
-const updateMarketPrice = async (id: string, data: UpdateMarketPriceInput) => {
+export const updateMarketPrice = serviceHandler(async (id: string, data: UpdateMarketPriceInput) => {
   const price = data.pricePerKg ?? data.pricePerUnit;
   return await prisma.marketPrice.update({
     where: { id },
@@ -104,13 +105,13 @@ const updateMarketPrice = async (id: string, data: UpdateMarketPriceInput) => {
       ...(data.date ? { date: new Date(data.date) } : {}),
     } as any,
   });
-};
+});
 
-const deleteMarketPrice = async (id: string) => {
+export const deleteMarketPrice = serviceHandler(async (id: string) => {
   return await prisma.marketPrice.delete({
     where: { id },
   });
-};
+});
 
 export const MarketService = {
   createMarketPrice,

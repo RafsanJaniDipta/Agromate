@@ -1,4 +1,5 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
 export interface CreateAnswerInput {
   questionId: string;
@@ -12,7 +13,7 @@ export interface UpdateAnswerInput {
   isAccepted?: boolean;
 }
 
-const createAnswer = async (data: CreateAnswerInput) => {
+export const createAnswer = serviceHandler(async (data: CreateAnswerInput) => {
   const user = await prisma.user.findUnique({ where: { id: data.userId } });
   const isExpertAnswer = data.isExpertAnswer ?? user?.role === "EXPERT";
 
@@ -25,9 +26,9 @@ const createAnswer = async (data: CreateAnswerInput) => {
       user: { select: { id: true, name: true, image: true, role: true } },
     },
   });
-};
+});
 
-const getAnswersByQuestionId = async (questionId: string) => {
+export const getAnswersByQuestionId = serviceHandler(async (questionId: string) => {
   return await prisma.answer.findMany({
     where: { questionId },
     include: {
@@ -35,16 +36,16 @@ const getAnswersByQuestionId = async (questionId: string) => {
     },
     orderBy: [{ isAccepted: "desc" }, { isExpertAnswer: "desc" }, { createdAt: "asc" }],
   });
-};
+});
 
-const updateAnswer = async (id: string, userId: string, data: UpdateAnswerInput) => {
+export const updateAnswer = serviceHandler(async (id: string, userId: string, data: UpdateAnswerInput) => {
   return await prisma.answer.updateMany({
     where: { id, userId },
     data,
   });
-};
+});
 
-const acceptAnswer = async (answerId: string, questionOwnerUserId: string) => {
+export const acceptAnswer = serviceHandler(async (answerId: string, questionOwnerUserId: string) => {
   const answer = await prisma.answer.findUnique({
     where: { id: answerId },
     include: { question: true },
@@ -68,13 +69,13 @@ const acceptAnswer = async (answerId: string, questionOwnerUserId: string) => {
     where: { id: answerId },
     data: { isAccepted: true },
   });
-};
+});
 
-const deleteAnswer = async (id: string, userId: string) => {
+export const deleteAnswer = serviceHandler(async (id: string, userId: string) => {
   return await prisma.answer.deleteMany({
     where: { id, userId },
   });
-};
+});
 
 export const AnswerService = {
   createAnswer,
@@ -83,4 +84,3 @@ export const AnswerService = {
   acceptAnswer,
   deleteAnswer,
 };
-

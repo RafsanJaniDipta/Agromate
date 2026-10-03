@@ -1,4 +1,5 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
 export interface CreateDiseaseDetectionInput {
   userId: string;
@@ -7,10 +8,9 @@ export interface CreateDiseaseDetectionInput {
   cropId?: string;
 }
 
-const createDetection = async (data: CreateDiseaseDetectionInput) => {
+export const createDetection = serviceHandler(async (data: CreateDiseaseDetectionInput) => {
   const img = data.image ?? data.imageUrl ?? "";
 
-  // Mock/AI disease detection logic returning structured result
   const mockResult = {
     diseaseName: "Early Blight (Alternaria solani)",
     confidence: 0.94,
@@ -51,9 +51,9 @@ const createDetection = async (data: CreateDiseaseDetectionInput) => {
     preventionTips: mockResult.preventionTips,
     createdAt: detection.createdAt,
   };
-};
+});
 
-const getDetections = async (userId: string, page: number = 1, limit: number = 10) => {
+export const getDetections = serviceHandler(async (userId: string, page: number = 1, limit: number = 10) => {
   const skip = (page - 1) * limit;
   const where = { userId };
 
@@ -92,9 +92,9 @@ const getDetections = async (userId: string, page: number = 1, limit: number = 1
     items: formattedItems,
     meta: { page, limit, total },
   };
-};
+});
 
-const getDetectionById = async (id: string, userId: string) => {
+export const getDetectionById = serviceHandler(async (id: string, userId: string) => {
   const item = await prisma.diseaseDetection.findUnique({
     where: { id },
   });
@@ -121,12 +121,10 @@ const getDetectionById = async (id: string, userId: string) => {
     preventionTips: parsedRec.preventionTips || [],
     createdAt: item.createdAt,
   };
-};
+});
 
 export const DiseaseDetectionService = {
   createDetection,
   getDetections,
   getDetectionById,
 };
-
-

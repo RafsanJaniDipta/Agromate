@@ -1,86 +1,68 @@
 import type { Request, Response } from "express";
-import { DiseaseDetectionService } from "./diseaseDetection.service.js";
-import { sendSuccess, sendError } from "../../utils/apiResponse.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { sendSuccess } from "../../utils/apiResponse.js";
+import { AppError } from "../../utils/AppError.js";
+import {
+  createDetection as createDetectionService,
+  getDetections as getDetectionsService,
+  getDetectionById as getDetectionByIdService,
+} from "./diseaseDetection.service.js";
 
-const createDetection = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const { image, imageUrl, cropId } = req.body;
-    const img = image || imageUrl;
-    if (!img) {
-      sendError(res, 422, "image (or imageUrl) is required");
-      return;
-    }
-
-    const result = await DiseaseDetectionService.createDetection({
-      userId,
-      image,
-      imageUrl,
-      cropId,
-    });
-
-    sendSuccess(res, 201, "Disease detection completed successfully", result);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to process disease detection");
+export const createDetection = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const getDetections = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const { page, limit } = req.query;
-    const result = await DiseaseDetectionService.getDetections(
-      userId,
-      page ? Number(page) : 1,
-      limit ? Number(limit) : 10,
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Disease detections fetched successfully",
-      data: result.items,
-      meta: result.meta,
-    });
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch disease detections");
+  const { image, imageUrl, cropId } = req.body;
+  const img = image || imageUrl;
+  if (!img) {
+    throw AppError.unprocessable("image (or imageUrl) is required");
   }
-};
 
-const getDetectionById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const result = await createDetectionService({
+    userId,
+    image,
+    imageUrl,
+    cropId,
+  });
 
-    const id = String(req.params.id || "");
-    const detection = await DiseaseDetectionService.getDetectionById(id, userId);
-    if (!detection) {
-      sendError(res, 404, "Disease detection record not found or unauthorized");
-      return;
-    }
+  sendSuccess(res, 201, "Disease detection completed successfully", result);
+});
 
-    sendSuccess(res, 200, "Disease detection details fetched successfully", detection);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch disease detection details");
+export const getDetections = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
+
+  const { page, limit } = req.query;
+  const result = await getDetectionsService(
+    userId,
+    page ? Number(page) : 1,
+    limit ? Number(limit) : 10,
+  );
+
+  sendSuccess(res, 200, "Disease detections fetched successfully", { items: result.items, meta: result.meta });
+});
+
+export const getDetectionById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
+  }
+
+  const id = String(req.params.id || "");
+  const detection = await getDetectionByIdService(id, userId);
+  if (!detection) {
+    throw AppError.notFound("Disease detection record not found or unauthorized");
+  }
+
+  sendSuccess(res, 200, "Disease detection details fetched successfully", detection);
+});
 
 export const DiseaseDetectionController = {
   createDetection,
   getDetections,
   getDetectionById,
 };
-
-

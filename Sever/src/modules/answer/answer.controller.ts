@@ -1,84 +1,69 @@
 import type { Request, Response } from "express";
-import { AnswerService } from "./answer.service.js";
-import { sendSuccess, sendError } from "../../utils/apiResponse.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { sendSuccess } from "../../utils/apiResponse.js";
+import { AppError } from "../../utils/AppError.js";
+import {
+  createAnswer as createAnswerService,
+  getAnswersByQuestionId as getAnswersByQuestionIdService,
+  acceptAnswer as acceptAnswerService,
+  deleteAnswer as deleteAnswerService,
+} from "./answer.service.js";
 
-const createAnswer = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = (req as any).user?.id || req.body.userId;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const { questionId, content } = req.body;
-    if (!questionId || !content) {
-      sendError(res, 400, "questionId and content are required");
-      return;
-    }
-
-    const answer = await AnswerService.createAnswer({
-      questionId,
-      userId,
-      content,
-    });
-
-    sendSuccess(res, 201, "Answer posted successfully", answer);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to post answer");
+export const createAnswer = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = (req as any).user?.id || req.body.userId;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const getAnswers = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { questionId } = req.query;
-    if (!questionId || typeof questionId !== "string") {
-      sendError(res, 400, "questionId query parameter is required");
-      return;
-    }
-
-    const answers = await AnswerService.getAnswersByQuestionId(questionId);
-    sendSuccess(res, 200, "Answers fetched successfully", answers);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch answers");
+  const { questionId, content } = req.body;
+  if (!questionId || !content) {
+    throw AppError.badRequest("questionId and content are required");
   }
-};
 
-const acceptAnswer = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const userId = (req as any).user?.id || req.body.userId;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const answer = await createAnswerService({
+    questionId,
+    userId,
+    content,
+  });
 
-    const answer = await AnswerService.acceptAnswer(id, userId);
-    sendSuccess(res, 200, "Answer accepted successfully", answer);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to accept answer");
+  sendSuccess(res, 201, "Answer posted successfully", answer);
+});
+
+export const getAnswers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { questionId } = req.query;
+  if (!questionId || typeof questionId !== "string") {
+    throw AppError.badRequest("questionId query parameter is required");
   }
-};
 
-const deleteAnswer = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const userId = (req as any).user?.id || (req.query.userId as string);
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const answers = await getAnswersByQuestionIdService(questionId);
+  sendSuccess(res, 200, "Answers fetched successfully", answers);
+});
 
-    const deleted = await AnswerService.deleteAnswer(id, userId);
-    if (deleted.count === 0) {
-      sendError(res, 404, "Answer not found or unauthorized to delete");
-      return;
-    }
-
-    sendSuccess(res, 200, "Answer deleted successfully", { id });
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to delete answer");
+export const acceptAnswer = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const userId = (req as any).user?.id || req.body.userId;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
+
+  const answer = await acceptAnswerService(id, userId);
+  sendSuccess(res, 200, "Answer accepted successfully", answer);
+});
+
+export const deleteAnswer = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const userId = (req as any).user?.id || (req.query.userId as string);
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
+  }
+
+  const deleted = await deleteAnswerService(id, userId);
+  if (deleted.count === 0) {
+    throw AppError.notFound("Answer not found or unauthorized to delete");
+  }
+
+  sendSuccess(res, 200, "Answer deleted successfully", { id });
+});
 
 export const AnswerController = {
   createAnswer,
@@ -86,4 +71,3 @@ export const AnswerController = {
   acceptAnswer,
   deleteAnswer,
 };
-

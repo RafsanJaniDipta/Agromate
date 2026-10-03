@@ -1,158 +1,126 @@
 import type { Request, Response } from "express";
-import { QuestionService } from "./question.service.js";
-import { sendSuccess, sendError } from "../../utils/apiResponse.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { sendSuccess, sendPaginatedSuccess } from "../../utils/apiResponse.js";
+import { AppError } from "../../utils/AppError.js";
+import {
+  createQuestion as createQuestionService,
+  getQuestions as getQuestionsService,
+  getQuestionById as getQuestionByIdService,
+  addAnswer as addAnswerService,
+  updateQuestionStatus as updateQuestionStatusService,
+  deleteQuestion as deleteQuestionService,
+} from "./question.service.js";
 
-const createQuestion = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const { title, content, image, imageUrl, category } = req.body;
-    if (!title || !content) {
-      sendError(res, 422, "Title and content are required");
-      return;
-    }
-
-    const question = await QuestionService.createQuestion({
-      userId,
-      title,
-      content,
-      image,
-      imageUrl,
-      category,
-    });
-
-    sendSuccess(res, 201, "Question posted successfully", question);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to post question");
+export const createQuestion = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const getQuestions = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { status, search, category, page, limit } = req.query;
-    const result = await QuestionService.getQuestions({
-      status: typeof status === "string" ? status : undefined,
-      search: typeof search === "string" ? search : undefined,
-      category: typeof category === "string" ? category : undefined,
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "Questions fetched successfully",
-      data: result.items,
-      meta: result.meta,
-    });
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch questions");
+  const { title, content, image, imageUrl, category } = req.body;
+  if (!title || !content) {
+    throw AppError.unprocessable("Title and content are required");
   }
-};
 
-const getQuestionById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const id = String(req.params.id || "");
-    const question = await QuestionService.getQuestionById(id);
-    if (!question) {
-      sendError(res, 404, "Question not found");
-      return;
-    }
+  const question = await createQuestionService({
+    userId,
+    title,
+    content,
+    image,
+    imageUrl,
+    category,
+  });
 
-    sendSuccess(res, 200, "Question details fetched successfully", question);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch question details");
+  sendSuccess(res, 201, "Question posted successfully", question);
+});
+
+export const getQuestions = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { status, search, category, page, limit } = req.query;
+  const result = await getQuestionsService({
+    status: typeof status === "string" ? status : undefined,
+    search: typeof search === "string" ? search : undefined,
+    category: typeof category === "string" ? category : undefined,
+    page: page ? Number(page) : undefined,
+    limit: limit ? Number(limit) : undefined,
+  });
+
+  sendPaginatedSuccess(res, 200, "Questions fetched successfully", result.items, result.meta);
+});
+
+export const getQuestionById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const id = String(req.params.id || "");
+  const question = await getQuestionByIdService(id);
+  if (!question) {
+    throw AppError.notFound("Question not found");
   }
-};
 
-const addAnswer = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  sendSuccess(res, 200, "Question details fetched successfully", question);
+});
 
-    const questionId = String(req.params.id || "");
-    const { content } = req.body;
-    if (!content) {
-      sendError(res, 422, "Content is required for answer");
-      return;
-    }
-
-    const answer = await QuestionService.addAnswer({
-      questionId,
-      userId,
-      content,
-    });
-
-    if (!answer) {
-      sendError(res, 404, "Question not found");
-      return;
-    }
-
-    sendSuccess(res, 201, "Answer added successfully", answer);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to add answer");
+export const addAnswer = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const updateStatus = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    const userRole = req.user?.role || "";
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const id = String(req.params.id || "");
-    const { status } = req.body;
-    if (!status) {
-      sendError(res, 422, "Status is required");
-      return;
-    }
-
-    const updated = await QuestionService.updateQuestionStatus(id, userId, userRole, status);
-    if (updated === null) {
-      sendError(res, 404, "Question not found");
-      return;
-    }
-    if (updated === false) {
-      sendError(res, 403, "Forbidden: Only the question owner or Admin can change status");
-      return;
-    }
-
-    sendSuccess(res, 200, "Question status updated successfully", updated);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to update question status");
+  const questionId = String(req.params.id || "");
+  const { content } = req.body;
+  if (!content) {
+    throw AppError.unprocessable("Content is required for answer");
   }
-};
 
-const deleteQuestion = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    const userRole = req.user?.role || "";
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const answer = await addAnswerService({
+    questionId,
+    userId,
+    content,
+  });
 
-    const id = String(req.params.id || "");
-    const deleted = await QuestionService.deleteQuestion(id, userId, userRole);
-    if (!deleted) {
-      sendError(res, 404, "Question not found or unauthorized to delete");
-      return;
-    }
-
-    sendSuccess(res, 200, "Question deleted successfully", { message: "Question deleted successfully" });
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to delete question");
+  if (!answer) {
+    throw AppError.notFound("Question not found");
   }
-};
+
+  sendSuccess(res, 201, "Answer added successfully", answer);
+});
+
+export const updateStatus = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  const userRole = req.user?.role || "";
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
+  }
+
+  const id = String(req.params.id || "");
+  const { status } = req.body;
+  if (!status) {
+    throw AppError.unprocessable("Status is required");
+  }
+
+  const updated = await updateQuestionStatusService(id, userId, userRole, status);
+  if (updated === null) {
+    throw AppError.notFound("Question not found");
+  }
+  if (updated === false) {
+    throw AppError.forbidden("Forbidden: Only the question owner or Admin can change status");
+  }
+
+  sendSuccess(res, 200, "Question status updated successfully", updated);
+});
+
+export const deleteQuestion = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  const userRole = req.user?.role || "";
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
+  }
+
+  const id = String(req.params.id || "");
+  const deleted = await deleteQuestionService(id, userId, userRole);
+  if (!deleted) {
+    throw AppError.notFound("Question not found or unauthorized to delete");
+  }
+
+  sendSuccess(res, 200, "Question deleted successfully", { message: "Question deleted successfully" });
+});
 
 export const QuestionController = {
   createQuestion,
@@ -162,5 +130,3 @@ export const QuestionController = {
   updateStatus,
   deleteQuestion,
 };
-
-

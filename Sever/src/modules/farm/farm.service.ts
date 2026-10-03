@@ -1,4 +1,5 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
 export interface CreateFarmInput {
   name: string;
@@ -17,7 +18,7 @@ export interface UpdateFarmInput {
   soilType?: string;
 }
 
-const createFarm = async (data: CreateFarmInput) => {
+export const createFarm = serviceHandler(async (data: CreateFarmInput) => {
   const area = data.totalArea ?? data.areaInAcres ?? 0;
   return await prisma.farm.create({
     data: {
@@ -29,9 +30,9 @@ const createFarm = async (data: CreateFarmInput) => {
       userId: data.userId,
     },
   });
-};
+});
 
-const getFarmsByUserId = async (userId: string) => {
+export const getFarmsByUserId = serviceHandler(async (userId: string) => {
   return await prisma.farm.findMany({
     where: { userId },
     include: {
@@ -39,18 +40,18 @@ const getFarmsByUserId = async (userId: string) => {
     },
     orderBy: { createdAt: "desc" },
   });
-};
+});
 
-const getFarmById = async (id: string, userId: string) => {
+export const getFarmById = serviceHandler(async (id: string, userId: string) => {
   return await prisma.farm.findFirst({
     where: { id, userId },
     include: {
       fields: true,
     },
   });
-};
+});
 
-const updateFarm = async (id: string, userId: string, data: UpdateFarmInput) => {
+export const updateFarm = serviceHandler(async (id: string, userId: string, data: UpdateFarmInput) => {
   const farm = await prisma.farm.findFirst({ where: { id, userId } });
   if (!farm) return null;
 
@@ -66,15 +67,15 @@ const updateFarm = async (id: string, userId: string, data: UpdateFarmInput) => 
     },
     include: { fields: true },
   });
-};
+});
 
-const deleteFarm = async (id: string, userId: string) => {
+export const deleteFarm = serviceHandler(async (id: string, userId: string) => {
   const farm = await prisma.farm.findFirst({ where: { id, userId } });
   if (!farm) return false;
 
   await prisma.farm.delete({ where: { id } });
   return true;
-};
+});
 
 export const FarmService = {
   createFarm,
@@ -83,5 +84,3 @@ export const FarmService = {
   updateFarm,
   deleteFarm,
 };
-
-

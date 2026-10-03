@@ -1,26 +1,56 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
-const getAllUsersFromDB = async () => {
-  return await prisma.user.findMany({
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      isActive: true,
-      banned: true,
-      banReason: true,
-      location: true,
-      phone: true,
-      createdAt: true,
+export interface PaginationOptions {
+  page?: number;
+  limit?: number;
+}
+
+export interface UpdateUserRoleStatusPayload {
+  status?: boolean | string;
+  role?: string;
+}
+
+export const getAllUsersFromDB = serviceHandler(async (options: PaginationOptions = {}) => {
+  const page = Number(options.page) || 1;
+  const limit = Number(options.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const [data, total] = await Promise.all([
+    prisma.user.findMany({
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isActive: true,
+        banned: true,
+        banReason: true,
+        location: true,
+        phone: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.user.count(),
+  ]);
+
+  return {
+    data,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage: Math.ceil(total / limit),
     },
-    orderBy: { createdAt: "desc" },
-  });
-};
+  };
+});
 
-const updateUserRoleStatusInDB = async (
+export const updateUserRoleStatusInDB = serviceHandler(async (
   id: string,
-  payload: { status?: boolean | string; role?: string },
+  payload: UpdateUserRoleStatusPayload,
   adminId?: string
 ) => {
   const targetUser = await prisma.user.findUnique({ where: { id } });
@@ -67,9 +97,9 @@ const updateUserRoleStatusInDB = async (
       updatedAt: true,
     },
   });
-};
+});
 
-const getPlatformStatistics = async () => {
+export const getPlatformStatistics = serviceHandler(async () => {
   const [
     totalUsers,
     totalFarms,
@@ -91,25 +121,44 @@ const getPlatformStatistics = async () => {
     totalQuestions,
     totalDiseaseDetections,
   };
-};
+});
 
-const getDeliveryAgentsFromDB = async () => {
-  return await prisma.user.findMany({
-    where: {
-      role: "DELIVERY_AGENT",
+export const getDeliveryAgentsFromDB = serviceHandler(async (options: PaginationOptions = {}) => {
+  const page = Number(options.page) || 1;
+  const limit = Number(options.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const where = { role: "DELIVERY_AGENT" as const };
+
+  const [data, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        location: true,
+        isActive: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.user.count({ where }),
+  ]);
+
+  return {
+    data,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage: Math.ceil(total / limit),
     },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      phone: true,
-      location: true,
-      isActive: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
-};
+  };
+});
 
 export const AdminService = {
   getAllUsersFromDB,

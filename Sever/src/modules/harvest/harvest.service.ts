@@ -1,4 +1,5 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
 export interface CreateHarvestInput {
   cropCycleId: string;
@@ -18,7 +19,7 @@ export interface UpdateHarvestInput {
   notes?: string;
 }
 
-const createHarvest = async (data: CreateHarvestInput) => {
+export const createHarvest = serviceHandler(async (data: CreateHarvestInput) => {
   const cycle = await prisma.cropCycle.findUnique({
     where: { id: data.cropCycleId },
     include: { field: { include: { farm: true } } },
@@ -43,9 +44,9 @@ const createHarvest = async (data: CreateHarvestInput) => {
       },
     },
   });
-};
+});
 
-const getHarvests = async (
+export const getHarvests = serviceHandler(async (
   userId: string,
   params: {
     cropCycleId?: string;
@@ -99,9 +100,9 @@ const getHarvests = async (
       totalQuantity: aggregate._sum.quantity || 0,
     },
   };
-};
+});
 
-const getHarvestById = async (id: string, userId: string) => {
+export const getHarvestById = serviceHandler(async (id: string, userId: string) => {
   const harvest = await prisma.harvest.findUnique({
     where: { id },
     include: {
@@ -116,9 +117,9 @@ const getHarvestById = async (id: string, userId: string) => {
   }
 
   return harvest;
-};
+});
 
-const updateHarvest = async (id: string, userId: string, data: UpdateHarvestInput) => {
+export const updateHarvest = serviceHandler(async (id: string, userId: string, data: UpdateHarvestInput) => {
   const harvest = await prisma.harvest.findUnique({
     where: { id },
     include: { cropCycle: { include: { field: { include: { farm: true } } } } },
@@ -141,9 +142,9 @@ const updateHarvest = async (id: string, userId: string, data: UpdateHarvestInpu
       cropCycle: { include: { crop: true, field: true } },
     },
   });
-};
+});
 
-const deleteHarvest = async (id: string, userId: string) => {
+export const deleteHarvest = serviceHandler(async (id: string, userId: string) => {
   const harvest = await prisma.harvest.findUnique({
     where: { id },
     include: { cropCycle: { include: { field: { include: { farm: true } } } } },
@@ -155,7 +156,7 @@ const deleteHarvest = async (id: string, userId: string) => {
 
   await prisma.harvest.delete({ where: { id } });
   return true;
-};
+});
 
 export const HarvestService = {
   createHarvest,
@@ -164,5 +165,3 @@ export const HarvestService = {
   updateHarvest,
   deleteHarvest,
 };
-
-

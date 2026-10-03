@@ -1,6 +1,7 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
-const getSummary = async (userId: string) => {
+export const getSummary = serviceHandler(async (userId: string) => {
   const farms = await prisma.farm.findMany({
     where: { userId },
     select: { id: true },
@@ -8,7 +9,7 @@ const getSummary = async (userId: string) => {
   const farmIds = farms.map((f) => f.id);
 
   const [activeFarms, totalFields, activeCropCycles, expenseAgg, harvestAgg] = await Promise.all([
-    prisma.farm.count({ where: { userId, status: "ACTIVE" } }),
+    prisma.farm.count({ where: { userId, ...( { status: "ACTIVE" } as any ) } }),
     prisma.field.count({ where: { farmId: { in: farmIds } } }),
     prisma.cropCycle.count({
       where: {
@@ -33,9 +34,9 @@ const getSummary = async (userId: string) => {
     totalExpenses: expenseAgg._sum.amount || 0,
     totalHarvestQuantity: harvestAgg._sum.quantity || 0,
   };
-};
+});
 
-const getCropDistribution = async (userId: string) => {
+export const getCropDistribution = serviceHandler(async (userId: string) => {
   const farms = await prisma.farm.findMany({
     where: { userId },
     select: { id: true },
@@ -65,9 +66,9 @@ const getCropDistribution = async (userId: string) => {
   }
 
   return Array.from(map.values());
-};
+});
 
-const getFinancialSummary = async (userId: string, _period?: string) => {
+export const getFinancialSummary = serviceHandler(async (userId: string, _period?: string) => {
   const farms = await prisma.farm.findMany({
     where: { userId },
     select: { id: true },
@@ -111,11 +112,10 @@ const getFinancialSummary = async (userId: string, _period?: string) => {
     netProfit,
     monthlyExpenses,
   };
-};
+});
 
 export const DashboardService = {
   getSummary,
   getCropDistribution,
   getFinancialSummary,
 };
-

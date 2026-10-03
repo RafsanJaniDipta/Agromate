@@ -32,6 +32,7 @@ model User {
   location      String?
   phone         String?
   language      String?   @default("en")
+  locale        String?   @default("bn")
   isActive      Boolean   @default(true)
 
   sessions                  Session[]
@@ -46,6 +47,7 @@ model User {
   expertProfile             ExpertProfile?
   reminders                 Reminder[]
   aiConversations           AIConversation[]
+  supportTickets            SupportTicket[]
 
   @@unique([email])
   @@map("user")
@@ -192,6 +194,7 @@ model Field {
 model Crop {
   id              String   @id @default(uuid(7)) @db.Uuid
   name            String   @unique
+  nameBn          String?  @map("name_bn")
   category        String?
   season          String?
   growthDays      Int?
@@ -201,6 +204,7 @@ model Crop {
   optimalRainfall Float?
   durationDays    Int?
   description     String?
+  descriptionBn  String?  @map("description_bn")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -208,6 +212,34 @@ model Crop {
   questions  Question[]
 
   @@map("crop")
+}
+
+model Guide {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  titleEn   String   @map("title_en")
+  titleBn   String?  @map("title_bn")
+  bodyEn    String   @map("body_en")
+  bodyBn    String?  @map("body_bn")
+  crop      String   // key, e.g. 'rice'
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("guide")
+}
+
+model SupportTicket {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  name      String
+  phone     String
+  topic     String   // key e.g. 'crop', 'market', 'weather', 'account', 'other'
+  message   String
+  locale    String   @default("bn")
+  userId    String?  @db.Uuid
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("support_ticket")
 }
 
 model CropCycle {
@@ -386,7 +418,7 @@ model AIMessage {
   id             String         @id @default(uuid(7)) @db.Uuid
   conversationId String         @db.Uuid
   conversation   AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         String         // "USER" | "ASSISTANT"
+  sender         String // "USER" | "ASSISTANT"
   content        String
   createdAt      DateTime       @default(now())
 

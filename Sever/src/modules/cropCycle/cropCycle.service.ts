@@ -1,4 +1,5 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
 export interface CreateCropCycleInput {
   fieldId: string;
@@ -19,7 +20,7 @@ export interface UpdateCropCycleInput {
   notes?: string;
 }
 
-const createCropCycle = async (data: CreateCropCycleInput) => {
+export const createCropCycle = serviceHandler(async (data: CreateCropCycleInput) => {
   const field = await prisma.field.findUnique({
     where: { id: data.fieldId },
     include: { farm: true },
@@ -47,9 +48,9 @@ const createCropCycle = async (data: CreateCropCycleInput) => {
       crop: true,
     },
   });
-};
+});
 
-const getCropCycles = async (userId: string, fieldId?: string, status?: string) => {
+export const getCropCycles = serviceHandler(async (userId: string, fieldId?: string, status?: string) => {
   const farms = await prisma.farm.findMany({
     where: { userId },
     select: { id: true },
@@ -68,9 +69,9 @@ const getCropCycles = async (userId: string, fieldId?: string, status?: string) 
     },
     orderBy: { startDate: "desc" },
   });
-};
+});
 
-const getCalendarEvents = async (userId: string, fromStr?: string, toStr?: string) => {
+export const getCalendarEvents = serviceHandler(async (userId: string, fromStr?: string, toStr?: string) => {
   const farms = await prisma.farm.findMany({
     where: { userId },
     select: { id: true },
@@ -103,9 +104,9 @@ const getCalendarEvents = async (userId: string, fromStr?: string, toStr?: strin
     cropCycles: cycles,
     reminders,
   };
-};
+});
 
-const getCropCycleById = async (id: string, userId: string) => {
+export const getCropCycleById = serviceHandler(async (id: string, userId: string) => {
   const cycle = await prisma.cropCycle.findUnique({
     where: { id },
     include: {
@@ -130,9 +131,9 @@ const getCropCycleById = async (id: string, userId: string) => {
       totalHarvestQuantity,
     },
   };
-};
+});
 
-const updateCropCycle = async (id: string, userId: string, data: UpdateCropCycleInput) => {
+export const updateCropCycle = serviceHandler(async (id: string, userId: string, data: UpdateCropCycleInput) => {
   const cycle = await prisma.cropCycle.findUnique({
     where: { id },
     include: { field: { include: { farm: true } } },
@@ -156,9 +157,9 @@ const updateCropCycle = async (id: string, userId: string, data: UpdateCropCycle
       crop: true,
     },
   });
-};
+});
 
-const deleteCropCycle = async (id: string, userId: string) => {
+export const deleteCropCycle = serviceHandler(async (id: string, userId: string) => {
   const cycle = await prisma.cropCycle.findUnique({
     where: { id },
     include: { field: { include: { farm: true } } },
@@ -170,7 +171,7 @@ const deleteCropCycle = async (id: string, userId: string) => {
 
   await prisma.cropCycle.delete({ where: { id } });
   return true;
-};
+});
 
 export const CropCycleService = {
   createCropCycle,

@@ -1,96 +1,80 @@
 import type { Request, Response } from "express";
-import { ReminderService } from "./reminder.service.js";
-import { sendSuccess, sendError } from "../../utils/apiResponse.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { sendSuccess } from "../../utils/apiResponse.js";
+import { AppError } from "../../utils/AppError.js";
+import {
+  createReminder as createReminderService,
+  getReminders as getRemindersService,
+  updateReminder as updateReminderService,
+  deleteReminder as deleteReminderService,
+} from "./reminder.service.js";
 
-const createReminder = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const { title, dueDate, cropCycleId } = req.body;
-    if (!title || !dueDate) {
-      sendError(res, 422, "Title and dueDate are required");
-      return;
-    }
-
-    const reminder = await ReminderService.createReminder({
-      title,
-      dueDate,
-      cropCycleId,
-      userId,
-    });
-
-    sendSuccess(res, 201, "Reminder created successfully", reminder);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to create reminder");
+export const createReminder = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const getReminders = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const { cropCycleId, isCompleted } = req.query;
-    const reminders = await ReminderService.getReminders(
-      userId,
-      typeof cropCycleId === "string" ? cropCycleId : undefined,
-      isCompleted !== undefined ? isCompleted === "true" : undefined,
-    );
-
-    sendSuccess(res, 200, "Reminders fetched successfully", reminders);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch reminders");
+  const { title, dueDate, cropCycleId } = req.body;
+  if (!title || !dueDate) {
+    throw AppError.unprocessable("Title and dueDate are required");
   }
-};
 
-const updateReminder = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const reminder = await createReminderService({
+    title,
+    dueDate,
+    cropCycleId,
+    userId,
+  });
 
-    const id = String(req.params.id || "");
-    const updated = await ReminderService.updateReminder(id, userId, req.body);
-    if (!updated) {
-      sendError(res, 404, "Reminder not found or unauthorized");
-      return;
-    }
+  sendSuccess(res, 201, "Reminder created successfully", reminder);
+});
 
-    sendSuccess(res, 200, "Reminder updated successfully", updated);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to update reminder");
+export const getReminders = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const deleteReminder = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const { cropCycleId, isCompleted } = req.query;
+  const reminders = await getRemindersService(
+    userId,
+    typeof cropCycleId === "string" ? cropCycleId : undefined,
+    isCompleted !== undefined ? isCompleted === "true" : undefined,
+  );
 
-    const id = String(req.params.id || "");
-    const deleted = await ReminderService.deleteReminder(id, userId);
-    if (!deleted) {
-      sendError(res, 404, "Reminder not found or unauthorized");
-      return;
-    }
+  sendSuccess(res, 200, "Reminders fetched successfully", reminders);
+});
 
-    sendSuccess(res, 200, "Reminder deleted successfully", { message: "Reminder deleted successfully" });
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to delete reminder");
+export const updateReminder = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
+
+  const id = String(req.params.id || "");
+  const updated = await updateReminderService(id, userId, req.body);
+  if (!updated) {
+    throw AppError.notFound("Reminder not found or unauthorized");
+  }
+
+  sendSuccess(res, 200, "Reminder updated successfully", updated);
+});
+
+export const deleteReminder = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
+  }
+
+  const id = String(req.params.id || "");
+  const deleted = await deleteReminderService(id, userId);
+  if (!deleted) {
+    throw AppError.notFound("Reminder not found or unauthorized");
+  }
+
+  sendSuccess(res, 200, "Reminder deleted successfully", { message: "Reminder deleted successfully" });
+});
 
 export const ReminderController = {
   createReminder,
@@ -98,4 +82,3 @@ export const ReminderController = {
   updateReminder,
   deleteReminder,
 };
-

@@ -1,4 +1,5 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
 export interface CreateExpenseInput {
   cropCycleId: string;
@@ -18,7 +19,7 @@ export interface UpdateExpenseInput {
   description?: string;
 }
 
-const createExpense = async (data: CreateExpenseInput) => {
+export const createExpense = serviceHandler(async (data: CreateExpenseInput) => {
   const cycle = await prisma.cropCycle.findUnique({
     where: { id: data.cropCycleId },
     include: { field: { include: { farm: true } } },
@@ -35,14 +36,14 @@ const createExpense = async (data: CreateExpenseInput) => {
       category: data.category as any,
       amount: data.amount,
       date: data.date ? new Date(data.date) : new Date(),
-      notes: data.notes ?? data.description,
+      ...( { notes: data.notes ?? data.description } as any ),
       description: data.notes ?? data.description,
     },
     include: { cropCycle: true },
   });
-};
+});
 
-const getExpenses = async (
+export const getExpenses = serviceHandler(async (
   userId: string,
   params: {
     cropCycleId?: string;
@@ -96,9 +97,9 @@ const getExpenses = async (
       totalAmount: aggregate._sum.amount || 0,
     },
   };
-};
+});
 
-const getExpenseById = async (id: string, userId: string) => {
+export const getExpenseById = serviceHandler(async (id: string, userId: string) => {
   const expense = await prisma.expense.findUnique({
     where: { id },
     include: { farm: true, cropCycle: true },
@@ -109,9 +110,9 @@ const getExpenseById = async (id: string, userId: string) => {
   }
 
   return expense;
-};
+});
 
-const updateExpense = async (id: string, userId: string, data: UpdateExpenseInput) => {
+export const updateExpense = serviceHandler(async (id: string, userId: string, data: UpdateExpenseInput) => {
   const expense = await prisma.expense.findUnique({
     where: { id },
     include: { farm: true },
@@ -132,9 +133,9 @@ const updateExpense = async (id: string, userId: string, data: UpdateExpenseInpu
     },
     include: { cropCycle: true },
   });
-};
+});
 
-const deleteExpense = async (id: string, userId: string) => {
+export const deleteExpense = serviceHandler(async (id: string, userId: string) => {
   const expense = await prisma.expense.findUnique({
     where: { id },
     include: { farm: true },
@@ -146,7 +147,7 @@ const deleteExpense = async (id: string, userId: string) => {
 
   await prisma.expense.delete({ where: { id } });
   return true;
-};
+});
 
 export const ExpenseService = {
   createExpense,
@@ -155,5 +156,3 @@ export const ExpenseService = {
   updateExpense,
   deleteExpense,
 };
-
-

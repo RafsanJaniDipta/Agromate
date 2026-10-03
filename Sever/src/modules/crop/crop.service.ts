@@ -1,4 +1,5 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
 export interface CreateCropInput {
   name: string;
@@ -26,7 +27,7 @@ export interface UpdateCropInput {
   description?: string;
 }
 
-const createCrop = async (data: CreateCropInput) => {
+export const createCrop = serviceHandler(async (data: CreateCropInput) => {
   const days = data.growthDays ?? data.durationDays;
   return await prisma.crop.create({
     data: {
@@ -42,9 +43,9 @@ const createCrop = async (data: CreateCropInput) => {
       description: data.description,
     },
   });
-};
+});
 
-const getAllCrops = async (search?: string, season?: string) => {
+export const getAllCrops = serviceHandler(async (search?: string, season?: string) => {
   return await prisma.crop.findMany({
     where: {
       ...(search
@@ -59,15 +60,15 @@ const getAllCrops = async (search?: string, season?: string) => {
     },
     orderBy: { name: "asc" },
   });
-};
+});
 
-const getCropById = async (id: string) => {
+export const getCropById = serviceHandler(async (id: string) => {
   return await prisma.crop.findUnique({
     where: { id },
   });
-};
+});
 
-const updateCrop = async (id: string, data: UpdateCropInput) => {
+export const updateCrop = serviceHandler(async (id: string, data: UpdateCropInput) => {
   const days = data.growthDays ?? data.durationDays;
   return await prisma.crop.update({
     where: { id },
@@ -82,14 +83,14 @@ const updateCrop = async (id: string, data: UpdateCropInput) => {
       ...(data.description !== undefined ? { description: data.description } : {}),
     },
   });
-};
+});
 
-const deleteCrop = async (id: string) => {
+export const deleteCrop = serviceHandler(async (id: string) => {
   await prisma.crop.delete({
     where: { id },
   });
   return true;
-};
+});
 
 export const CropService = {
   createCrop,
@@ -98,5 +99,3 @@ export const CropService = {
   updateCrop,
   deleteCrop,
 };
-
-

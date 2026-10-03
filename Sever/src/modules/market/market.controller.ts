@@ -1,100 +1,77 @@
 import type { Request, Response } from "express";
-import { MarketService } from "./market.service.js";
-import { sendSuccess, sendError } from "../../utils/apiResponse.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { sendSuccess, sendPaginatedSuccess } from "../../utils/apiResponse.js";
+import { AppError } from "../../utils/AppError.js";
+import {
+  createMarketPrice as createMarketPriceService,
+  getMarketPrices as getMarketPricesService,
+  getTrends as getTrendsService,
+  getMarketPriceById as getMarketPriceByIdService,
+  updateMarketPrice as updateMarketPriceService,
+  deleteMarketPrice as deleteMarketPriceService,
+} from "./market.service.js";
 
-const createMarketPrice = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { cropName, pricePerKg, pricePerUnit, location, source, date } = req.body;
-    const price = pricePerKg ?? pricePerUnit;
-    if (!cropName || !location || price === undefined) {
-      sendError(res, 422, "cropName, location, and pricePerKg (or pricePerUnit) are required");
-      return;
-    }
-
-    const marketPrice = await MarketService.createMarketPrice({
-      cropName,
-      pricePerKg: Number(price),
-      location,
-      source,
-      date,
-    });
-
-    sendSuccess(res, 201, "Market price added successfully", marketPrice);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to add market price");
+export const createMarketPrice = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { cropName, pricePerKg, pricePerUnit, location, source, date } = req.body;
+  const price = pricePerKg ?? pricePerUnit;
+  if (!cropName || !location || price === undefined) {
+    throw AppError.unprocessable("cropName, location, and pricePerKg (or pricePerUnit) are required");
   }
-};
 
-const getMarketPrices = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { cropName, location, page, limit } = req.query;
-    const result = await MarketService.getMarketPrices({
-      cropName: typeof cropName === "string" ? cropName : undefined,
-      location: typeof location === "string" ? location : undefined,
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-    });
+  const marketPrice = await createMarketPriceService({
+    cropName,
+    pricePerKg: Number(price),
+    location,
+    source,
+    date,
+  });
 
-    res.status(200).json({
-      success: true,
-      message: "Market prices fetched successfully",
-      data: result.items,
-      meta: result.meta,
-    });
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch market prices");
+  sendSuccess(res, 201, "Market price added successfully", marketPrice);
+});
+
+export const getMarketPrices = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { cropName, location, page, limit } = req.query;
+  const result = await getMarketPricesService({
+    cropName: typeof cropName === "string" ? cropName : undefined,
+    location: typeof location === "string" ? location : undefined,
+    page: page ? Number(page) : undefined,
+    limit: limit ? Number(limit) : undefined,
+  });
+
+  sendPaginatedSuccess(res, 200, "Market prices fetched successfully", result.items, result.meta);
+});
+
+export const getTrends = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { cropName, days } = req.query;
+  if (!cropName || typeof cropName !== "string") {
+    throw AppError.unprocessable("cropName query parameter is required");
   }
-};
 
-const getTrends = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { cropName, days } = req.query;
-    if (!cropName || typeof cropName !== "string") {
-      sendError(res, 422, "cropName query parameter is required");
-      return;
-    }
+  const trends = await getTrendsService(cropName, days ? Number(days) : 30);
+  sendSuccess(res, 200, "Price trends fetched successfully", trends);
+});
 
-    const trends = await MarketService.getTrends(cropName, days ? Number(days) : 30);
-    sendSuccess(res, 200, "Price trends fetched successfully", trends);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch price trends");
+export const getMarketPriceById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const id = String(req.params.id || "");
+  const marketPrice = await getMarketPriceByIdService(id);
+  if (!marketPrice) {
+    throw AppError.notFound("Market price not found");
   }
-};
 
-const getMarketPriceById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const id = String(req.params.id || "");
-    const marketPrice = await MarketService.getMarketPriceById(id);
-    if (!marketPrice) {
-      sendError(res, 404, "Market price not found");
-      return;
-    }
+  sendSuccess(res, 200, "Market price details fetched successfully", marketPrice);
+});
 
-    sendSuccess(res, 200, "Market price details fetched successfully", marketPrice);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch market price details");
-  }
-};
+export const updateMarketPrice = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const id = String(req.params.id || "");
+  const updated = await updateMarketPriceService(id, req.body);
+  sendSuccess(res, 200, "Market price updated successfully", updated);
+});
 
-const updateMarketPrice = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const id = String(req.params.id || "");
-    const updated = await MarketService.updateMarketPrice(id, req.body);
-    sendSuccess(res, 200, "Market price updated successfully", updated);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to update market price");
-  }
-};
-
-const deleteMarketPrice = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const id = String(req.params.id || "");
-    await MarketService.deleteMarketPrice(id);
-    sendSuccess(res, 200, "Market price deleted successfully", { message: "Market price deleted successfully" });
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to delete market price");
-  }
-};
+export const deleteMarketPrice = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const id = String(req.params.id || "");
+  await deleteMarketPriceService(id);
+  sendSuccess(res, 200, "Market price deleted successfully", { message: "Market price deleted successfully" });
+});
 
 export const MarketController = {
   createMarketPrice,
@@ -104,6 +81,3 @@ export const MarketController = {
   updateMarketPrice,
   deleteMarketPrice,
 };
-
-
-

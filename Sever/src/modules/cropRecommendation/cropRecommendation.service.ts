@@ -1,4 +1,5 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
 export interface CreateCropRecommendationInput {
   userId: string;
@@ -8,28 +9,33 @@ export interface CreateCropRecommendationInput {
   recommendedCrops: string;
 }
 
-export class CropRecommendationService {
-  static async createRecommendation(data: CreateCropRecommendationInput) {
-    return prisma.cropRecommendation.create({ data });
-  }
+export const createRecommendation = serviceHandler(async (data: CreateCropRecommendationInput) => {
+  return prisma.cropRecommendation.create({ data });
+});
 
-  static async getRecommendationsByUserId(userId: string) {
-    return prisma.cropRecommendation.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-    });
-  }
+export const getRecommendationsByUserId = serviceHandler(async (userId: string) => {
+  return prisma.cropRecommendation.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+});
 
-  static async getRecommendationById(id: string) {
-    return prisma.cropRecommendation.findUnique({
-      where: { id },
-      include: { user: true },
-    });
-  }
+export const getRecommendationById = serviceHandler(async (id: string) => {
+  return prisma.cropRecommendation.findUnique({
+    where: { id },
+    include: { user: true },
+  });
+});
 
-  static async deleteRecommendation(id: string, userId: string) {
-    return prisma.cropRecommendation.deleteMany({
-      where: { id, userId },
-    });
-  }
-}
+export const deleteRecommendation = serviceHandler(async (id: string, userId: string) => {
+  return prisma.cropRecommendation.deleteMany({
+    where: { id, userId },
+  });
+});
+
+export const CropRecommendationService = {
+  createRecommendation,
+  getRecommendationsByUserId,
+  getRecommendationById,
+  deleteRecommendation,
+};

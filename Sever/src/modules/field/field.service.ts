@@ -1,4 +1,5 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
 export interface CreateFieldInput {
   farmId: string;
@@ -16,7 +17,7 @@ export interface UpdateFieldInput {
   soilType?: string;
 }
 
-const createField = async (data: CreateFieldInput) => {
+export const createField = serviceHandler(async (data: CreateFieldInput) => {
   const farm = await prisma.farm.findFirst({
     where: { id: data.farmId, userId: data.userId },
   });
@@ -33,9 +34,9 @@ const createField = async (data: CreateFieldInput) => {
       soilType: data.soilType,
     },
   });
-};
+});
 
-const getFieldsByFarmId = async (farmId: string, userId: string) => {
+export const getFieldsByFarmId = serviceHandler(async (farmId: string, userId: string) => {
   const farm = await prisma.farm.findFirst({
     where: { id: farmId, userId },
   });
@@ -45,9 +46,9 @@ const getFieldsByFarmId = async (farmId: string, userId: string) => {
     where: { farmId },
     orderBy: { createdAt: "desc" },
   });
-};
+});
 
-const getFieldById = async (id: string, userId: string) => {
+export const getFieldById = serviceHandler(async (id: string, userId: string) => {
   const field = await prisma.field.findUnique({
     where: { id },
     include: {
@@ -64,9 +65,9 @@ const getFieldById = async (id: string, userId: string) => {
   }
 
   return field;
-};
+});
 
-const updateField = async (id: string, userId: string, data: UpdateFieldInput) => {
+export const updateField = serviceHandler(async (id: string, userId: string, data: UpdateFieldInput) => {
   const field = await prisma.field.findUnique({
     where: { id },
     include: { farm: true },
@@ -86,9 +87,9 @@ const updateField = async (id: string, userId: string, data: UpdateFieldInput) =
       ...(data.soilType !== undefined ? { soilType: data.soilType } : {}),
     },
   });
-};
+});
 
-const deleteField = async (id: string, userId: string) => {
+export const deleteField = serviceHandler(async (id: string, userId: string) => {
   const field = await prisma.field.findUnique({
     where: { id },
     include: { farm: true },
@@ -100,7 +101,7 @@ const deleteField = async (id: string, userId: string) => {
 
   await prisma.field.delete({ where: { id } });
   return true;
-};
+});
 
 export const FieldService = {
   createField,
@@ -109,5 +110,3 @@ export const FieldService = {
   updateField,
   deleteField,
 };
-
-

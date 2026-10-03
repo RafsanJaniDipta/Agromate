@@ -1,145 +1,119 @@
 import type { Request, Response } from "express";
-import { CropCycleService } from "./cropCycle.service.js";
-import { sendSuccess, sendError } from "../../utils/apiResponse.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { sendSuccess } from "../../utils/apiResponse.js";
+import { AppError } from "../../utils/AppError.js";
+import {
+  createCropCycle as createCropCycleService,
+  getCropCycles as getCropCyclesService,
+  getCalendarEvents as getCalendarEventsService,
+  getCropCycleById as getCropCycleByIdService,
+  updateCropCycle as updateCropCycleService,
+  deleteCropCycle as deleteCropCycleService,
+} from "./cropCycle.service.js";
 
-const createCropCycle = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const { fieldId, cropId, plantingDate, startDate, expectedHarvestDate, growthStage, notes } = req.body;
-    if (!fieldId || !cropId) {
-      sendError(res, 422, "fieldId and cropId are required");
-      return;
-    }
-
-    const cropCycle = await CropCycleService.createCropCycle({
-      fieldId,
-      cropId,
-      plantingDate,
-      startDate,
-      expectedHarvestDate,
-      growthStage,
-      notes,
-      userId,
-    });
-
-    if (!cropCycle) {
-      sendError(res, 404, "Field not found or unauthorized");
-      return;
-    }
-
-    sendSuccess(res, 201, "Crop cycle created successfully", cropCycle);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to create crop cycle");
+export const createCropCycle = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const getCropCycles = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const { fieldId, status } = req.query;
-    const cropCycles = await CropCycleService.getCropCycles(
-      userId,
-      typeof fieldId === "string" ? fieldId : undefined,
-      typeof status === "string" ? status : undefined,
-    );
-    sendSuccess(res, 200, "Crop cycles fetched successfully", cropCycles);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch crop cycles");
+  const { fieldId, cropId, plantingDate, startDate, expectedHarvestDate, growthStage, notes } = req.body;
+  if (!fieldId || !cropId) {
+    throw AppError.unprocessable("fieldId and cropId are required");
   }
-};
 
-const getCalendarEvents = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const cropCycle = await createCropCycleService({
+    fieldId,
+    cropId,
+    plantingDate,
+    startDate,
+    expectedHarvestDate,
+    growthStage,
+    notes,
+    userId,
+  });
 
-    const { from, to } = req.query;
-    const events = await CropCycleService.getCalendarEvents(
-      userId,
-      typeof from === "string" ? from : undefined,
-      typeof to === "string" ? to : undefined,
-    );
-    sendSuccess(res, 200, "Calendar events fetched successfully", events);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch calendar events");
+  if (!cropCycle) {
+    throw AppError.notFound("Field not found or unauthorized");
   }
-};
 
-const getCropCycleById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  sendSuccess(res, 201, "Crop cycle created successfully", cropCycle);
+});
 
-    const id = String(req.params.id || "");
-    const cropCycle = await CropCycleService.getCropCycleById(id, userId);
-    if (!cropCycle) {
-      sendError(res, 404, "Crop cycle not found or unauthorized");
-      return;
-    }
-
-    sendSuccess(res, 200, "Crop cycle details fetched successfully", cropCycle);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch crop cycle details");
+export const getCropCycles = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const updateCropCycle = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const { fieldId, status } = req.query;
+  const cropCycles = await getCropCyclesService(
+    userId,
+    typeof fieldId === "string" ? fieldId : undefined,
+    typeof status === "string" ? status : undefined,
+  );
+  sendSuccess(res, 200, "Crop cycles fetched successfully", cropCycles);
+});
 
-    const id = String(req.params.id || "");
-    const updated = await CropCycleService.updateCropCycle(id, userId, req.body);
-    if (!updated) {
-      sendError(res, 404, "Crop cycle not found or unauthorized");
-      return;
-    }
-
-    sendSuccess(res, 200, "Crop cycle updated successfully", updated);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to update crop cycle");
+export const getCalendarEvents = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const deleteCropCycle = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const { from, to } = req.query;
+  const events = await getCalendarEventsService(
+    userId,
+    typeof from === "string" ? from : undefined,
+    typeof to === "string" ? to : undefined,
+  );
+  sendSuccess(res, 200, "Calendar events fetched successfully", events);
+});
 
-    const id = String(req.params.id || "");
-    const deleted = await CropCycleService.deleteCropCycle(id, userId);
-    if (!deleted) {
-      sendError(res, 404, "Crop cycle not found or unauthorized");
-      return;
-    }
-
-    sendSuccess(res, 200, "Crop cycle deleted successfully", { message: "Crop cycle deleted successfully" });
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to delete crop cycle");
+export const getCropCycleById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
+
+  const id = String(req.params.id || "");
+  const cropCycle = await getCropCycleByIdService(id, userId);
+  if (!cropCycle) {
+    throw AppError.notFound("Crop cycle not found or unauthorized");
+  }
+
+  sendSuccess(res, 200, "Crop cycle details fetched successfully", cropCycle);
+});
+
+export const updateCropCycle = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
+  }
+
+  const id = String(req.params.id || "");
+  const updated = await updateCropCycleService(id, userId, req.body);
+  if (!updated) {
+    throw AppError.notFound("Crop cycle not found or unauthorized");
+  }
+
+  sendSuccess(res, 200, "Crop cycle updated successfully", updated);
+});
+
+export const deleteCropCycle = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
+  }
+
+  const id = String(req.params.id || "");
+  const deleted = await deleteCropCycleService(id, userId);
+  if (!deleted) {
+    throw AppError.notFound("Crop cycle not found or unauthorized");
+  }
+
+  sendSuccess(res, 200, "Crop cycle deleted successfully", { message: "Crop cycle deleted successfully" });
+});
 
 export const CropCycleController = {
   createCropCycle,
@@ -149,5 +123,3 @@ export const CropCycleController = {
   updateCropCycle,
   deleteCropCycle,
 };
-
-

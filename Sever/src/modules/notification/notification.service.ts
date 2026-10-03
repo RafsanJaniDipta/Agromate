@@ -1,5 +1,6 @@
 import { prisma } from "../../config/database.js";
-import type { NotificationType } from "../../generated/prisma/index.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
+import type { NotificationType } from "../../generated/prisma/client.js";
 
 export interface CreateNotificationInput {
   userId: string;
@@ -8,35 +9,41 @@ export interface CreateNotificationInput {
   type?: NotificationType;
 }
 
-export class NotificationService {
-  static async createNotification(data: CreateNotificationInput) {
-    return prisma.notification.create({ data });
-  }
+export const createNotification = serviceHandler(async (data: CreateNotificationInput) => {
+  return prisma.notification.create({ data });
+});
 
-  static async getNotificationsByUserId(userId: string) {
-    return prisma.notification.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-    });
-  }
+export const getNotificationsByUserId = serviceHandler(async (userId: string) => {
+  return prisma.notification.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+});
 
-  static async markAsRead(id: string, userId: string) {
-    return prisma.notification.updateMany({
-      where: { id, userId },
-      data: { isRead: true },
-    });
-  }
+export const markAsRead = serviceHandler(async (id: string, userId: string) => {
+  return prisma.notification.updateMany({
+    where: { id, userId },
+    data: { isRead: true },
+  });
+});
 
-  static async markAllAsRead(userId: string) {
-    return prisma.notification.updateMany({
-      where: { userId, isRead: false },
-      data: { isRead: true },
-    });
-  }
+export const markAllAsRead = serviceHandler(async (userId: string) => {
+  return prisma.notification.updateMany({
+    where: { userId, isRead: false },
+    data: { isRead: true },
+  });
+});
 
-  static async deleteNotification(id: string, userId: string) {
-    return prisma.notification.deleteMany({
-      where: { id, userId },
-    });
-  }
-}
+export const deleteNotification = serviceHandler(async (id: string, userId: string) => {
+  return prisma.notification.deleteMany({
+    where: { id, userId },
+  });
+});
+
+export const NotificationService = {
+  createNotification,
+  getNotificationsByUserId,
+  markAsRead,
+  markAllAsRead,
+  deleteNotification,
+};

@@ -1,9 +1,14 @@
 import { Router } from "express";
-import { CropRecommendationController } from "./cropRecommendation.controller.js";
+import {
+  createRecommendation,
+  getRecommendations,
+  getRecommendationById,
+  deleteRecommendation,
+} from "./cropRecommendation.controller.js";
 
 export const cropRecommendationRouter = Router();
 
-cropRecommendationRouter.post("/", CropRecommendationController.createRecommendation);
-cropRecommendationRouter.get("/", CropRecommendationController.getRecommendations);
-cropRecommendationRouter.get("/:id", CropRecommendationController.getRecommendationById);
-cropRecommendationRouter.delete("/:id", CropRecommendationController.deleteRecommendation);
+cropRecommendationRouter.post("/", createRecommendation);
+cropRecommendationRouter.get("/", getRecommendations);
+cropRecommendationRouter.get("/:id", getRecommendationById);
+cropRecommendationRouter.delete("/:id", deleteRecommendation);

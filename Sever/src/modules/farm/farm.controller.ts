@@ -1,170 +1,130 @@
 import type { Request, Response } from "express";
-import { FarmService } from "./farm.service.js";
-import { FieldService } from "../field/field.service.js";
-import { sendSuccess, sendError } from "../../utils/apiResponse.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { sendSuccess } from "../../utils/apiResponse.js";
+import { AppError } from "../../utils/AppError.js";
+import { createFarm as createFarmService, getFarmsByUserId, getFarmById as getFarmByIdService, updateFarm as updateFarmService, deleteFarm as deleteFarmService } from "./farm.service.js";
+import { createField as createFieldService, getFieldsByFarmId as getFieldsByFarmIdService } from "../field/field.service.js";
 
-const createFarm = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const { name, location, totalArea, areaInAcres, soilType } = req.body;
-    if (!name || !location) {
-      sendError(res, 422, "Name and location are required");
-      return;
-    }
-
-    const farm = await FarmService.createFarm({
-      name,
-      location,
-      totalArea: totalArea !== undefined ? Number(totalArea) : undefined,
-      areaInAcres: areaInAcres !== undefined ? Number(areaInAcres) : undefined,
-      soilType,
-      userId,
-    });
-
-    sendSuccess(res, 201, "Farm created successfully", farm);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to create farm");
+export const createFarm = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const getFarms = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const farms = await FarmService.getFarmsByUserId(userId);
-    sendSuccess(res, 200, "Farms fetched successfully", farms);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch farms");
+  const { name, location, totalArea, areaInAcres, soilType } = req.body;
+  if (!name || !location) {
+    throw AppError.unprocessable("Name and location are required");
   }
-};
 
-const getFarmById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const farm = await createFarmService({
+    name,
+    location,
+    totalArea: totalArea !== undefined ? Number(totalArea) : undefined,
+    areaInAcres: areaInAcres !== undefined ? Number(areaInAcres) : undefined,
+    soilType,
+    userId,
+  });
 
-    const id = String(req.params.id || "");
-    const farm = await FarmService.getFarmById(id, userId);
-    if (!farm) {
-      sendError(res, 404, "Farm not found");
-      return;
-    }
+  sendSuccess(res, 201, "Farm created successfully", farm);
+});
 
-    sendSuccess(res, 200, "Farm details fetched successfully", farm);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch farm details");
+export const getFarms = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const updateFarm = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const farms = await getFarmsByUserId(userId);
+  sendSuccess(res, 200, "Farms fetched successfully", farms);
+});
 
-    const id = String(req.params.id || "");
-    const updated = await FarmService.updateFarm(id, userId, req.body);
-    if (!updated) {
-      sendError(res, 404, "Farm not found or unauthorized");
-      return;
-    }
-
-    sendSuccess(res, 200, "Farm updated successfully", updated);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to update farm");
+export const getFarmById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const deleteFarm = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const id = String(req.params.id || "");
-    const deleted = await FarmService.deleteFarm(id, userId);
-    if (!deleted) {
-      sendError(res, 404, "Farm not found or unauthorized");
-      return;
-    }
-
-    sendSuccess(res, 200, "Farm deleted successfully", { message: "Farm deleted successfully" });
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to delete farm");
+  const id = String(req.params.id || "");
+  const farm = await getFarmByIdService(id, userId);
+  if (!farm) {
+    throw AppError.notFound("Farm not found");
   }
-};
 
-const createFieldForFarm = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  sendSuccess(res, 200, "Farm details fetched successfully", farm);
+});
 
-    const farmId = String(req.params.farmId || "");
-    const { name, area, areaInAcres, soilType } = req.body;
-    if (!name) {
-      sendError(res, 422, "Field name is required");
-      return;
-    }
-
-    const field = await FieldService.createField({
-      farmId,
-      name,
-      area: area !== undefined ? Number(area) : undefined,
-      areaInAcres: areaInAcres !== undefined ? Number(areaInAcres) : undefined,
-      soilType,
-      userId,
-    });
-
-    if (!field) {
-      sendError(res, 404, "Farm not found or unauthorized");
-      return;
-    }
-
-    sendSuccess(res, 201, "Field created successfully", field);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to create field");
+export const updateFarm = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const getFieldsForFarm = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const farmId = String(req.params.farmId || "");
-    const fields = await FieldService.getFieldsByFarmId(farmId, userId);
-    if (fields === null) {
-      sendError(res, 404, "Farm not found or unauthorized");
-      return;
-    }
-
-    sendSuccess(res, 200, "Fields fetched successfully", fields);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch fields");
+  const id = String(req.params.id || "");
+  const updated = await updateFarmService(id, userId, req.body);
+  if (!updated) {
+    throw AppError.notFound("Farm not found or unauthorized");
   }
-};
+
+  sendSuccess(res, 200, "Farm updated successfully", updated);
+});
+
+export const deleteFarm = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
+  }
+
+  const id = String(req.params.id || "");
+  const deleted = await deleteFarmService(id, userId);
+  if (!deleted) {
+    throw AppError.notFound("Farm not found or unauthorized");
+  }
+
+  sendSuccess(res, 200, "Farm deleted successfully", { message: "Farm deleted successfully" });
+});
+
+export const createFieldForFarm = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
+  }
+
+  const farmId = String(req.params.farmId || "");
+  const { name, area, areaInAcres, soilType } = req.body;
+  if (!name) {
+    throw AppError.unprocessable("Field name is required");
+  }
+
+  const field = await createFieldService({
+    farmId,
+    name,
+    area: area !== undefined ? Number(area) : undefined,
+    areaInAcres: areaInAcres !== undefined ? Number(areaInAcres) : undefined,
+    soilType,
+    userId,
+  });
+
+  if (!field) {
+    throw AppError.notFound("Farm not found or unauthorized");
+  }
+
+  sendSuccess(res, 201, "Field created successfully", field);
+});
+
+export const getFieldsForFarm = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
+  }
+
+  const farmId = String(req.params.farmId || "");
+  const fields = await getFieldsByFarmIdService(farmId, userId);
+  if (fields === null) {
+    throw AppError.notFound("Farm not found or unauthorized");
+  }
+
+  sendSuccess(res, 200, "Fields fetched successfully", fields);
+});
 
 export const FarmController = {
   createFarm,
@@ -175,5 +135,3 @@ export const FarmController = {
   createFieldForFarm,
   getFieldsForFarm,
 };
-
-

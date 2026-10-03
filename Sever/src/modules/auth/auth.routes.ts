@@ -1,4 +1,4 @@
-﻿import { Router } from "express";
+import { Router } from "express";
 import { toNodeHandler } from "better-auth/node";
 
 import { auth } from "../../config/auth.js";
@@ -21,6 +21,11 @@ import { auth } from "../../config/auth.js";
  * The client must handle both. Everything else in the API uses the envelope.
  */
 
+import { handleRegister, handleLogin } from "./auth.controller.js";
+
 export const authRouter = Router();
 
-authRouter.all("/{*any}", toNodeHandler(auth));
+authRouter.post("/register", handleRegister);
+authRouter.post("/login", handleLogin);
+
+authRouter.all("/{*any}", toNodeHandler(auth));

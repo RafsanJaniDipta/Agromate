@@ -1,73 +1,59 @@
 import type { Request, Response } from "express";
-import { UserService } from "./user.service.js";
-import { sendSuccess, sendError } from "../../utils/apiResponse.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { sendSuccess } from "../../utils/apiResponse.js";
+import { AppError } from "../../utils/AppError.js";
+import {
+  getUserById as getUserByIdService,
+  updateUserProfile as updateUserProfileService,
+  getAllUsers as getAllUsersService,
+} from "./user.service.js";
 
-const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = (req as any).user?.id || (req.query.userId as string);
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
-
-    const user = await UserService.getUserById(userId);
-    if (!user) {
-      sendError(res, 404, "User profile not found");
-      return;
-    }
-
-    sendSuccess(res, 200, "User profile fetched successfully", user);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch user profile");
+export const getCurrentUser = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id || (req.query.userId as string);
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const getUserById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const id = String(req.params.id || "");
-    const user = await UserService.getUserById(id);
-    if (!user) {
-      sendError(res, 404, "User not found");
-      return;
-    }
-
-    sendSuccess(res, 200, "User details fetched successfully", user);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch user details");
+  const user = await getUserByIdService(userId);
+  if (!user) {
+    throw AppError.notFound("User profile not found");
   }
-};
 
-const updateProfile = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = (req as any).user?.id || req.body.userId;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  sendSuccess(res, 200, "User profile fetched successfully", user);
+});
 
-    const { name, location, phone, image } = req.body;
-    const updatedUser = await UserService.updateUserProfile(userId, {
-      name,
-      location,
-      phone,
-      image,
-    });
-
-    sendSuccess(res, 200, "User profile updated successfully", updatedUser);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to update user profile");
+export const getUserById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const id = String(req.params.id || "");
+  const user = await getUserByIdService(id);
+  if (!user) {
+    throw AppError.notFound("User not found");
   }
-};
 
-const getAllUsers = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { role } = req.query;
-    const users = await UserService.getAllUsers(typeof role === "string" ? role : undefined);
-    sendSuccess(res, 200, "Users fetched successfully", users);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch users");
+  sendSuccess(res, 200, "User details fetched successfully", user);
+});
+
+export const updateProfile = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id || req.body.userId;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
+
+  const { name, location, phone, image } = req.body;
+  const updatedUser = await updateUserProfileService(userId, {
+    name,
+    location,
+    phone,
+    image,
+  });
+
+  sendSuccess(res, 200, "User profile updated successfully", updatedUser);
+});
+
+export const getAllUsers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { role } = req.query;
+  const result = await getAllUsersService({ role: typeof role === "string" ? role : undefined });
+  sendSuccess(res, 200, "Users fetched successfully", { data: result.data, meta: result.meta });
+});
 
 export const UserController = {
   getCurrentUser,
@@ -75,4 +61,3 @@ export const UserController = {
   updateProfile,
   getAllUsers,
 };
-

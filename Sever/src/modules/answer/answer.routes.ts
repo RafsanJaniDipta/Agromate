@@ -1,9 +1,12 @@
 import { Router } from "express";
-import { AnswerController } from "./answer.controller.js";
+import { createAnswer, getAnswers, acceptAnswer, deleteAnswer } from "./answer.controller.js";
+import { authenticate } from "../../middlewares/auth.middleware.js";
 
 export const answerRouter = Router();
 
-answerRouter.post("/", AnswerController.createAnswer);
-answerRouter.get("/", AnswerController.getAnswers);
-answerRouter.patch("/:id/accept", AnswerController.acceptAnswer);
-answerRouter.delete("/:id", AnswerController.deleteAnswer);
+answerRouter.use(authenticate);
+
+answerRouter.post("/", createAnswer);
+answerRouter.get("/", getAnswers);
+answerRouter.patch("/:id/accept", acceptAnswer);
+answerRouter.delete("/:id", deleteAnswer);

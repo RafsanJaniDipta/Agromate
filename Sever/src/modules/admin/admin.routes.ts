@@ -1,9 +1,14 @@
 import { Router } from "express";
-import { AdminController } from "./admin.controller.js";
+import {
+  getAllUsers,
+  updateUserStatus,
+  getStatistics,
+  getDeliveryAgents,
+} from "./admin.controller.js";
 
 export const adminRouter = Router();
 
-adminRouter.get("/users", AdminController.getAllUsers);
-adminRouter.patch("/users/:id", AdminController.updateUserStatus);
-adminRouter.get("/statistics", AdminController.getStatistics);
-adminRouter.get("/delivery-agents", AdminController.getDeliveryAgents);
+adminRouter.get("/users", getAllUsers);
+adminRouter.patch("/users/:id", updateUserStatus);
+adminRouter.get("/statistics", getStatistics);
+adminRouter.get("/delivery-agents", getDeliveryAgents);

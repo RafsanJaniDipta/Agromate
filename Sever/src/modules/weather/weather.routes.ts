@@ -1,10 +1,13 @@
 import { Router } from "express";
-import { WeatherController } from "./weather.controller.js";
+import {
+  getCurrentWeather,
+  getWeatherForecast,
+} from "./weather.controller.js";
 import { authenticate } from "../../middlewares/auth.middleware.js";
 
 export const weatherRouter = Router();
 
 weatherRouter.use(authenticate);
 
-weatherRouter.get("/current", WeatherController.getCurrentWeather);
-weatherRouter.get("/forecast", WeatherController.getWeatherForecast);
+weatherRouter.get("/current", getCurrentWeather);
+weatherRouter.get("/forecast", getWeatherForecast);

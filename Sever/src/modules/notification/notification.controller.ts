@@ -1,90 +1,73 @@
 import type { Request, Response } from "express";
-import { NotificationService } from "./notification.service.js";
-import { sendSuccess, sendError } from "../../utils/apiResponse.js";
-import type { NotificationType } from "../../generated/prisma/index.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { sendSuccess } from "../../utils/apiResponse.js";
+import { AppError } from "../../utils/AppError.js";
+import {
+  createNotification as createNotificationService,
+  getNotificationsByUserId as getNotificationsByUserIdService,
+  markAsRead as markAsReadService,
+  markAllAsRead as markAllAsReadService,
+  deleteNotification as deleteNotificationService,
+} from "./notification.service.js";
+import type { NotificationType } from "../../generated/prisma/client.js";
 
-const createNotification = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { userId, title, message, type } = req.body;
-    if (!userId || !title || !message) {
-      sendError(res, 400, "userId, title, and message are required");
-      return;
-    }
-
-    const notification = await NotificationService.createNotification({
-      userId,
-      title,
-      message,
-      type: type as NotificationType,
-    });
-
-    sendSuccess(res, 201, "Notification created successfully", notification);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to create notification");
+export const createNotification = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { userId, title, message, type } = req.body;
+  if (!userId || !title || !message) {
+    throw AppError.unprocessable("userId, title, and message are required");
   }
-};
 
-const getNotifications = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = (req as any).user?.id || (req.query.userId as string);
-    if (!userId) {
-      sendError(res, 400, "userId is required");
-      return;
-    }
+  const notification = await createNotificationService({
+    userId,
+    title,
+    message,
+    type: type as NotificationType,
+  });
 
-    const notifications = await NotificationService.getNotificationsByUserId(userId);
-    sendSuccess(res, 200, "Notifications fetched successfully", notifications);
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to fetch notifications");
+  sendSuccess(res, 201, "Notification created successfully", notification);
+});
+
+export const getNotifications = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id || (req.query.userId as string);
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const markAsRead = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const userId = (req as any).user?.id || req.body.userId;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  const notifications = await getNotificationsByUserIdService(userId);
+  sendSuccess(res, 200, "Notifications fetched successfully", notifications);
+});
 
-    await NotificationService.markAsRead(id, userId);
-    sendSuccess(res, 200, "Notification marked as read", { id });
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to mark notification as read");
+export const markAsRead = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const id = String(req.params.id || "");
+  const userId = req.user?.id || req.body.userId;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const markAllAsRead = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = (req as any).user?.id || req.body.userId;
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  await markAsReadService(id, userId);
+  sendSuccess(res, 200, "Notification marked as read", { id });
+});
 
-    await NotificationService.markAllAsRead(userId);
-    sendSuccess(res, 200, "All notifications marked as read");
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to mark all notifications as read");
+export const markAllAsRead = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.id || req.body.userId;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
 
-const deleteNotification = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const userId = (req as any).user?.id || (req.query.userId as string);
-    if (!userId) {
-      sendError(res, 401, "User is not authenticated");
-      return;
-    }
+  await markAllAsReadService(userId);
+  sendSuccess(res, 200, "All notifications marked as read");
+});
 
-    await NotificationService.deleteNotification(id, userId);
-    sendSuccess(res, 200, "Notification deleted successfully", { id });
-  } catch (error: any) {
-    sendError(res, 500, error.message || "Failed to delete notification");
+export const deleteNotification = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const id = String(req.params.id || "");
+  const userId = req.user?.id || (req.query.userId as string);
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
   }
-};
+
+  await deleteNotificationService(id, userId);
+  sendSuccess(res, 200, "Notification deleted successfully", { id });
+});
 
 export const NotificationController = {
   createNotification,
@@ -93,4 +76,3 @@ export const NotificationController = {
   markAllAsRead,
   deleteNotification,
 };
-

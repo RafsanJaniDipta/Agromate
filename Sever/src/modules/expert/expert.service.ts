@@ -1,4 +1,5 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
 export interface UpsertExpertProfileInput {
   userId: string;
@@ -8,7 +9,7 @@ export interface UpsertExpertProfileInput {
   qualifications?: string;
 }
 
-const getVerifiedExperts = async (specialization?: string) => {
+export const getVerifiedExperts = serviceHandler(async (specialization?: string) => {
   const experts = await prisma.expertProfile.findMany({
     where: {
       status: "VERIFIED" as any,
@@ -21,9 +22,9 @@ const getVerifiedExperts = async (specialization?: string) => {
   });
 
   return experts;
-};
+});
 
-const getVerifiedExpertById = async (id: string) => {
+export const getVerifiedExpertById = serviceHandler(async (id: string) => {
   const expert = await prisma.expertProfile.findFirst({
     where: {
       OR: [{ id }, { userId: id }],
@@ -35,9 +36,9 @@ const getVerifiedExpertById = async (id: string) => {
   });
 
   return expert;
-};
+});
 
-const getOwnProfile = async (userId: string) => {
+export const getOwnProfile = serviceHandler(async (userId: string) => {
   const profile = await prisma.expertProfile.findUnique({
     where: { userId },
     include: {
@@ -46,9 +47,9 @@ const getOwnProfile = async (userId: string) => {
   });
 
   return profile;
-};
+});
 
-const upsertOwnProfile = async (data: UpsertExpertProfileInput) => {
+export const upsertOwnProfile = serviceHandler(async (data: UpsertExpertProfileInput) => {
   const existing = await prisma.expertProfile.findUnique({
     where: { userId: data.userId },
   });
@@ -78,7 +79,7 @@ const upsertOwnProfile = async (data: UpsertExpertProfileInput) => {
   });
 
   return profile;
-};
+});
 
 export const ExpertService = {
   getVerifiedExperts,
@@ -86,5 +87,3 @@ export const ExpertService = {
   getOwnProfile,
   upsertOwnProfile,
 };
-
-

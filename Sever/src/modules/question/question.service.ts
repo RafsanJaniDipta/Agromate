@@ -1,4 +1,5 @@
 import { prisma } from "../../config/database.js";
+import { serviceHandler } from "../../utils/serviceHandler.js";
 
 export interface CreateQuestionInput {
   userId: string;
@@ -15,7 +16,7 @@ export interface AddAnswerInput {
   content: string;
 }
 
-const createQuestion = async (data: CreateQuestionInput) => {
+export const createQuestion = serviceHandler(async (data: CreateQuestionInput) => {
   const img = data.image ?? data.imageUrl;
   return await prisma.question.create({
     data: {
@@ -30,9 +31,9 @@ const createQuestion = async (data: CreateQuestionInput) => {
       user: { select: { id: true, name: true, image: true, role: true } },
     },
   });
-};
+});
 
-const getQuestions = async (params: {
+export const getQuestions = serviceHandler(async (params: {
   status?: string;
   search?: string;
   category?: string;
@@ -74,9 +75,9 @@ const getQuestions = async (params: {
     items,
     meta: { page, limit, total },
   };
-};
+});
 
-const getQuestionById = async (id: string) => {
+export const getQuestionById = serviceHandler(async (id: string) => {
   const question = await prisma.question.findUnique({
     where: { id },
     include: {
@@ -97,9 +98,9 @@ const getQuestionById = async (id: string) => {
     ...question,
     totalAnswers: question._count.answers,
   };
-};
+});
 
-const addAnswer = async (data: AddAnswerInput) => {
+export const addAnswer = serviceHandler(async (data: AddAnswerInput) => {
   const question = await prisma.question.findUnique({ where: { id: data.questionId } });
   if (!question) return null;
 
@@ -115,9 +116,9 @@ const addAnswer = async (data: AddAnswerInput) => {
   });
 
   return answer;
-};
+});
 
-const updateQuestionStatus = async (id: string, userId: string, userRole: string, status: string) => {
+export const updateQuestionStatus = serviceHandler(async (id: string, userId: string, userRole: string, status: string) => {
   const question = await prisma.question.findUnique({ where: { id } });
   if (!question) return null;
 
@@ -132,9 +133,9 @@ const updateQuestionStatus = async (id: string, userId: string, userRole: string
       user: { select: { id: true, name: true, image: true, role: true } },
     },
   });
-};
+});
 
-const deleteQuestion = async (id: string, userId: string, userRole: string) => {
+export const deleteQuestion = serviceHandler(async (id: string, userId: string, userRole: string) => {
   const question = await prisma.question.findUnique({ where: { id } });
   if (!question) return false;
 
@@ -144,7 +145,7 @@ const deleteQuestion = async (id: string, userId: string, userRole: string) => {
 
   await prisma.question.delete({ where: { id } });
   return true;
-};
+});
 
 export const QuestionService = {
   createQuestion,
@@ -154,5 +155,3 @@ export const QuestionService = {
   updateQuestionStatus,
   deleteQuestion,
 };
-
-
