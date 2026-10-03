@@ -2,77 +2,141 @@ import type { Request, Response } from "express";
 import { ExpenseService } from "./expense.service.js";
 import { sendSuccess, sendError } from "../../utils/apiResponse.js";
 
-export class ExpenseController {
-  static async createExpense(req: Request, res: Response): Promise<void> {
-    try {
-      const { farmId, cropCycleId, category, amount, description, date } = req.body;
-      if (!farmId || !category || !amount) {
-        sendError(res, 400, "farmId, category, and amount are required");
-        return;
-      }
-
-      const expense = await ExpenseService.createExpense({
-        farmId,
-        cropCycleId,
-        category,
-        amount: Number(amount),
-        description,
-        date: date ? new Date(date) : undefined,
-      });
-
-      sendSuccess(res, 201, "Expense recorded successfully", expense);
-    } catch (error: any) {
-      sendError(res, 500, error.message || "Failed to record expense");
+const createExpense = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      sendError(res, 401, "User is not authenticated");
+      return;
     }
-  }
 
-  static async getExpenses(req: Request, res: Response): Promise<void> {
-    try {
-      const farmId = req.query.farmId as string;
-      if (!farmId) {
-        sendError(res, 400, "farmId query parameter is required");
-        return;
-      }
-
-      const expenses = await ExpenseService.getExpensesByFarmId(farmId);
-      sendSuccess(res, 200, "Expenses fetched successfully", expenses);
-    } catch (error: any) {
-      sendError(res, 500, error.message || "Failed to fetch expenses");
+    const { cropCycleId, category, amount, date, notes, description } = req.body;
+    if (!cropCycleId || !category || amount === undefined) {
+      sendError(res, 422, "cropCycleId, category, and amount are required");
+      return;
     }
-  }
 
-  static async getExpenseById(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const expense = await ExpenseService.getExpenseById(id);
-      if (!expense) {
-        sendError(res, 404, "Expense not found");
-        return;
-      }
+    const expense = await ExpenseService.createExpense({
+      cropCycleId,
+      category,
+      amount: Number(amount),
+      date,
+      notes,
+      description,
+      userId,
+    });
 
-      sendSuccess(res, 200, "Expense details fetched successfully", expense);
-    } catch (error: any) {
-      sendError(res, 500, error.message || "Failed to fetch expense details");
+    if (!expense) {
+      sendError(res, 404, "Crop cycle not found or unauthorized");
+      return;
     }
-  }
 
-  static async updateExpense(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const updated = await ExpenseService.updateExpense(id, req.body);
-      sendSuccess(res, 200, "Expense updated successfully", updated);
-    } catch (error: any) {
-      sendError(res, 500, error.message || "Failed to update expense");
-    }
+    sendSuccess(res, 201, "Expense recorded successfully", expense);
+  } catch (error: any) {
+    sendError(res, 500, error.message || "Failed to record expense");
   }
+};
 
-  static async deleteExpense(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      await ExpenseService.deleteExpense(id);
-      sendSuccess(res, 200, "Expense deleted successfully", { id });
-    } catch (error: any) {
-      sendError(res, 500, error.message || "Failed to delete expense");
+const getExpenses = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      sendError(res, 401, "User is not authenticated");
+      return;
     }
+
+    const { cropCycleId, category, from, to, page, limit } = req.query;
+
+    const result = await ExpenseService.getExpenses(userId, {
+      cropCycleId: typeof cropCycleId === "string" ? cropCycleId : undefined,
+      category: typeof category === "string" ? category : undefined,
+      from: typeof from === "string" ? from : undefined,
+      to: typeof to === "string" ? to : undefined,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Expenses fetched successfully",
+      data: result.items,
+      meta: result.meta,
+      summary: result.summary,
+    });
+  } catch (error: any) {
+    sendError(res, 500, error.message || "Failed to fetch expenses");
   }
-}
+};
+
+const getExpenseById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      sendError(res, 401, "User is not authenticated");
+      return;
+    }
+
+    const id = String(req.params.id || "");
+    const expense = await ExpenseService.getExpenseById(id, userId);
+    if (!expense) {
+      sendError(res, 404, "Expense not found or unauthorized");
+      return;
+    }
+
+    sendSuccess(res, 200, "Expense details fetched successfully", expense);
+  } catch (error: any) {
+    sendError(res, 500, error.message || "Failed to fetch expense details");
+  }
+};
+
+const updateExpense = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      sendError(res, 401, "User is not authenticated");
+      return;
+    }
+
+    const id = String(req.params.id || "");
+    const updated = await ExpenseService.updateExpense(id, userId, req.body);
+    if (!updated) {
+      sendError(res, 404, "Expense not found or unauthorized");
+      return;
+    }
+
+    sendSuccess(res, 200, "Expense updated successfully", updated);
+  } catch (error: any) {
+    sendError(res, 500, error.message || "Failed to update expense");
+  }
+};
+
+const deleteExpense = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      sendError(res, 401, "User is not authenticated");
+      return;
+    }
+
+    const id = String(req.params.id || "");
+    const deleted = await ExpenseService.deleteExpense(id, userId);
+    if (!deleted) {
+      sendError(res, 404, "Expense not found or unauthorized");
+      return;
+    }
+
+    sendSuccess(res, 200, "Expense deleted successfully", { message: "Expense deleted successfully" });
+  } catch (error: any) {
+    sendError(res, 500, error.message || "Failed to delete expense");
+  }
+};
+
+export const ExpenseController = {
+  createExpense,
+  getExpenses,
+  getExpenseById,
+  updateExpense,
+  deleteExpense,
+};
+
+

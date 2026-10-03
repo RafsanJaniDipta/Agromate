@@ -1,56 +1,159 @@
 import { prisma } from "../../config/database.js";
-import type { ExpenseCategory } from "../../generated/prisma/index.js";
 
 export interface CreateExpenseInput {
-  farmId: string;
-  cropCycleId?: string;
-  category: ExpenseCategory;
+  cropCycleId: string;
+  category: string;
   amount: number;
+  date?: Date | string;
+  notes?: string;
   description?: string;
-  date?: Date;
+  userId: string;
 }
 
 export interface UpdateExpenseInput {
-  category?: ExpenseCategory;
+  category?: string;
   amount?: number;
+  date?: Date | string;
+  notes?: string;
   description?: string;
-  date?: Date;
 }
 
-export class ExpenseService {
-  static async createExpense(data: CreateExpenseInput) {
-    return prisma.expense.create({ data });
+const createExpense = async (data: CreateExpenseInput) => {
+  const cycle = await prisma.cropCycle.findUnique({
+    where: { id: data.cropCycleId },
+    include: { field: { include: { farm: true } } },
+  });
+
+  if (!cycle || cycle.field.farm.userId !== data.userId) {
+    return null;
   }
 
-  static async getExpensesByFarmId(farmId: string) {
-    return prisma.expense.findMany({
-      where: { farmId },
-      include: {
-        cropCycle: {
-          include: { crop: true },
-        },
-      },
+  return await prisma.expense.create({
+    data: {
+      farmId: cycle.field.farmId,
+      cropCycleId: data.cropCycleId,
+      category: data.category as any,
+      amount: data.amount,
+      date: data.date ? new Date(data.date) : new Date(),
+      notes: data.notes ?? data.description,
+      description: data.notes ?? data.description,
+    },
+    include: { cropCycle: true },
+  });
+};
+
+const getExpenses = async (
+  userId: string,
+  params: {
+    cropCycleId?: string;
+    category?: string;
+    from?: string;
+    to?: string;
+    page?: number;
+    limit?: number;
+  },
+) => {
+  const page = params.page && params.page > 0 ? params.page : 1;
+  const limit = params.limit && params.limit > 0 ? params.limit : 10;
+  const skip = (page - 1) * limit;
+
+  const farms = await prisma.farm.findMany({ where: { userId }, select: { id: true } });
+  const farmIds = farms.map((f) => f.id);
+
+  const where: any = {
+    farmId: { in: farmIds },
+    ...(params.cropCycleId ? { cropCycleId: params.cropCycleId } : {}),
+    ...(params.category ? { category: params.category } : {}),
+    ...(params.from || params.to
+      ? {
+          date: {
+            ...(params.from ? { gte: new Date(params.from) } : {}),
+            ...(params.to ? { lte: new Date(params.to) } : {}),
+          },
+        }
+      : {}),
+  };
+
+  const [total, items, aggregate] = await Promise.all([
+    prisma.expense.count({ where }),
+    prisma.expense.findMany({
+      where,
+      skip,
+      take: limit,
       orderBy: { date: "desc" },
-    });
+      include: { cropCycle: true },
+    }),
+    prisma.expense.aggregate({
+      where,
+      _sum: { amount: true },
+    }),
+  ]);
+
+  return {
+    items,
+    meta: { page, limit, total },
+    summary: {
+      totalAmount: aggregate._sum.amount || 0,
+    },
+  };
+};
+
+const getExpenseById = async (id: string, userId: string) => {
+  const expense = await prisma.expense.findUnique({
+    where: { id },
+    include: { farm: true, cropCycle: true },
+  });
+
+  if (!expense || expense.farm.userId !== userId) {
+    return null;
   }
 
-  static async getExpenseById(id: string) {
-    return prisma.expense.findUnique({
-      where: { id },
-      include: { farm: true, cropCycle: true },
-    });
+  return expense;
+};
+
+const updateExpense = async (id: string, userId: string, data: UpdateExpenseInput) => {
+  const expense = await prisma.expense.findUnique({
+    where: { id },
+    include: { farm: true },
+  });
+
+  if (!expense || expense.farm.userId !== userId) {
+    return null;
   }
 
-  static async updateExpense(id: string, data: UpdateExpenseInput) {
-    return prisma.expense.update({
-      where: { id },
-      data,
-    });
+  return await prisma.expense.update({
+    where: { id },
+    data: {
+      ...(data.category !== undefined ? { category: data.category as any } : {}),
+      ...(data.amount !== undefined ? { amount: data.amount } : {}),
+      ...(data.date ? { date: new Date(data.date) } : {}),
+      ...(data.notes !== undefined ? { notes: data.notes, description: data.notes } : {}),
+      ...(data.description !== undefined ? { description: data.description } : {}),
+    },
+    include: { cropCycle: true },
+  });
+};
+
+const deleteExpense = async (id: string, userId: string) => {
+  const expense = await prisma.expense.findUnique({
+    where: { id },
+    include: { farm: true },
+  });
+
+  if (!expense || expense.farm.userId !== userId) {
+    return false;
   }
 
-  static async deleteExpense(id: string) {
-    return prisma.expense.delete({
-      where: { id },
-    });
-  }
-}
+  await prisma.expense.delete({ where: { id } });
+  return true;
+};
+
+export const ExpenseService = {
+  createExpense,
+  getExpenses,
+  getExpenseById,
+  updateExpense,
+  deleteExpense,
+};
+
+
