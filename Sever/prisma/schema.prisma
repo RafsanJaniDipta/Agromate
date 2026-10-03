@@ -1,54 +1,63 @@
-// AgroMate — Prisma schema
+// AgroMate — Production Database Prisma Schema
 //
-// Better Auth generates the User / Session / Account / Verification models
-// into this file via `bunx @better-auth/cli@latest generate`.
-// Until then it is intentionally empty of models.
+// Better Auth generates the User / Session / Account / Verification models.
+// Agromate Domain models extend the schema for full agricultural management.
 
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
 
-// Prisma 7 no longer accepts `url` in the datasource block.
-// Migrate reads the connection string from prisma.config.ts; the runtime client
-// receives it through the PrismaPg driver adapter in src/config/database.ts.
-
+// Prisma 7 reads connection string from prisma.config.ts / database.ts
 datasource db {
   provider = "postgresql"
 }
 
+// -------------------------------------------------------------
+// Better Auth Core User Models
+// -------------------------------------------------------------
+
 model User {
-  id            String    @id
+  id            String    @id @default(uuid(7)) @db.Uuid
   name          String
   email         String
   emailVerified Boolean   @default(false)
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  role          String?
+  role          String?   @default("FARMER") // "FARMER" | "EXPERT" | "ADMIN"
   banned        Boolean?  @default(false)
   banReason     String?
   banExpires    DateTime?
   location      String?
   phone         String?
-  sessions      Session[]
-  accounts      Account[]
+
+  sessions                  Session[]
+  accounts                  Account[]
+  farms                     Farm[]
+  diseaseDetections         DiseaseDetection[]
+  fertilizerRecommendations FertilizerRecommendation[]
+  cropRecommendations       CropRecommendation[]
+  questions                 Question[]
+  answers                   Answer[]
+  notifications             Notification[]
+  expertProfile             ExpertProfile?
 
   @@unique([email])
   @@map("user")
 }
 
 model Session {
-  id             String   @id
+  id             String   @id @default(uuid(7)) @db.Uuid
   expiresAt      DateTime
   token          String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   ipAddress      String?
   userAgent      String?
-  userId         String
+  userId         String   @db.Uuid
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  impersonatedBy String?
+  impersonatedBy String?  @db.Uuid
 
   @@unique([token])
   @@index([userId])
@@ -56,10 +65,10 @@ model Session {
 }
 
 model Account {
-  id                    String    @id
+  id                    String    @id @default(uuid(7)) @db.Uuid
   accountId             String
   providerId            String
-  userId                String
+  userId                String    @db.Uuid
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
@@ -76,7 +85,7 @@ model Account {
 }
 
 model Verification {
-  id         String   @id
+  id         String   @id @default(uuid(7)) @db.Uuid
   identifier String
   value      String
   expiresAt  DateTime
@@ -85,4 +94,290 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+// -------------------------------------------------------------
+// Enums
+// -------------------------------------------------------------
+
+enum Role {
+  FARMER
+  EXPERT
+  ADMIN
+}
+
+enum CropCycleStatus {
+  PLANTED
+  GROWING
+  HARVESTED
+  FAILED
+}
+
+enum ExpenseCategory {
+  SEEDS
+  FERTILIZER
+  PESTICIDE
+  LABOR
+  EQUIPMENT
+  IRRIGATION
+  TRANSPORT
+  OTHER
+}
+
+enum QuestionStatus {
+  OPEN
+  ANSWERED
+  CLOSED
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  SUCCESS
+  ALERT
+}
+
+// -------------------------------------------------------------
+// AgroMate Core Domain Models
+// -------------------------------------------------------------
+
+model Farm {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  name        String
+  location    String
+  areaInAcres Float
+  soilType    String?
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  fields                    Field[]
+  expenses                  Expense[]
+  fertilizerRecommendations FertilizerRecommendation[]
+
+  @@index([userId])
+  @@map("farm")
+}
+
+model Field {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  name        String
+  farmId      String   @db.Uuid
+  farm        Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  areaInAcres Float
+  soilType    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cropCycles CropCycle[]
+
+  @@index([farmId])
+  @@map("field")
+}
+
+model Crop {
+  id              String   @id @default(uuid(7)) @db.Uuid
+  name            String   @unique
+  category        String?
+  idealSoil       String?
+  optimalTemp     Float?
+  optimalRainfall Float?
+  durationDays    Int?
+  description     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  cropCycles CropCycle[]
+
+  @@map("crop")
+}
+
+model CropCycle {
+  id                  String          @id @default(uuid(7)) @db.Uuid
+  fieldId             String          @db.Uuid
+  field               Field           @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  cropId              String          @db.Uuid
+  crop                Crop            @relation(fields: [cropId], references: [id], onDelete: Cascade)
+  startDate           DateTime
+  expectedHarvestDate DateTime?
+  actualHarvestDate   DateTime?
+  status              CropCycleStatus @default(PLANTED)
+  notes               String?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  expenses Expense[]
+  harvests Harvest[]
+
+  @@index([fieldId])
+  @@index([cropId])
+  @@map("crop_cycle")
+}
+
+model Expense {
+  id          String          @id @default(uuid(7)) @db.Uuid
+  farmId      String          @db.Uuid
+  farm        Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  cropCycleId String?         @db.Uuid
+  cropCycle   CropCycle?      @relation(fields: [cropCycleId], references: [id], onDelete: SetNull)
+  category    ExpenseCategory
+  amount      Float
+  description String?
+  date        DateTime        @default(now())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([farmId])
+  @@index([cropCycleId])
+  @@map("expense")
+}
+
+model Harvest {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  cropCycleId  String    @db.Uuid
+  cropCycle    CropCycle @relation(fields: [cropCycleId], references: [id], onDelete: Cascade)
+  harvestDate  DateTime  @default(now())
+  quantity     Float
+  unit         String    @default("KG")
+  pricePerUnit Float?
+  totalRevenue Float?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([cropCycleId])
+  @@map("harvest")
+}
+
+model MarketPrice {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  cropName     String
+  location     String
+  pricePerUnit Float
+  unit         String   @default("KG")
+  date         DateTime @default(now())
+  source       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([cropName])
+  @@index([location])
+  @@map("market_price")
+}
+
+model DiseaseDetection {
+  id              String   @id @default(uuid(7)) @db.Uuid
+  userId          String   @db.Uuid
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageUrl        String
+  detectedDisease String
+  confidenceScore Float
+  recommendations String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@map("disease_detection")
+}
+
+model FertilizerRecommendation {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  userId       String   @db.Uuid
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  farmId       String?  @db.Uuid
+  farm         Farm?    @relation(fields: [farmId], references: [id], onDelete: SetNull)
+  cropName     String
+  soilN        Float?
+  soilP        Float?
+  soilK        Float?
+  recommendedN Float
+  recommendedP Float
+  recommendedK Float
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([farmId])
+  @@map("fertilizer_recommendation")
+}
+
+model CropRecommendation {
+  id               String   @id @default(uuid(7)) @db.Uuid
+  userId           String   @db.Uuid
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location         String
+  soilType         String
+  season           String?
+  recommendedCrops String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+  @@map("crop_recommendation")
+}
+
+model Question {
+  id        String         @id @default(uuid(7)) @db.Uuid
+  userId    String         @db.Uuid
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  category  String?
+  imageUrl  String?
+  status    QuestionStatus @default(OPEN)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  answers Answer[]
+
+  @@index([userId])
+  @@map("question")
+}
+
+model Answer {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  questionId     String   @db.Uuid
+  question       Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId         String   @db.Uuid
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content        String
+  isExpertAnswer Boolean  @default(false)
+  isAccepted     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([questionId])
+  @@index([userId])
+  @@map("answer")
+}
+
+model ExpertProfile {
+  id              String   @id @default(uuid(7)) @db.Uuid
+  userId          String   @unique @db.Uuid
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialization  String
+  organization    String?
+  experienceYears Int      @default(0)
+  bio             String?
+  rating          Float?   @default(5.0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("expert_profile")
+}
+
+model Notification {
+  id        String           @id @default(uuid(7)) @db.Uuid
+  userId    String           @db.Uuid
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([userId])
+  @@map("notification")
 }
