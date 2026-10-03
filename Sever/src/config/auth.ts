@@ -54,6 +54,7 @@ export const auth = betterAuth({
     useSecureCookies: process.env.NODE_ENV === "production",
 
     database: {
+      generateId: "uuid",
       // Better Auth's runtime schema check reads `prisma._runtimeDataModel`,
       // which Prisma 7's `prisma-client` generator no longer populates (it
       // comes back with zero models). The check then reports all four auth
