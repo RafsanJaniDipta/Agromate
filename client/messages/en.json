@@ -5,7 +5,9 @@
     "aboutTitle": "About | Agromate",
     "supportTitle": "Support | Agromate",
     "loginTitle": "Log in | Agromate",
-    "registerTitle": "Create account | Agromate"
+    "registerTitle": "Create account | Agromate",
+    "dashboardTitle": "Dashboard | Agromate",
+    "diagnoseTitle": "Crop disease check | Agromate"
   },
   "languageSwitcher": {
     "label": "Language"
@@ -18,7 +20,10 @@
     "about": "About Us",
     "support": "Support",
     "expertAdvice": "Get Expert Advice",
-    "login": "Log in"
+    "login": "Log in",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "register": "Create account"
   },
   "hero": {
     "titleLine1": "Smart Farming",
@@ -128,6 +133,53 @@
       "tech": "Smart Technology",
       "yield": "More Yield",
       "support": "Expert Support"
+    }
+  },
+  "stories": {
+    "badge": "Success Stories",
+    "title": "Real farmers, <accent>real harvests.</accent>",
+    "intro": "See how farmers across Bangladesh grow more and spend less with Agromate's tools and expert advice.",
+    "pickerLabel": "Choose a story",
+    "yieldLabel": "Higher yield this season",
+    "costLabel": "Lower farming cost",
+    "incomeLabel": "More income",
+    "items": {
+      "shafiqul": {
+        "name": "Shafiqul Islam",
+        "role": "Vegetable farmer",
+        "location": "Rangpur",
+        "quote": "Fertilizer advice from Agromate showed me exactly what my soil needed. I used less urea and still got my best harvest in ten years.",
+        "yield": "+42%",
+        "cost": "−30%",
+        "income": "+55%"
+      },
+      "karim": {
+        "name": "Abdul Karim",
+        "role": "Aman rice farmer",
+        "location": "Dinajpur",
+        "quote": "The weather alert reached me two days before the storm. I cut my paddy early and saved the whole crop.",
+        "yield": "+35%",
+        "cost": "−20%",
+        "income": "+40%"
+      },
+      "nurul": {
+        "name": "Nurul Haque",
+        "role": "Jute farmer",
+        "location": "Faridpur",
+        "quote": "I photograph a sick plant and get an answer in minutes. Live market prices showed me the best time to sell my jute.",
+        "yield": "+28%",
+        "cost": "−25%",
+        "income": "+60%"
+      },
+      "jamal": {
+        "name": "Jamal Uddin",
+        "role": "Boro rice farmer",
+        "location": "Mymensingh",
+        "quote": "One phone call with an expert changed how I water my paddy. I use less water now, and my income has doubled.",
+        "yield": "+50%",
+        "cost": "−18%",
+        "income": "+100%"
+      }
     }
   },
   "footer": {
@@ -303,6 +355,154 @@
       "error": "Sorry, we could not create your account. Please try again.",
       "hasAccount": "Already have an account?",
       "loginLink": "Log in"
+    }
+  },
+  "dashboard": {
+    "openDetails": "Open {title}",
+    "search": "Search",
+    "notifications": "{count, plural, =0 {Notifications} one {Notifications, # unread} other {Notifications, # unread}}",
+    "tabs": {
+      "label": "Dashboard sections",
+      "dashboard": "Dashboard",
+      "diagnose": "Disease check",
+      "fields": "Fields",
+      "analytics": "Analytics",
+      "reports": "Reports"
+    },
+    "sidebar": {
+      "label": "Farm tools",
+      "home": "Home",
+      "map": "Field map",
+      "crops": "Crops",
+      "diagnose": "Disease check",
+      "equipment": "Equipment",
+      "livestock": "Livestock",
+      "storage": "Storage",
+      "analytics": "Analytics",
+      "settings": "Settings",
+      "help": "Help"
+    },
+    "weather": {
+      "title": "Weather",
+      "temperature": "{value, number}°C",
+      "conditions": {
+        "sunny": "Sunny",
+        "partlyCloudy": "Partly cloudy",
+        "cloudy": "Cloudy",
+        "rainy": "Rainy",
+        "stormy": "Stormy"
+      },
+      "rainfall": "Rainfall",
+      "rainfallValue": "{value, number}mm",
+      "wind": "Wind",
+      "windValue": "{value, number} km/h",
+      "uv": "UV index",
+      "uvValue": "UV {value, number}"
+    },
+    "map": {
+      "title": "Field map",
+      "layers": "Map layers",
+      "search": "Search fields",
+      "fullscreen": "Full screen",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "resetView": "Reset view",
+      "health": {
+        "healthy": "healthy",
+        "attention": "needs attention",
+        "critical": "critical"
+      }
+    },
+    "tasks": {
+      "title": "Daily tasks",
+      "progress": "<highlight>{done, number}</highlight> of {total, number} completed",
+      "empty": "No tasks for today.",
+      "add": "Add new task",
+      "newTaskLabel": "New task",
+      "newTaskPlaceholder": "e.g. Spray Field 1",
+      "save": "Add"
+    },
+    "stats": {
+      "yield": "Total yield",
+      "tonnes": "{value, number}t",
+      "vsLastWeek": "vs last week",
+      "water": "Water usage",
+      "cubicMeters": "{value, number}m³",
+      "ofDailyLimit": "<highlight>{percent}</highlight> of daily limit",
+      "equipment": "Equipment",
+      "activeCount": "{active, number} of {total, number}",
+      "active": "active",
+      "working": "working",
+      "maintenance": "maintenance",
+      "revenue": "Revenue",
+      "thisMonth": "this month"
+    },
+    "harvest": {
+      "eyebrow": "Harvest",
+      "title": "Overview",
+      "actual": "Actual",
+      "target": "Target",
+      "tonnes": "{value, number}t",
+      "chartLabel": "Monthly harvest in tonnes, actual vs target",
+      "month": "Month"
+    },
+    "diagnose": {
+      "title": "Crop disease check",
+      "hint": "Take or upload a clear photo of the affected part: leaf, fruit, stem, root or the whole plant. The AI will recognise the crop and the problem.",
+      "choose": "Take or choose a photo",
+      "previewAlt": "Selected plant photo",
+      "analyze": "Check photo",
+      "analyzing": "Checking…",
+      "retake": "Another photo",
+      "resultHealthy": "Looks healthy",
+      "resultDisease": "Possible problem",
+      "healthy": "Healthy",
+      "confidenceLabel": "Certainty",
+      "confidenceLevels": {
+        "high": "high",
+        "medium": "medium",
+        "low": "low"
+      },
+      "advice": "What to do",
+      "lowConfidence": "The AI is not sure. Try a closer, sharper photo, or show the plant to an agriculture officer.",
+      "disclaimer": "This is an AI estimate. Ask your local Upazila Agriculture Officer before spraying.",
+      "errors": {
+        "badImage": "Please choose an image file.",
+        "tooLarge": "The photo is too large (max 8 MB).",
+        "notConfigured": "Disease check is not set up on the server yet.",
+        "busy": "Too many checks right now. Please wait a minute and try again.",
+        "upstream": "Could not get a result. Please try again.",
+        "network": "Check your internet connection and try again."
+      },
+      "notPlant": "No clear plant could be seen in this photo. Take a close, sharp photo of the affected part in daylight."
+    },
+    "diagnosePage": {
+      "title": "Crop disease check",
+      "intro": "Add a photo of the affected part of the plant. The AI recognises the crop and the likely disease, and tells you what to do next.",
+      "resultTitle": "Result",
+      "resultEmpty": "Add a photo on the left and press \"Check photo\". The AI's answer will show here.",
+      "tipsTitle": "Tips for a good photo",
+      "tips": {
+        "daylight": "Shoot in daylight; avoid deep shade and flash.",
+        "close": "Get close to the affected spot so marks or pests are clearly visible.",
+        "sharp": "Hold the camera steady; blurry photos can give wrong results.",
+        "onePart": "Keep one part per photo: a single leaf, fruit or stem."
+      },
+      "stepsTitle": "How it works",
+      "steps": {
+        "photo": {
+          "title": "Take a photo",
+          "text": "Take or upload a photo of a leaf, fruit, stem, root or the whole plant."
+        },
+        "check": {
+          "title": "Check it",
+          "text": "The AI reads the photo and names the crop, the problem and the signs."
+        },
+        "act": {
+          "title": "Take action",
+          "text": "Follow the suggested steps, and ask an agriculture officer before spraying."
+        }
+      }
     }
   }
 }

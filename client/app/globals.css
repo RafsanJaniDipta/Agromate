@@ -44,6 +44,8 @@ body {
   --animate-blur-in: blur-in 1s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-hero-zoom: hero-zoom 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-marquee: marquee 30s linear infinite;
+  /* Success stories timer bar; its animationend moves to the next story */
+  --animate-story-progress: grow-x 7s linear both;
 
   @keyframes blur-in {
     from {
@@ -62,6 +64,12 @@ body {
   @keyframes marquee {
     to {
       translate: -50% 0;
+    }
+  }
+
+  @keyframes grow-x {
+    from {
+      scale: 0 1;
     }
   }
 }
@@ -91,7 +99,8 @@ body {
 
   .animate-blur-in,
   .animate-hero-zoom,
-  .animate-marquee {
+  .animate-marquee,
+  .animate-story-progress {
     animation: none;
   }
 }
