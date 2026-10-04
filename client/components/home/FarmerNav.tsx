@@ -3,22 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
-import ArrowIcon from "@/components/shared/ArrowIcon";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import Logo from "@/components/shared/Logo";
+import MenuPanel from "@/components/home/MenuPanel";
+import { navLinks } from "@/components/home/navLinks";
 
-// Home page sections, reachable from any page
-const homeSection = (hash: string) => ({ pathname: "/", hash });
-
-const navLinks = [
-  { href: "/", key: "home" },
-  { href: homeSection("services"), key: "services" },
-  { href: homeSection("stories"), key: "stories" },
-  { href: "/about", key: "about" },
-  { href: "/support", key: "support" },
-] as const;
-
-// Top bar: logo, white pill menu, language toggle and the main call to action.
+// Top bar: logo, white pill menu (desktop), language toggle and the menu button.
 export default function FarmerNav() {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -82,20 +72,8 @@ export default function FarmerNav() {
 
       <div className="flex items-center gap-3">
         <LanguageSwitcher />
-        <Link
-          href="/login"
-          className="hidden text-sm font-medium text-white/90 transition hover:text-white sm:block"
-        >
-          {t("login")}
-        </Link>
-        {/* Hidden on small phones so the logo and language toggle fit */}
-        <Link
-          href="/support"
-          className="group hidden items-center gap-3 rounded-full bg-brand py-1 pl-5 pr-1 text-sm font-medium text-white transition hover:opacity-90 sm:inline-flex"
-        >
-          {t("expertAdvice")}
-          <ArrowIcon />
-        </Link>
+        {/* Bar button that opens the full menu panel; Log in and Expert Advice live inside it */}
+        <MenuPanel />
       </div>
     </header>
   );

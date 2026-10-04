@@ -6,6 +6,7 @@ import { resolveLocale } from "@/i18n/params";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 import Footer from "@/components/shared/Footer";
+import HideOnDashboard from "@/components/shared/HideOnDashboard";
 import ScrollReveal from "@/components/shared/ScrollReveal";
 import SmoothScroll from "@/components/shared/SmoothScroll";
 
@@ -54,7 +55,9 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
         <NextIntlClientProvider>
           <SmoothScroll>
             <main className="flex flex-1 flex-col">{children}</main>
-            <Footer />
+            <HideOnDashboard>
+              <Footer />
+            </HideOnDashboard>
             <ScrollReveal />
           </SmoothScroll>
         </NextIntlClientProvider>
