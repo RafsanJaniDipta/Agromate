@@ -32,9 +32,40 @@ declare global {
   }
 }
 
-export async function authenticate(req: Request, _res: Response, next: NextFunction): Promise<void> {
+/**
+ * Reads the session from the request cookie. When Better Auth extends a
+ * "remember me" session (at most once a day) it also issues a fresh cookie;
+ * that Set-Cookie is passed on so the browser's cookie is extended too.
+ * Without it the database session would live on while the browser's cookie
+ * still expired 7 days after login.
+ */
+async function loadSession(req: Request, res: Response) {
+  const { headers, response: session } = await auth.api.getSession({
+    headers: fromNodeHeaders(req.headers),
+    returnHeaders: true,
+  });
+
+  const cookies = headers.getSetCookie();
+  if (cookies.length) {
+    res.append("Set-Cookie", cookies);
+  }
+
+  return session;
+}
+
+type Session = NonNullable<Awaited<ReturnType<typeof loadSession>>>;
+
+const toAuthUser = ({ user }: Session): AuthUser => ({
+  id: user.id,
+  email: user.email,
+  name: user.name,
+  role: user.role ?? "FARMER",
+  location: user.location,
+});
+
+export async function authenticate(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
+    const session = await loadSession(req, res);
 
     if (!session) {
       throw AppError.unauthorized();
@@ -47,13 +78,7 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
       );
     }
 
-    req.user = {
-      id: session.user.id,
-      email: session.user.email,
-      name: session.user.name,
-      role: session.user.role ?? "FARMER",
-      location: session.user.location,
-    };
+    req.user = toAuthUser(session);
     req.session = { id: session.session.id, expiresAt: session.session.expiresAt };
 
     next();
@@ -66,18 +91,12 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
  * Attaches the user when a valid session exists but never rejects.
  * For endpoints that are public yet can personalise their response.
  */
-export async function optionalAuthenticate(req: Request, _res: Response, next: NextFunction): Promise<void> {
+export async function optionalAuthenticate(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
+    const session = await loadSession(req, res);
 
-    if (session?.user) {
-      req.user = {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        role: session.user.role ?? "FARMER",
-        location: session.user.location,
-      };
+    if (session) {
+      req.user = toAuthUser(session);
     }
 
     next();
