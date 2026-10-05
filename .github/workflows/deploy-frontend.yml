@@ -1,17 +1,20 @@
 name: Frontend CI/CD
 
 on:
-  # PRs into working: lint + build only, no deploy
+  # PRs: lint + build only, no deploy
   pull_request:
     branches:
       - working
+      - production
     paths:
       - 'client/**'
       - '.github/workflows/deploy-frontend.yml'
-  # Merged into working: check, then deploy
+  # Pushes to these branches go live (see the deploy job's `if`).
+  # imran/ui_design is temporary: remove it once its work is merged into production.
   push:
     branches:
-      - working
+      - production
+      - imran/ui_design
     paths:
       - 'client/**'
       - '.github/workflows/deploy-frontend.yml'
@@ -47,7 +50,9 @@ jobs:
 
   deploy:
     needs: check
-    if: github.event_name != 'pull_request'
+    # Only these branches may deploy live, even from the "Run workflow" button.
+    # PRs never match: their ref name is "<number>/merge".
+    if: github.ref_name == 'production' || github.ref_name == 'imran/ui_design'
     runs-on: ubuntu-latest
     # Tells the Vercel CLI which project to deploy to
     env:
