@@ -32,6 +32,20 @@ export function createApp(): Application {
     }),
   );
 
+  app.use(
+    "/api/auth",
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      limit: 20,
+      standardHeaders: "draft-7",
+      legacyHeaders: false,
+      message: {
+        success: false,
+        message: "Too many authentication attempts, please try again later.",
+      },
+    }),
+  );
+
   // Better Auth MUST come before any body parser. It reads the raw request
   // stream itself; express.json() consumes it first and auth calls then hang.
   // Mounted at the root because the handler owns the whole /api/auth/* tree.
@@ -44,7 +58,7 @@ export function createApp(): Application {
     app.use(morgan("dev"));
   }
 
-  // Broad safety net; auth routes additionally get a stricter limiter in their module.
+  // Non-auth API routes use this broad limit; auth is limited before its handler above.
   app.use(
     "/api",
     rateLimit({

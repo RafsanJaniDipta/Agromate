@@ -14,8 +14,7 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
-    // Uncomment once prisma/seed.ts exists (Sondip, Day 2).
-    // seed: "bun run prisma/seed.ts",
+    seed: "tsx prisma/seed.ts",
   },
   datasource: {
     // Neon pooled connection string. `process.env` rather than `env()` so that

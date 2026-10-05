@@ -9,11 +9,6 @@
       "key": "baseUrl",
       "value": "http://localhost:5000/api",
       "type": "string"
-    },
-    {
-      "key": "authToken",
-      "value": "",
-      "type": "string"
     }
   ],
   "item": [
@@ -21,7 +16,7 @@
       "name": "Auth",
       "item": [
         {
-          "name": "Register User",
+          "name": "Register with Email",
           "request": {
             "method": "POST",
             "header": [
@@ -29,13 +24,13 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Rahim Farmer\",\n  \"phone\": \"+8801700000000\",\n  \"password\": \"password123\",\n  \"locale\": \"bn\"\n}"
+              "raw": "{\n  \"name\": \"Rahim Farmer\",\n  \"email\": \"rahim@example.com\",\n  \"password\": \"password123\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+            "url": { "raw": "{{baseUrl}}/auth/sign-up/email", "host": ["{{baseUrl}}"], "path": ["auth", "sign-up", "email"] }
           }
         },
         {
-          "name": "Login User",
+          "name": "Login with Email",
           "request": {
             "method": "POST",
             "header": [
@@ -43,9 +38,23 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phone\": \"+8801700000000\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"email\": \"rahim@example.com\",\n  \"password\": \"password123\",\n  \"rememberMe\": true\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+            "url": { "raw": "{{baseUrl}}/auth/sign-in/email", "host": ["{{baseUrl}}"], "path": ["auth", "sign-in", "email"] }
+          }
+        },
+        {
+          "name": "Get Current Session",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/auth/get-session", "host": ["{{baseUrl}}"], "path": ["auth", "get-session"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/auth/sign-out", "host": ["{{baseUrl}}"], "path": ["auth", "sign-out"] }
           }
         }
       ]
