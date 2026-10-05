@@ -16,9 +16,9 @@ export const createHarvest = asyncHandler(async (req: Request, res: Response): P
     throw AppError.unauthorized("User is not authenticated");
   }
 
-  const { cropCycleId, harvestDate, quantity, unit, qualityGrade, notes } = req.body;
-  if (!cropCycleId || quantity === undefined) {
-    throw AppError.unprocessable("cropCycleId and quantity are required");
+  const { cropCycleId, harvestDate, quantity, unit, pricePerUnit } = req.body;
+  if (!cropCycleId || quantity === undefined || pricePerUnit === undefined) {
+    throw AppError.unprocessable("cropCycleId, quantity and pricePerUnit are required");
   }
 
   const harvest = await createHarvestService({
@@ -26,8 +26,7 @@ export const createHarvest = asyncHandler(async (req: Request, res: Response): P
     harvestDate,
     quantity: Number(quantity),
     unit,
-    qualityGrade,
-    notes,
+    pricePerUnit: Number(pricePerUnit),
     userId,
   });
 

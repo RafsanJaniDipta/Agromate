@@ -9,11 +9,7 @@ import {
 } from "./user.service.js";
 
 export const getCurrentUser = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const userId = req.user?.id || (req.query.userId as string);
-  if (!userId) {
-    throw AppError.unauthorized("User is not authenticated");
-  }
-
+  const userId = req.user!.id;
   const user = await getUserByIdService(userId);
   if (!user) {
     throw AppError.notFound("User profile not found");
@@ -33,11 +29,7 @@ export const getUserById = asyncHandler(async (req: Request, res: Response): Pro
 });
 
 export const updateProfile = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const userId = req.user?.id || req.body.userId;
-  if (!userId) {
-    throw AppError.unauthorized("User is not authenticated");
-  }
-
+  const userId = req.user!.id;
   const { name, location, phone, image } = req.body;
   const updatedUser = await updateUserProfileService(userId, {
     name,

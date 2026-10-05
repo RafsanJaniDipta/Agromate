@@ -1,10 +1,15 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
+import { AppError } from "../../utils/AppError.js";
+import { parseEnum } from "../../utils/enum.js";
+import { ExpertStatus } from "../../generated/prisma/client.js";
 
 export interface PaginationOptions {
   page?: number;
   limit?: number;
 }
+
+const USER_ROLES = ["FARMER", "EXPERT", "ADMIN"];
 
 export interface UpdateUserRoleStatusPayload {
   status?: boolean | string;
@@ -25,7 +30,6 @@ export const getAllUsersFromDB = serviceHandler(async (options: PaginationOption
         name: true,
         email: true,
         role: true,
-        isActive: true,
         banned: true,
         banReason: true,
         location: true,
@@ -55,31 +59,34 @@ export const updateUserRoleStatusInDB = serviceHandler(async (
 ) => {
   const targetUser = await prisma.user.findUnique({ where: { id } });
   if (!targetUser) {
-    throw new Error("User not found");
+    throw AppError.notFound("User not found");
   }
 
   if (adminId && targetUser.id === adminId) {
-    throw new Error("You cannot modify your own data");
+    throw AppError.forbidden("You cannot modify your own data");
   }
 
-  if (targetUser.role === "ADMIN") {
-    throw new Error("You cannot modify another ADMIN's data");
+  if (targetUser.role.toUpperCase() === "ADMIN") {
+    throw AppError.forbidden("You cannot modify another admin's data");
   }
 
   const updateData: Record<string, any> = {};
 
   if (payload.role !== undefined) {
-    updateData.role = payload.role;
+    const role = String(payload.role).toUpperCase();
+    if (!USER_ROLES.includes(role)) {
+      throw AppError.unprocessable(`Role must be one of: ${USER_ROLES.join(", ")}`);
+    }
+    updateData.role = role;
   }
 
   if (payload.status !== undefined) {
+    // Better Auth's `banned` flag is the single source of "inactive"
     if (typeof payload.status === "boolean") {
-      updateData.isActive = payload.status;
+      updateData.banned = !payload.status;
     } else if (payload.status === "ACTIVE") {
-      updateData.isActive = true;
       updateData.banned = false;
     } else if (payload.status === "INACTIVE" || payload.status === "BANNED") {
-      updateData.isActive = false;
       updateData.banned = true;
     }
   }
@@ -92,7 +99,6 @@ export const updateUserRoleStatusInDB = serviceHandler(async (
       name: true,
       email: true,
       role: true,
-      isActive: true,
       banned: true,
       updatedAt: true,
     },
@@ -141,7 +147,6 @@ export const getDeliveryAgentsFromDB = serviceHandler(async (options: Pagination
         email: true,
         phone: true,
         location: true,
-        isActive: true,
         createdAt: true,
       },
       orderBy: { createdAt: "desc" },
@@ -160,7 +165,48 @@ export const getDeliveryAgentsFromDB = serviceHandler(async (options: Pagination
   };
 });
 
+// Expert profiles, oldest first so applications are reviewed in order
+export const getExpertApplications = serviceHandler(async (status?: string) => {
+  return prisma.expertProfile.findMany({
+    where: status ? { status: parseEnum(ExpertStatus, status, "status") } : {},
+    include: {
+      user: { select: { id: true, name: true, phone: true, email: true, createdAt: true } },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+});
+
+// Approves or rejects an expert; only a verified expert can answer questions
+export const reviewExpertApplication = serviceHandler(async (
+  userId: string,
+  status: unknown,
+  rejectionReason?: string,
+) => {
+  const decision = parseEnum(ExpertStatus, status, "status");
+  if (decision === "PENDING") {
+    throw AppError.unprocessable("Status must be VERIFIED or REJECTED");
+  }
+
+  const profile = await prisma.expertProfile.findUnique({ where: { userId } });
+  if (!profile) {
+    throw AppError.notFound("Expert profile not found");
+  }
+
+  return prisma.expertProfile.update({
+    where: { userId },
+    data: {
+      status: decision,
+      rejectionReason: decision === "REJECTED" ? (rejectionReason ?? null) : null,
+    },
+    include: {
+      user: { select: { id: true, name: true, phone: true, email: true } },
+    },
+  });
+});
+
 export const AdminService = {
+  getExpertApplications,
+  reviewExpertApplication,
   getAllUsersFromDB,
   updateUserRoleStatusInDB,
   getPlatformStatistics,

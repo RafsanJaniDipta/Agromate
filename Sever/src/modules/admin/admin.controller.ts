@@ -6,6 +6,8 @@ import {
   updateUserRoleStatusInDB,
   getPlatformStatistics,
   getDeliveryAgentsFromDB,
+  getExpertApplications as getExpertApplicationsService,
+  reviewExpertApplication as reviewExpertApplicationService,
 } from "./admin.service.js";
 
 export const getAllUsers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -26,7 +28,7 @@ export const updateUserStatus = asyncHandler(async (req: Request, res: Response)
   const { id } = req.params;
   const { status, role } = req.body;
 
-  const adminId = (req as any).user?.id as string;
+  const adminId = req.user?.id;
 
   const result = await updateUserRoleStatusInDB(
     id as string,
@@ -62,7 +64,21 @@ export const getDeliveryAgents = asyncHandler(async (req: Request, res: Response
   );
 });
 
+export const getExpertApplications = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { status } = req.query;
+  const result = await getExpertApplicationsService(typeof status === "string" ? status : undefined);
+  sendSuccess(res, 200, "Expert applications retrieved successfully", result);
+});
+
+export const reviewExpertApplication = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { status, rejectionReason } = req.body;
+  const result = await reviewExpertApplicationService(String(req.params.userId), status, rejectionReason);
+  sendSuccess(res, 200, "Expert application reviewed successfully", result);
+});
+
 export const AdminController = {
+  getExpertApplications,
+  reviewExpertApplication,
   getAllUsers,
   updateUserStatus,
   getStatistics,

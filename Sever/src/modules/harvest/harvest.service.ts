@@ -1,13 +1,14 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
+import type { Prisma } from "../../generated/prisma/client.js";
 
 export interface CreateHarvestInput {
   cropCycleId: string;
   harvestDate?: Date | string;
   quantity: number;
   unit?: string;
-  qualityGrade?: string;
-  notes?: string;
+  // Sale price per unit; revenue is quantity × pricePerUnit
+  pricePerUnit: number;
   userId: string;
 }
 
@@ -15,8 +16,7 @@ export interface UpdateHarvestInput {
   harvestDate?: Date | string;
   quantity?: number;
   unit?: string;
-  qualityGrade?: string;
-  notes?: string;
+  pricePerUnit?: number;
 }
 
 export const createHarvest = serviceHandler(async (data: CreateHarvestInput) => {
@@ -34,10 +34,9 @@ export const createHarvest = serviceHandler(async (data: CreateHarvestInput) => 
       cropCycleId: data.cropCycleId,
       harvestDate: data.harvestDate ? new Date(data.harvestDate) : new Date(),
       quantity: data.quantity,
-      unit: data.unit ?? "kg",
-      qualityGrade: data.qualityGrade,
-      notes: data.notes,
-    } as any,
+      unit: data.unit?.toUpperCase() ?? "KG",
+      pricePerUnit: data.pricePerUnit,
+    },
     include: {
       cropCycle: {
         include: { crop: true, field: true },
@@ -63,7 +62,7 @@ export const getHarvests = serviceHandler(async (
   const farms = await prisma.farm.findMany({ where: { userId }, select: { id: true } });
   const farmIds = farms.map((f) => f.id);
 
-  const where: any = {
+  const where: Prisma.HarvestWhereInput = {
     cropCycle: { field: { farmId: { in: farmIds } } },
     ...(params.cropCycleId ? { cropCycleId: params.cropCycleId } : {}),
     ...(params.from || params.to
@@ -133,11 +132,10 @@ export const updateHarvest = serviceHandler(async (id: string, userId: string, d
     where: { id },
     data: {
       ...(data.harvestDate ? { harvestDate: new Date(data.harvestDate) } : {}),
-      ...(data.quantity !== undefined ? { quantity: data.quantity } : {}),
-      ...(data.unit !== undefined ? { unit: data.unit } : {}),
-      ...(data.qualityGrade !== undefined ? { qualityGrade: data.qualityGrade } : {}),
-      ...(data.notes !== undefined ? { notes: data.notes } : {}),
-    } as any,
+      ...(data.quantity !== undefined ? { quantity: Number(data.quantity) } : {}),
+      ...(data.unit !== undefined ? { unit: data.unit.toUpperCase() } : {}),
+      ...(data.pricePerUnit !== undefined ? { pricePerUnit: Number(data.pricePerUnit) } : {}),
+    },
     include: {
       cropCycle: { include: { crop: true, field: true } },
     },

@@ -33,9 +33,7 @@ export const createCrop = serviceHandler(async (data: CreateCropInput) => {
     data: {
       name: data.name,
       season: data.season,
-      growthDays: days,
       durationDays: days,
-      soilTypes: data.soilTypes,
       idealSoil: data.idealSoil ?? data.soilTypes,
       category: data.category,
       optimalTemp: data.optimalTemp,
@@ -75,8 +73,8 @@ export const updateCrop = serviceHandler(async (id: string, data: UpdateCropInpu
     data: {
       ...(data.name !== undefined ? { name: data.name } : {}),
       ...(data.season !== undefined ? { season: data.season } : {}),
-      ...(days !== undefined ? { growthDays: days, durationDays: days } : {}),
-      ...(data.soilTypes !== undefined ? { soilTypes: data.soilTypes, idealSoil: data.soilTypes } : {}),
+      ...(days !== undefined ? { durationDays: days } : {}),
+      ...(data.soilTypes !== undefined ? { idealSoil: data.soilTypes } : {}),
       ...(data.category !== undefined ? { category: data.category } : {}),
       ...(data.optimalTemp !== undefined ? { optimalTemp: data.optimalTemp } : {}),
       ...(data.optimalRainfall !== undefined ? { optimalRainfall: data.optimalRainfall } : {}),

@@ -1,41 +1,64 @@
 import { prisma } from "../../config/database.js";
+import { AppError } from "../../utils/AppError.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
+import type { Prisma } from "../../generated/prisma/client.js";
 
-export interface CreateMarketPriceInput {
-  cropName: string;
-  pricePerKg?: number;
-  pricePerUnit?: number;
-  location: string;
-  source?: string;
-  date?: Date | string;
-}
-
-export interface UpdateMarketPriceInput {
+/**
+ * A price row points at a crop (cropId) and a district. Clients may name the crop
+ * instead of sending its id, and older clients send `location` for district and
+ * `pricePerKg` for pricePerUnit; all of these are accepted.
+ */
+export interface MarketPriceInput {
+  cropId?: string;
   cropName?: string;
-  pricePerKg?: number;
-  pricePerUnit?: number;
+  district?: string;
   location?: string;
+  pricePerUnit?: number;
+  pricePerKg?: number;
+  unit?: string;
   source?: string;
   date?: Date | string;
 }
 
-export const createMarketPrice = serviceHandler(async (data: CreateMarketPriceInput) => {
-  const price = data.pricePerKg ?? data.pricePerUnit ?? 0;
+const withCrop = { crop: { select: { id: true, name: true, nameBn: true } } } as const;
+
+// Matches a crop by English or Bangla name, ignoring case
+const cropNameFilter = (name: string): Prisma.CropWhereInput => ({
+  OR: [
+    { name: { equals: name, mode: "insensitive" } },
+    { nameBn: { equals: name, mode: "insensitive" } },
+  ],
+});
+
+async function resolveCropId(input: MarketPriceInput): Promise<string> {
+  if (input.cropId) return input.cropId;
+
+  const crop = input.cropName
+    ? await prisma.crop.findFirst({ where: cropNameFilter(input.cropName), select: { id: true } })
+    : null;
+  if (!crop) {
+    throw AppError.unprocessable("Unknown crop. Send a valid cropId or cropName.");
+  }
+  return crop.id;
+}
+
+export const createMarketPrice = serviceHandler(async (data: MarketPriceInput) => {
   return await prisma.marketPrice.create({
     data: {
-      cropName: data.cropName,
-      location: data.location,
-      pricePerUnit: price,
-      pricePerKg: price,
+      cropId: await resolveCropId(data),
+      district: data.district ?? data.location ?? "General",
+      pricePerUnit: Number(data.pricePerUnit ?? data.pricePerKg),
+      unit: data.unit?.toUpperCase() ?? "KG",
       source: data.source,
       date: data.date ? new Date(data.date) : new Date(),
-    } as any,
+    },
+    include: withCrop,
   });
 });
 
 export const getMarketPrices = serviceHandler(async (params: {
   cropName?: string;
-  location?: string;
+  district?: string;
   page?: number;
   limit?: number;
 }) => {
@@ -43,9 +66,18 @@ export const getMarketPrices = serviceHandler(async (params: {
   const limit = params.limit && params.limit > 0 ? params.limit : 10;
   const skip = (page - 1) * limit;
 
-  const where: any = {
-    ...(params.cropName ? { cropName: { contains: params.cropName, mode: "insensitive" } } : {}),
-    ...(params.location ? { location: { contains: params.location, mode: "insensitive" } } : {}),
+  const where: Prisma.MarketPriceWhereInput = {
+    ...(params.cropName
+      ? {
+          crop: {
+            OR: [
+              { name: { contains: params.cropName, mode: "insensitive" } },
+              { nameBn: { contains: params.cropName, mode: "insensitive" } },
+            ],
+          },
+        }
+      : {}),
+    ...(params.district ? { district: { contains: params.district, mode: "insensitive" } } : {}),
   };
 
   const [total, items] = await Promise.all([
@@ -55,6 +87,7 @@ export const getMarketPrices = serviceHandler(async (params: {
       skip,
       take: limit,
       orderBy: { date: "desc" },
+      include: withCrop,
     }),
   ]);
 
@@ -70,15 +103,17 @@ export const getTrends = serviceHandler(async (cropName: string, days: number = 
 
   const prices = await prisma.marketPrice.findMany({
     where: {
-      cropName: { equals: cropName, mode: "insensitive" },
+      crop: cropNameFilter(cropName),
       date: { gte: fromDate },
     },
     orderBy: { date: "asc" },
   });
 
   const priceHistory = prices.map((p) => ({
-    date: p.date ? new Date(p.date).toISOString().split("T")[0] : "",
-    pricePerKg: (p as any).pricePerKg ?? p.pricePerUnit,
+    date: p.date.toISOString().split("T")[0],
+    district: p.district,
+    pricePerUnit: p.pricePerUnit,
+    unit: p.unit,
   }));
 
   return {
@@ -90,20 +125,25 @@ export const getTrends = serviceHandler(async (cropName: string, days: number = 
 export const getMarketPriceById = serviceHandler(async (id: string) => {
   return await prisma.marketPrice.findUnique({
     where: { id },
+    include: withCrop,
   });
 });
 
-export const updateMarketPrice = serviceHandler(async (id: string, data: UpdateMarketPriceInput) => {
-  const price = data.pricePerKg ?? data.pricePerUnit;
+export const updateMarketPrice = serviceHandler(async (id: string, data: MarketPriceInput) => {
+  const price = data.pricePerUnit ?? data.pricePerKg;
+  const district = data.district ?? data.location;
+
   return await prisma.marketPrice.update({
     where: { id },
     data: {
-      ...(data.cropName !== undefined ? { cropName: data.cropName } : {}),
-      ...(data.location !== undefined ? { location: data.location } : {}),
-      ...(price !== undefined ? { pricePerUnit: price, pricePerKg: price } : {}),
+      ...(data.cropId || data.cropName ? { cropId: await resolveCropId(data) } : {}),
+      ...(district !== undefined ? { district } : {}),
+      ...(price !== undefined ? { pricePerUnit: Number(price) } : {}),
+      ...(data.unit !== undefined ? { unit: data.unit.toUpperCase() } : {}),
       ...(data.source !== undefined ? { source: data.source } : {}),
       ...(data.date ? { date: new Date(data.date) } : {}),
-    } as any,
+    },
+    include: withCrop,
   });
 });
 
@@ -121,5 +161,3 @@ export const MarketService = {
   updateMarketPrice,
   deleteMarketPrice,
 };
-
-

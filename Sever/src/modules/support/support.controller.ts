@@ -17,7 +17,7 @@ export const handleCreateSupport = asyncHandler(async (req: Request, res: Respon
     topic,
     message,
     locale,
-    userId: (req as any).user?.id,
+    userId: req.user?.id,
   });
 
   sendSuccess(res, 201, "Support request submitted successfully.", ticket);
