@@ -41,18 +41,26 @@ The API uses Better Auth email/password endpoints. Email verification is disable
    }
    ```
    Use a new email address for each new account.
-2. **Log in**: `POST http://localhost:5000/api/auth/sign-in/email`
+2. **Log in with Email**: `POST http://localhost:5000/api/auth/sign-in/email`
    ```json
    {
-     "email": "rahim@example.com",
-     "password": "password123",
+     "email": "farmer@agromate.dev",
+     "password": "Farmer@12345",
      "rememberMe": true
    }
    ```
-3. **Check the session**: `GET http://localhost:5000/api/auth/get-session`. The response should contain the signed-in user and session.
-4. **Try an authenticated endpoint**: `GET http://localhost:5000/api/users/me`. It should return the current user's profile.
-5. **Log out**: `POST http://localhost:5000/api/auth/sign-out`.
-6. **Check again**: repeat the session request. It should no longer return an active session.
+3. **Log in with Phone Number (No OTP)**: `POST http://localhost:5000/api/auth/sign-in/phone-number`
+   ```json
+   {
+     "phoneNumber": "+8801700112233",
+     "password": "Farmer@12345",
+     "rememberMe": true
+   }
+   ```
+4. **Check the session**: `GET http://localhost:5000/api/auth/get-session`. The response should contain the signed-in user and session.
+5. **Try an authenticated endpoint**: `GET http://localhost:5000/api/users/me`. It should return the current user's profile.
+6. **Log out**: `POST http://localhost:5000/api/auth/sign-out`.
+7. **Check again**: repeat the session request. It should no longer return an active session.
 
 If Postman does not resend the cookie, open its **Cookies** manager for `localhost:5000` and check that the Better Auth cookie exists and is enabled. Do not use a bearer token; this project authenticates requests with cookies.
 

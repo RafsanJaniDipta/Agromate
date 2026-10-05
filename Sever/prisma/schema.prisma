@@ -31,6 +31,8 @@ model User {
   banExpires    DateTime?
   location      String?
   phone         String?
+  phoneNumber   String?   @unique @map("phone_number")
+  phoneNumberVerified Boolean? @default(false) @map("phone_number_verified")
   language      String?   @default("en")
   locale        String?   @default("bn")
 
@@ -485,4 +487,16 @@ model Notification {
   @@index([userId])
   @@index([userId, isRead])
   @@map("notification")
+}
+
+model ExpertCategory {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  slug      String   @unique
+  nameBn    String   @map("name_bn")
+  nameEn    String   @map("name_en")
+  icon      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("expert_category")
 }

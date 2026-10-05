@@ -38,9 +38,23 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"rahim@example.com\",\n  \"password\": \"password123\",\n  \"rememberMe\": true\n}"
+              "raw": "{\n  \"email\": \"farmer@agromate.dev\",\n  \"password\": \"Farmer@12345\",\n  \"rememberMe\": true\n}"
             },
             "url": { "raw": "{{baseUrl}}/auth/sign-in/email", "host": ["{{baseUrl}}"], "path": ["auth", "sign-in", "email"] }
+          }
+        },
+        {
+          "name": "Login with Phone Number",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+8801700112233\",\n  \"password\": \"Farmer@12345\",\n  \"rememberMe\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/sign-in/phone-number", "host": ["{{baseUrl}}"], "path": ["auth", "sign-in", "phone-number"] }
           }
         },
         {
