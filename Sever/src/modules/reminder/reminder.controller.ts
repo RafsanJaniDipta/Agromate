@@ -15,7 +15,7 @@ export const createReminder = asyncHandler(async (req: Request, res: Response): 
     throw AppError.unauthorized("User is not authenticated");
   }
 
-  const { title, dueDate, cropCycleId } = req.body;
+  const { title, dueDate, note, cropCycleId } = req.body;
   if (!title || !dueDate) {
     throw AppError.unprocessable("Title and dueDate are required");
   }
@@ -23,6 +23,7 @@ export const createReminder = asyncHandler(async (req: Request, res: Response): 
   const reminder = await createReminderService({
     title,
     dueDate,
+    note,
     cropCycleId,
     userId,
   });
@@ -36,11 +37,12 @@ export const getReminders = asyncHandler(async (req: Request, res: Response): Pr
     throw AppError.unauthorized("User is not authenticated");
   }
 
-  const { cropCycleId, isCompleted } = req.query;
+  // isCompleted is the older name for isDone
+  const { cropCycleId, isDone = req.query.isCompleted } = req.query;
   const reminders = await getRemindersService(
     userId,
     typeof cropCycleId === "string" ? cropCycleId : undefined,
-    isCompleted !== undefined ? isCompleted === "true" : undefined,
+    isDone !== undefined ? isDone === "true" : undefined,
   );
 
   sendSuccess(res, 200, "Reminders fetched successfully", reminders);

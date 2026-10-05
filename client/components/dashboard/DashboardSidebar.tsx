@@ -3,10 +3,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
-import {
-  sidebarFooterLinks,
-  sidebarLinks,
-} from "@/components/dashboard/dashboardNav";
+import { dashboardNav } from "@/components/dashboard/dashboardNav";
+import type { Role } from "@/lib/session";
 
 type RailLinkProps = {
   href: string;
@@ -42,10 +40,12 @@ function RailLink({ href, label, Icon, isActive, isOpen }: RailLinkProps) {
   );
 }
 
-export default function DashboardSidebar() {
+// Icon rail whose links depend on the signed-in role; expands on hover.
+export default function DashboardSidebar({ role }: { role: Role }) {
   const t = useTranslations("dashboard.sidebar");
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { links, footerLinks } = dashboardNav[role];
 
   return (
     <div className="relative hidden w-20 shrink-0 md:block">
@@ -58,7 +58,7 @@ export default function DashboardSidebar() {
         }`}
       >
         <ul className="flex flex-col gap-3">
-          {sidebarLinks.map(({ href, key, Icon }) => (
+          {links.map(({ href, key, Icon }) => (
             <li key={key}>
               <RailLink
                 href={href}
@@ -72,7 +72,7 @@ export default function DashboardSidebar() {
         </ul>
 
         <ul className="flex flex-col gap-3">
-          {sidebarFooterLinks.map(({ href, key, Icon }) => (
+          {footerLinks.map(({ href, key, Icon }) => (
             <li key={key}>
               <RailLink
                 href={href}

@@ -1,23 +1,35 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { BellIcon, SearchIcon } from "@/components/icons";
-import { Link, usePathname } from "@/i18n/navigation";
+import { BellIcon, LogoutIcon, SearchIcon } from "@/components/icons";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import Logo from "@/components/shared/Logo";
-import { dashboardTabs } from "@/components/dashboard/dashboardNav";
-
-type DashboardTopBarProps = {
-  unreadNotifications: number;
-};
+import { dashboardNav } from "@/components/dashboard/dashboardNav";
+import { countUnreadNotifications } from "@/lib/notifications";
+import { loginPageFor, signOut, type Role } from "@/lib/session";
 
 const roundButton =
   "flex size-11 items-center justify-center rounded-full border border-white/10 bg-black/40 backdrop-blur-xl transition hover:bg-white/15";
 
-// Top bar: logo, section tabs, language toggle, search and notifications.
-export default function DashboardTopBar({ unreadNotifications }: DashboardTopBarProps) {
+// Top bar: logo, the role's section tabs, language toggle, search, notifications and logout.
+export default function DashboardTopBar({ role }: { role: Role }) {
   const t = useTranslations("dashboard");
   const pathname = usePathname();
+  const router = useRouter();
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    // The dot is a hint only, so a failed count just leaves it hidden
+    countUnreadNotifications().then(setUnread).catch(() => {});
+  }, []);
+
+  async function handleSignOut() {
+    // Leave even if the server call fails; the session expires on its own
+    await signOut().catch(() => {});
+    router.replace(loginPageFor(role));
+  }
 
   return (
     <header className="flex flex-wrap items-center justify-between gap-4">
@@ -29,7 +41,7 @@ export default function DashboardTopBar({ unreadNotifications }: DashboardTopBar
         className="order-last w-full overflow-x-auto rounded-full border border-white/10 bg-black/40 p-1.5 backdrop-blur-xl md:order-none md:w-auto"
       >
         <ul className="flex min-w-max text-sm">
-          {dashboardTabs.map(({ href, key }) => {
+          {dashboardNav[role].tabs.map(({ href, key }) => {
             const isActive = href === pathname;
             return (
               <li key={key}>
@@ -55,13 +67,16 @@ export default function DashboardTopBar({ unreadNotifications }: DashboardTopBar
         </button>
         <button
           type="button"
-          aria-label={t("notifications", { count: unreadNotifications })}
+          aria-label={t("notifications", { count: unread })}
           className={`relative ${roundButton}`}
         >
           <BellIcon className="size-5" />
-          {unreadNotifications > 0 && (
+          {unread > 0 && (
             <span className="absolute right-3 top-2.5 size-2 rounded-full bg-red-500 ring-2 ring-black/60" />
           )}
+        </button>
+        <button type="button" aria-label={t("signOut")} onClick={handleSignOut} className={roundButton}>
+          <LogoutIcon className="size-5" />
         </button>
       </div>
     </header>

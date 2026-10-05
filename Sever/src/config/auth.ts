@@ -97,6 +97,7 @@ export const auth = betterAuth({
       location: { type: "string", required: false },
       phone: { type: "string", required: false },
       role: { type: "string", required: false, defaultValue: "FARMER" },
+      locale: { type: "string", required: false, defaultValue: "bn" },
     },
   },
 

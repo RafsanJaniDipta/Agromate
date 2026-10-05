@@ -28,43 +28,27 @@ export const createNotification = asyncHandler(async (req: Request, res: Respons
 });
 
 export const getNotifications = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const userId = req.user?.id || (req.query.userId as string);
-  if (!userId) {
-    throw AppError.unauthorized("User is not authenticated");
-  }
-
+  const userId = req.user!.id;
   const notifications = await getNotificationsByUserIdService(userId);
   sendSuccess(res, 200, "Notifications fetched successfully", notifications);
 });
 
 export const markAsRead = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const id = String(req.params.id || "");
-  const userId = req.user?.id || req.body.userId;
-  if (!userId) {
-    throw AppError.unauthorized("User is not authenticated");
-  }
-
+  const userId = req.user!.id;
   await markAsReadService(id, userId);
   sendSuccess(res, 200, "Notification marked as read", { id });
 });
 
 export const markAllAsRead = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const userId = req.user?.id || req.body.userId;
-  if (!userId) {
-    throw AppError.unauthorized("User is not authenticated");
-  }
-
+  const userId = req.user!.id;
   await markAllAsReadService(userId);
   sendSuccess(res, 200, "All notifications marked as read");
 });
 
 export const deleteNotification = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const id = String(req.params.id || "");
-  const userId = req.user?.id || (req.query.userId as string);
-  if (!userId) {
-    throw AppError.unauthorized("User is not authenticated");
-  }
-
+  const userId = req.user!.id;
   await deleteNotificationService(id, userId);
   sendSuccess(res, 200, "Notification deleted successfully", { id });
 });

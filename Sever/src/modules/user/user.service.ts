@@ -20,7 +20,7 @@ export const getUserById = serviceHandler(async (id: string) => {
       phone: true,
       location: true,
       language: true,
-      isActive: true,
+      banned: true,
       image: true,
       createdAt: true,
       updatedAt: true,
@@ -37,7 +37,7 @@ export const getUserById = serviceHandler(async (id: string) => {
     phone: user.phone,
     location: user.location,
     language: user.language ?? "en",
-    isActive: user.isActive ?? true,
+    isActive: !user.banned,
     image: user.image,
   };
 });
@@ -60,7 +60,7 @@ export const updateUserProfile = serviceHandler(async (id: string, data: UpdateU
       phone: true,
       location: true,
       language: true,
-      isActive: true,
+      banned: true,
       image: true,
       updatedAt: true,
     },
@@ -74,7 +74,7 @@ export const updateUserProfile = serviceHandler(async (id: string, data: UpdateU
     phone: updated.phone,
     location: updated.location,
     language: updated.language ?? "en",
-    isActive: updated.isActive ?? true,
+    isActive: !updated.banned,
     image: updated.image,
   };
 });
@@ -99,7 +99,7 @@ export const getAllUsers = serviceHandler(async (options: { role?: string; page?
         location: true,
         phone: true,
         language: true,
-        isActive: true,
+        banned: true,
         createdAt: true,
       },
       orderBy: { createdAt: "desc" },

@@ -249,6 +249,15 @@ export function BarnIcon({ className }: IconProps) {
 }
 
 // Three sliders with knobs: settings
+export function LogoutIcon({ className }: IconProps) {
+  return (
+    <svg {...baseProps} className={className}>
+      <path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4" />
+      <path d="M15 16l4-4-4-4M19 12H9" />
+    </svg>
+  );
+}
+
 export function SettingsIcon({ className }: IconProps) {
   return (
     <svg {...baseProps} className={className}>

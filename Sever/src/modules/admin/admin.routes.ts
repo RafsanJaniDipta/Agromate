@@ -4,6 +4,8 @@ import {
   updateUserStatus,
   getStatistics,
   getDeliveryAgents,
+  getExpertApplications,
+  reviewExpertApplication,
 } from "./admin.controller.js";
 import { authenticate } from "../../middlewares/auth.middleware.js";
 import { adminOnly } from "../../middlewares/role.middleware.js";
@@ -16,3 +18,5 @@ adminRouter.get("/users", getAllUsers);
 adminRouter.patch("/users/:id", updateUserStatus);
 adminRouter.get("/statistics", getStatistics);
 adminRouter.get("/delivery-agents", getDeliveryAgents);
+adminRouter.get("/experts", getExpertApplications);
+adminRouter.patch("/experts/:userId", reviewExpertApplication);

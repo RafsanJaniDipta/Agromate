@@ -2,9 +2,11 @@
 
 import { usePathname } from "@/i18n/navigation";
 
-// Renders its children on public pages only; the dashboard is a full-screen app
-// with its own navigation, so site-wide pieces like the footer stay out of it.
+// Full-screen app sections with their own frame; site-wide pieces like the footer stay out of them
+const appSections = ["/dashboard", "/admin", "/expert"];
+
+// Renders its children on public pages only.
 export default function HideOnDashboard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  return pathname.startsWith("/dashboard") ? null : children;
+  return appSections.some((section) => pathname.startsWith(section)) ? null : children;
 }

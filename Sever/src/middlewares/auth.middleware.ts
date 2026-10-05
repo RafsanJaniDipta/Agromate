@@ -51,7 +51,7 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
       id: session.user.id,
       email: session.user.email,
       name: session.user.name,
-      role: session.user.role,
+      role: session.user.role ?? "FARMER",
       location: session.user.location,
     };
     req.session = { id: session.session.id, expiresAt: session.session.expiresAt };
@@ -75,7 +75,7 @@ export async function optionalAuthenticate(req: Request, _res: Response, next: N
         id: session.user.id,
         email: session.user.email,
         name: session.user.name,
-        role: session.user.role,
+        role: session.user.role ?? "FARMER",
         location: session.user.location,
       };
     }

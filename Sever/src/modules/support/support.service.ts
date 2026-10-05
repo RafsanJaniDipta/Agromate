@@ -15,7 +15,7 @@ export const createSupportTicket = serviceHandler(async (input: CreateSupportInp
   const normalizedPhone = normalizePhoneNumber(input.phone);
   const locale = input.locale || "bn";
 
-  return (prisma as any).supportTicket.create({
+  return prisma.supportTicket.create({
     data: {
       name: input.name,
       phone: normalizedPhone,
