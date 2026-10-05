@@ -67,4 +67,6 @@ jobs:
 
       # Vercel builds it remotely; the project's Root Directory must be "client"
       - name: Deploy to Vercel
-        run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+        run: >
+          vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+          --build-env NEXT_PUBLIC_COMMIT_SHA=${{ github.sha }}
