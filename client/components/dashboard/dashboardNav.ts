@@ -1,42 +1,86 @@
 import {
   BarnIcon,
   ChartIcon,
+  ChatIcon,
+  CoinsIcon,
   CowIcon,
   HelpIcon,
   HomeIcon,
   LeafIcon,
   MapIcon,
   SettingsIcon,
+  ShieldIcon,
   TractorIcon,
+  UserIcon,
   WheatIcon,
 } from "@/components/icons";
+import type { Role } from "@/lib/session";
+import type messages from "@/messages/en.json";
 
 // "#" links are placeholders until those pages exist.
-// `key` is the label's key in the "dashboard" translations.
+// `key` is the label's key in the "dashboard.tabs" / "dashboard.sidebar" translations.
 
-// Pill tabs in the top bar
-export const dashboardTabs = [
-  { href: "/dashboard", key: "dashboard" },
-  { href: "/dashboard/diagnose", key: "diagnose" },
-  { href: "#", key: "fields" },
-  { href: "#", key: "analytics" },
-  { href: "#", key: "reports" },
-] as const;
+// Keys are checked against en.json, so a menu item can't point at a missing label
+type TabKey = Exclude<keyof typeof messages.dashboard.tabs, "label">;
+type RailKey = Exclude<keyof typeof messages.dashboard.sidebar, "label">;
 
-// Icon rail on the left
-export const sidebarLinks = [
-  { href: "/dashboard", key: "home", Icon: HomeIcon },
-  { href: "#", key: "map", Icon: MapIcon },
-  { href: "#", key: "crops", Icon: WheatIcon },
-  { href: "/dashboard/diagnose", key: "diagnose", Icon: LeafIcon },
-  { href: "#", key: "equipment", Icon: TractorIcon },
-  { href: "#", key: "livestock", Icon: CowIcon },
-  { href: "#", key: "storage", Icon: BarnIcon },
-  { href: "#", key: "analytics", Icon: ChartIcon },
-] as const;
+type Tab = { href: string; key: TabKey };
+type RailLink = { href: string; key: RailKey; Icon: React.ComponentType<{ className?: string }> };
 
-// Pinned to the bottom of the icon rail
-export const sidebarFooterLinks = [
-  { href: "#", key: "settings", Icon: SettingsIcon },
-  { href: "/support", key: "help", Icon: HelpIcon },
-] as const;
+export type DashboardNav = {
+  // Pill tabs in the top bar
+  tabs: Tab[];
+  // Icon rail on the left
+  links: RailLink[];
+  // Pinned to the bottom of the icon rail
+  footerLinks: RailLink[];
+};
+
+const helpLink: RailLink = { href: "/support", key: "help", Icon: HelpIcon };
+
+export const dashboardNav: Record<Role, DashboardNav> = {
+  FARMER: {
+    tabs: [
+      { href: "/dashboard", key: "dashboard" },
+      { href: "/dashboard/diagnose", key: "diagnose" },
+      { href: "#", key: "fields" },
+      { href: "#", key: "analytics" },
+      { href: "#", key: "reports" },
+    ],
+    links: [
+      { href: "/dashboard", key: "home", Icon: HomeIcon },
+      { href: "#", key: "map", Icon: MapIcon },
+      { href: "#", key: "crops", Icon: WheatIcon },
+      { href: "/dashboard/diagnose", key: "diagnose", Icon: LeafIcon },
+      { href: "#", key: "equipment", Icon: TractorIcon },
+      { href: "#", key: "livestock", Icon: CowIcon },
+      { href: "#", key: "storage", Icon: BarnIcon },
+      { href: "#", key: "analytics", Icon: ChartIcon },
+    ],
+    footerLinks: [{ href: "#", key: "settings", Icon: SettingsIcon }, helpLink],
+  },
+  EXPERT: {
+    tabs: [
+      { href: "/expert", key: "questions" },
+      { href: "/expert/profile", key: "profile" },
+    ],
+    links: [
+      { href: "/expert", key: "questions", Icon: ChatIcon },
+      { href: "/expert/profile", key: "profile", Icon: UserIcon },
+    ],
+    footerLinks: [helpLink],
+  },
+  ADMIN: {
+    tabs: [
+      { href: "/admin", key: "overview" },
+      { href: "/admin/users", key: "users" },
+      { href: "/admin/market-prices", key: "marketPrices" },
+    ],
+    links: [
+      { href: "/admin", key: "overview", Icon: ShieldIcon },
+      { href: "/admin/users", key: "users", Icon: UserIcon },
+      { href: "/admin/market-prices", key: "marketPrices", Icon: CoinsIcon },
+    ],
+    footerLinks: [helpLink],
+  },
+};
