@@ -37,8 +37,9 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    // No SMTP provider configured yet — flipping this on would block sign-up
-    // until a mail service is wired up. Enable for the final release.
+    autoSignIn: false,
+    // Registration and login use email/password; verification can be enabled
+    // once an email delivery provider is part of the project scope.
     requireEmailVerification: false,
   },
 
@@ -52,6 +53,10 @@ export const auth = betterAuth({
   advanced: {
     // Lets the client read cross-origin cookies in local dev.
     useSecureCookies: process.env.NODE_ENV === "production",
+    defaultCookieAttributes:
+      process.env.NODE_ENV === "production"
+        ? { sameSite: "none", secure: true }
+        : { sameSite: "lax" },
 
     database: {
       generateId: "uuid",
@@ -67,11 +72,31 @@ export const auth = betterAuth({
     },
   },
 
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          let role = ((user as Record<string, unknown>).role as string || "FARMER").toUpperCase();
+          if (role !== "EXPERT" && role !== "FARMER") {
+            role = "FARMER";
+          }
+          return {
+            data: {
+              ...user,
+              role,
+            },
+          };
+        },
+      },
+    },
+  },
+
   user: {
     additionalFields: {
       // Surfaced on the farmer profile and used by the admin dashboard.
       location: { type: "string", required: false },
       phone: { type: "string", required: false },
+      role: { type: "string", required: false, defaultValue: "FARMER" },
     },
   },
 
