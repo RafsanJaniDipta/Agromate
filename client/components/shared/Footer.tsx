@@ -49,6 +49,8 @@ export default function Footer() {
   const t = useTranslations("footer");
   const format = useFormatter();
   const year = format.dateTime(new Date(), { year: "numeric" });
+  // Set by the CI deploy; shows which commit is live (absent in local dev)
+  const commit = process.env.NEXT_PUBLIC_COMMIT_SHA?.slice(0, 7);
 
   return (
     <footer className="bg-white p-2 md:p-3">
@@ -77,7 +79,10 @@ export default function Footer() {
           </div>
 
           <div className="mt-14 flex flex-col gap-4 text-sm text-white/60 sm:flex-row sm:items-center sm:justify-between">
-            <p>{t("copyright", { year })}</p>
+            <p>
+              {t("copyright", { year })}
+              {commit && <span className="ml-2 font-mono text-xs text-white/40">v{commit}</span>}
+            </p>
             <ul className="flex gap-6">
               {legalLinks.map((link) => (
                 <li key={link.id}>
