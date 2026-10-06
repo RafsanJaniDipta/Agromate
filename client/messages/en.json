@@ -13,7 +13,8 @@
     "expertTitle": "Expert dashboard | Agromate",
     "expertProfileTitle": "My expert profile | Agromate",
     "adminUsersTitle": "Users | Agromate admin",
-    "adminMarketPricesTitle": "Market prices | Agromate admin"
+    "adminMarketPricesTitle": "Market prices | Agromate admin",
+    "profileTitle": "My profile | Agromate"
   },
   "languageSwitcher": {
     "label": "Language"
@@ -332,6 +333,8 @@
     "backHome": "Back to home",
     "fields": {
       "name": "Full name",
+      "phone": "Phone number",
+      "phoneHint": "Your 11-digit mobile number, e.g. 017XXXXXXXX",
       "email": "Email address",
       "password": "Password",
       "passwordHint": "At least {min, number} characters",
@@ -350,7 +353,7 @@
       "forgot": "Forgot password?",
       "submit": "Log in",
       "submitting": "Logging in…",
-      "error": "Could not log in. Check your email and password, then try again.",
+      "error": "Could not log in. Check your phone number and password, then try again.",
       "noAccount": "New to Agromate?",
       "registerLink": "Create an account"
     },
@@ -658,6 +661,35 @@
       "save": "Save profile",
       "saving": "Saving…",
       "saved": "Saved.",
+      "error": "Could not save. Please try again."
+    }
+  },
+  "accountProfile": {
+    "title": "My profile",
+    "loading": "Loading your profile…",
+    "loadError": "Could not load your profile. Please refresh the page.",
+    "photoAlt": "Your profile picture",
+    "photo": {
+      "change": "Change photo",
+      "uploading": "Uploading…",
+      "hint": "JPG or PNG, up to 5 MB",
+      "tooBig": "That photo is larger than 5 MB.",
+      "notImage": "Please choose an image file.",
+      "error": "Could not upload the photo. Please try again."
+    },
+    "fields": {
+      "name": "Full name",
+      "phone": "Mobile number",
+      "phoneHint": "You log in with this number. Changing it changes your login.",
+      "location": "District / area",
+      "locationPlaceholder": "e.g. Bogura"
+    },
+    "save": "Save changes",
+    "saving": "Saving…",
+    "saved": "Saved.",
+    "errors": {
+      "phoneTaken": "This number is already used by another account.",
+      "invalid": "Check the name and enter an 11-digit mobile number, e.g. 017XXXXXXXX.",
       "error": "Could not save. Please try again."
     }
   }

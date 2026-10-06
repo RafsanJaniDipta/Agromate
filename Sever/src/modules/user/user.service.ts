@@ -1,5 +1,30 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
+import { AppError } from "../../utils/AppError.js";
+import { normalizePhoneNumber } from "../../utils/phone.js";
+
+// Bangladeshi mobile number after normalising, e.g. 017XXXXXXXX
+const BD_MOBILE = /^01[3-9]\d{8}$/;
+
+// The phone is the farmer's login, so it must be valid and belong to no one else
+async function checkedPhone(userId: string, raw: string): Promise<string> {
+  const phone = normalizePhoneNumber(raw);
+  if (!BD_MOBILE.test(phone)) {
+    throw AppError.unprocessable("Enter an 11-digit mobile number, e.g. 017XXXXXXXX");
+  }
+
+  const taken = await prisma.user.findFirst({
+    where: {
+      id: { not: userId },
+      OR: [{ phone: { in: [phone, `+88${phone}`, `88${phone}`] } }, { phoneNumber: phone }],
+    },
+    select: { id: true },
+  });
+  if (taken) {
+    throw AppError.conflict("This phone number is already used by another account");
+  }
+  return phone;
+}
 
 export interface UpdateUserProfileInput {
   name?: string;
@@ -67,30 +92,27 @@ export const getUserById = serviceHandler(async (id: string) => {
 });
 
 export const updateUserProfile = serviceHandler(async (id: string, data: UpdateUserProfileInput) => {
-  // Update core user fields if provided
-  const hasUserUpdates =
-    data.name !== undefined ||
-    data.phone !== undefined ||
-    data.location !== undefined ||
-    data.language !== undefined ||
-    data.locale !== undefined ||
-    data.image !== undefined;
+  const name = data.name?.trim();
+  if (data.name !== undefined && !name) {
+    throw AppError.unprocessable("Name cannot be empty");
+  }
+  const phone = data.phone !== undefined ? await checkedPhone(id, data.phone) : undefined;
 
-  if (hasUserUpdates) {
-    await prisma.user.update({
-      where: { id },
-      data: {
-        ...(data.name !== undefined ? { name: data.name } : {}),
-        ...(data.phone !== undefined ? { phone: data.phone } : {}),
-        ...(data.location !== undefined ? { location: data.location } : {}),
-        ...(data.language !== undefined ? { language: data.language } : {}),
-        ...(data.locale !== undefined ? { locale: data.locale } : {}),
-        ...(data.image !== undefined ? { image: data.image } : {}),
-      },
-    });
+  // Core account fields
+  const userData = {
+    ...(name ? { name } : {}),
+    // phoneNumber is what Better Auth's phone sign-in looks up; keep both in step
+    ...(phone ? { phone, phoneNumber: phone } : {}),
+    ...(data.location !== undefined ? { location: data.location.trim() || null } : {}),
+    ...(data.language !== undefined ? { language: data.language } : {}),
+    ...(data.locale !== undefined ? { locale: data.locale } : {}),
+    ...(data.image !== undefined ? { image: data.image } : {}),
+  };
+  if (Object.keys(userData).length) {
+    await prisma.user.update({ where: { id }, data: userData });
   }
 
-  // Update or create ExpertProfile if expert fields are provided
+  // Expert profile fields
   const hasExpertFields =
     data.specialization !== undefined ||
     data.organization !== undefined ||
@@ -99,6 +121,15 @@ export const updateUserProfile = serviceHandler(async (id: string, data: UpdateU
     data.qualifications !== undefined;
 
   if (hasExpertFields) {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { role: true, expertProfile: { select: { status: true } } },
+    });
+    // Otherwise a farmer could create a PENDING profile that shows up as an expert application
+    if (user?.role?.toUpperCase() !== "EXPERT") {
+      throw AppError.forbidden("Only experts can edit expert profile fields");
+    }
+
     await prisma.expertProfile.upsert({
       where: { userId: id },
       create: {
@@ -115,6 +146,8 @@ export const updateUserProfile = serviceHandler(async (id: string, data: UpdateU
         ...(data.experienceYears !== undefined ? { experienceYears: data.experienceYears } : {}),
         ...(data.bio !== undefined ? { bio: data.bio } : {}),
         ...(data.qualifications !== undefined ? { qualifications: data.qualifications } : {}),
+        // Editing a rejected profile sends it back for review, as /experts/me does
+        ...(user.expertProfile?.status === "REJECTED" ? { status: "PENDING" as const } : {}),
       },
     });
   }

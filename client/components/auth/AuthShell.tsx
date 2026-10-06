@@ -6,10 +6,12 @@ import GlassCard from "@/components/home/GlassCard";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import Logo from "@/components/shared/Logo";
 
+// Bangladeshi farmers. The photos are wide with small faces, so each avatar zooms in on
+// its face; `focus` is the face's position (same values as the success stories section).
 const avatars = [
-  "/images/farmers/farmer-portrait.jpg",
-  "/images/farmers/farmer-cornfield.jpg",
-  "/images/farmers/farmer-harvesting-greens.jpg",
+  { src: "/images/farmers/farmer-rice-field-portrait.jpg", focus: "57% 28%" },
+  { src: "/images/farmers/farmer-jute-harvest.jpg", focus: "60% 28%" },
+  { src: "/images/farmers/farmer-spreading-fertilizer.jpg", focus: "52% 25%" },
 ];
 
 // Shared frame for the login and register pages: photo panel on the left, form on the right.
@@ -22,12 +24,12 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
       <div className="grid min-h-[calc(100svh-1rem)] gap-2 md:min-h-[calc(100svh-1.5rem)] md:gap-3 lg:grid-cols-2">
         <div className="relative isolate flex min-h-56 flex-col overflow-hidden rounded-3xl p-6 text-white md:p-10">
           <Image
-            src="/images/farmers/farmer-tablet-drone.jpg"
+            src="/images/farmers/farmer-carrying-paddy.jpg"
             alt=""
             fill
             preload
             sizes="(min-width: 1024px) 50vw, 100vw"
-            className="-z-10 animate-hero-zoom object-cover"
+            className="-z-10 animate-hero-zoom object-cover object-[50%_35%]"
           />
           {/* Same green tint as the home hero, so text stays readable */}
           <div className="absolute inset-0 -z-10 bg-linear-to-br from-black/80 via-emerald-950/70 to-black/50" />
@@ -45,15 +47,20 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
 
             <GlassCard className="mt-8 hidden w-fit items-center gap-4 p-4 lg:flex">
               <div className="flex -space-x-3">
-                {avatars.map((src) => (
-                  <Image
+                {avatars.map(({ src, focus }) => (
+                  <span
                     key={src}
-                    src={src}
-                    alt=""
-                    width={40}
-                    height={40}
-                    className="size-10 rounded-full border-2 border-white/80 object-cover"
-                  />
+                    className="relative size-10 overflow-hidden rounded-full border-2 border-white/80"
+                  >
+                    <Image
+                      src={src}
+                      alt=""
+                      fill
+                      sizes="120px"
+                      className="scale-[2.6] object-cover"
+                      style={{ objectPosition: focus, transformOrigin: focus }}
+                    />
+                  </span>
                 ))}
               </div>
               <p className="text-sm text-white/80">
