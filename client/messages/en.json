@@ -332,8 +332,7 @@
     "backHome": "Back to home",
     "fields": {
       "name": "Full name",
-      "phone": "Phone number",
-      "phoneHint": "Your 11-digit mobile number, e.g. 017XXXXXXXX",
+      "email": "Email address",
       "password": "Password",
       "passwordHint": "At least {min, number} characters",
       "confirmPassword": "Confirm password",
@@ -351,7 +350,7 @@
       "forgot": "Forgot password?",
       "submit": "Log in",
       "submitting": "Logging in…",
-      "error": "Could not log in. Check your phone number and password, then try again.",
+      "error": "Could not log in. Check your email and password, then try again.",
       "noAccount": "New to Agromate?",
       "registerLink": "Create an account"
     },

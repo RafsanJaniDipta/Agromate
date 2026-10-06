@@ -31,6 +31,11 @@ const envSchema = z.object({
   // CORS (Masud)
   CLIENT_URL: z.string().default("http://localhost:3000"),
 
+  // Cloudinary — profile picture upload (Masud)
+  CLOUDINARY_CLOUD_NAME: z.string().min(1, "CLOUDINARY_CLOUD_NAME is required"),
+  CLOUDINARY_API_KEY: z.string().min(1, "CLOUDINARY_API_KEY is required"),
+  CLOUDINARY_API_SECRET: z.string().min(1, "CLOUDINARY_API_SECRET is required"),
+
   // AI provider (Irfan)
   AI_PROVIDER: z.enum(["gemini", "openai", "openrouter", "groq", "claude"]).default("gemini"),
   AI_API_KEY: z.string().default(""),

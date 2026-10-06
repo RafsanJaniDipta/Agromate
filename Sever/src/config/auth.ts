@@ -30,10 +30,16 @@ export const auth = betterAuth({
 
   // Origins permitted to send credentialed requests. Must include the
   // Next.js client or session cookies are rejected.
-  trustedOrigins: (process.env.BETTER_AUTH_TRUSTED_ORIGINS ?? "http://localhost:3000")
-    .split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean),
+  trustedOrigins: Array.from(
+    new Set([
+      "http://localhost:3000",
+      "http://localhost:5000",
+      ...(process.env.BETTER_AUTH_TRUSTED_ORIGINS ?? "http://localhost:3000")
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean),
+    ]),
+  ),
 
   emailAndPassword: {
     enabled: true,

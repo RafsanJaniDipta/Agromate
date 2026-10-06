@@ -34,6 +34,9 @@ declare global {
 
 export async function authenticate(req: Request, _res: Response, next: NextFunction): Promise<void> {
   try {
+    // Better Auth reads both the session cookie AND the Authorization: Bearer <token> header
+    // from the forwarded node headers — no extra work needed on our side.
+    // The token is the `token` value returned by the login response.
     const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
 
     if (!session) {

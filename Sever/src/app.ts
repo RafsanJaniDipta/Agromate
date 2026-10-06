@@ -21,7 +21,13 @@ export function createApp(): Application {
   const app = express();
 
   // The client front-ends allowed to call this API with the user's cookie
-  const clientOrigins = env.CLIENT_URL.split(",").map((origin) => origin.trim());
+  const clientOrigins = Array.from(
+    new Set([
+      "http://localhost:3000",
+      "http://localhost:5000",
+      ...env.CLIENT_URL.split(",").map((origin) => origin.trim()),
+    ]),
+  );
 
   // Trust the first proxy hop so rate limiting sees real client IPs in production.
   app.set("trust proxy", 1);
