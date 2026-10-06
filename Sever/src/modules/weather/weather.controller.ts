@@ -4,6 +4,7 @@ import { sendSuccess } from "../../utils/apiResponse.js";
 import {
   getCurrentWeather as getCurrentWeatherService,
   getWeatherForecast as getWeatherForecastService,
+  getWeatherHistory as getWeatherHistoryService,
 } from "./weather.service.js";
 
 export const getCurrentWeather = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -25,7 +26,17 @@ export const getWeatherForecast = asyncHandler(async (req: Request, res: Respons
   sendSuccess(res, 200, "Weather forecast fetched successfully", data);
 });
 
+export const getWeatherHistory = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { location, days } = req.query;
+  const data = await getWeatherHistoryService(
+    typeof location === "string" ? location : undefined,
+    days ? Number(days) : 30,
+  );
+  sendSuccess(res, 200, "Past weather fetched successfully", data);
+});
+
 export const WeatherController = {
   getCurrentWeather,
   getWeatherForecast,
+  getWeatherHistory,
 };

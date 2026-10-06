@@ -85,9 +85,16 @@ For permission checks, an unauthenticated request to a protected endpoint should
 2. **Record Expense**: `POST http://localhost:5000/api/expenses` using `cropCycleId`.
 
 ### 6. Weather & Market (`Weather & Market Prices`)
-- **Current Weather**: `GET http://localhost:5000/api/weather/current?location=Dhaka`
+- **Current Weather**: `GET http://localhost:5000/api/weather/current?location=Dhaka` (or `?lat=23.81&lon=90.41`)
 - **Forecast**: `GET http://localhost:5000/api/weather/forecast?location=Dhaka&days=7`
+- **Past Weather (30 days)**: `GET http://localhost:5000/api/weather/history?location=Dhaka&days=30`
 - **Market Prices**: `GET http://localhost:5000/api/market-prices`
+
+> Weather note: responses carry `source: "live"` (real WeatherAPI data) or
+> `source: "sample"` (test data when no valid `WEATHER_API_KEY` is configured,
+> per the assignment's fallback-for-testing rule). The current key in `.env` is
+> rejected by the provider (error 2006), so these return sample data until a
+> valid key is set.
 
 ### 7. Dashboard (`Dashboard`)
 - **Summary**: `GET http://localhost:5000/api/dashboard/summary`
