@@ -120,6 +120,9 @@ async function main() {
       emailVerified: true,
       name: "System Admin",
       location: "Dhaka Central",
+      phone: "+8801799887766",
+      phoneNumber: "+8801799887766",
+      phoneNumberVerified: true,
     },
   });
   console.log(`✅ Admin account ready: ${adminUser.email} (Role: ${adminUser.role})`);
@@ -148,6 +151,8 @@ async function main() {
       name: "Dr. Rafiqul Islam",
       location: "Gazipur, Dhaka",
       phone: "+8801711223344",
+      phoneNumber: "+8801711223344",
+      phoneNumberVerified: true,
     },
   });
 
@@ -197,6 +202,8 @@ async function main() {
       name: "Md. Rahim Farmer",
       location: "Bogura, Rajshahi",
       phone: "+8801700112233",
+      phoneNumber: "+8801700112233",
+      phoneNumberVerified: true,
     },
   });
 
