@@ -10,11 +10,14 @@ import { authenticate } from "../../middlewares/auth.middleware.js";
 import { adminOnly } from "../../middlewares/role.middleware.js";
 import { upload } from "../../middlewares/upload.middleware.js";
 
+import { validate } from "../../middlewares/validation.middleware.js";
+import { updateProfileSchema } from "./user.validation.js";
+
 export const userRouter = Router();
 
 userRouter.get("/me", authenticate, getCurrentUser);
-userRouter.patch("/me", authenticate, updateProfile);
-userRouter.put("/me", authenticate, updateProfile);
+userRouter.patch("/me", authenticate, validate({ body: updateProfileSchema }), updateProfile);
+userRouter.put("/me", authenticate, validate({ body: updateProfileSchema }), updateProfile);
 
 /**
  * POST /api/v1/users/me/avatar
