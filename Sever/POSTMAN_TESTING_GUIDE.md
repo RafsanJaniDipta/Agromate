@@ -15,10 +15,56 @@ We have created a ready-to-import Postman Collection file for you: `Sever/agroma
 
 ## 📝 Testing Workflow (Order of Operations)
 
-### 1. Register & Login (`Auth`)
-- **Register**: `POST http://localhost:5000/api/auth/register`
-- **Login**: `POST http://localhost:5000/api/auth/login`
-- *(Better Auth cookies / session tokens will automatically handle authentication if session cookies are enabled in Postman).*
+### Before testing
+
+1. Start PostgreSQL and configure `Sever/.env` from `.env.example`, including
+   `DATABASE_URL` and a `BETTER_AUTH_SECRET` of at least 32 characters.
+2. From the `Sever` directory, generate the Prisma client and start the API:
+   ```bash
+   bun run db:generate
+   bun run dev
+   ```
+   Apply development migrations first with `bun run db:migrate` if the database
+   has not been set up yet.
+3. Confirm the server is listening on port `5000`.
+
+### 1. Register, log in, and log out (`Auth`)
+
+The API uses Better Auth email/password endpoints. Email verification is disabled for now. Better Auth stores the session in an HTTP-only cookie; Postman should keep and resend that cookie automatically for requests to the same host.
+
+1. **Register**: `POST http://localhost:5000/api/auth/sign-up/email`
+   ```json
+   {
+     "name": "Rahim Farmer",
+     "email": "rahim@example.com",
+     "password": "password123"
+   }
+   ```
+   Use a new email address for each new account.
+2. **Log in with Email**: `POST http://localhost:5000/api/auth/sign-in/email`
+   ```json
+   {
+     "email": "farmer@agromate.dev",
+     "password": "Farmer@12345",
+     "rememberMe": true
+   }
+   ```
+3. **Log in with Phone Number (No OTP)**: `POST http://localhost:5000/api/auth/sign-in/phone-number`
+   ```json
+   {
+     "phoneNumber": "+8801700112233",
+     "password": "Farmer@12345",
+     "rememberMe": true
+   }
+   ```
+4. **Check the session**: `GET http://localhost:5000/api/auth/get-session`. The response should contain the signed-in user and session.
+5. **Try an authenticated endpoint**: `GET http://localhost:5000/api/users/me`. It should return the current user's profile.
+6. **Log out**: `POST http://localhost:5000/api/auth/sign-out`.
+7. **Check again**: repeat the session request. It should no longer return an active session.
+
+If Postman does not resend the cookie, open its **Cookies** manager for `localhost:5000` and check that the Better Auth cookie exists and is enabled. Do not use a bearer token; this project authenticates requests with cookies.
+
+For permission checks, an unauthenticated request to a protected endpoint should return `401`. A signed-in farmer calling an admin-only endpoint should return `403`. Expert answers require an expert profile with `VERIFIED` status; pending experts should receive `403`.
 
 ### 2. User Profile (`Users`)
 - **Get Profile**: `GET http://localhost:5000/api/users/me`

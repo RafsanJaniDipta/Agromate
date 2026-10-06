@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { admin } from "better-auth/plugins";
+import { admin, phoneNumber } from "better-auth/plugins";
 
 import { prisma } from "./database.js";
 import { ac, admin as adminRole, expert, farmer } from "./permissions.js";
@@ -30,15 +30,22 @@ export const auth = betterAuth({
 
   // Origins permitted to send credentialed requests. Must include the
   // Next.js client or session cookies are rejected.
-  trustedOrigins: (process.env.BETTER_AUTH_TRUSTED_ORIGINS ?? "http://localhost:3000")
-    .split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean),
+  trustedOrigins: Array.from(
+    new Set([
+      "http://localhost:3000",
+      "http://localhost:5000",
+      ...(process.env.BETTER_AUTH_TRUSTED_ORIGINS ?? "http://localhost:3000")
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean),
+    ]),
+  ),
 
   emailAndPassword: {
     enabled: true,
-    // No SMTP provider configured yet — flipping this on would block sign-up
-    // until a mail service is wired up. Enable for the final release.
+    autoSignIn: false,
+    // Registration and login use email/password; verification can be enabled
+    // once an email delivery provider is part of the project scope.
     requireEmailVerification: false,
   },
 
@@ -52,6 +59,10 @@ export const auth = betterAuth({
   advanced: {
     // Lets the client read cross-origin cookies in local dev.
     useSecureCookies: process.env.NODE_ENV === "production",
+    defaultCookieAttributes:
+      process.env.NODE_ENV === "production"
+        ? { sameSite: "none", secure: true }
+        : { sameSite: "lax" },
 
     database: {
       generateId: "uuid",
@@ -67,15 +78,54 @@ export const auth = betterAuth({
     },
   },
 
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          let role = ((user as Record<string, unknown>).role as string || "FARMER").toUpperCase();
+          if (role !== "EXPERT" && role !== "FARMER") {
+            role = "FARMER";
+          }
+          const rawPhone = (user as Record<string, unknown>).phoneNumber || (user as Record<string, unknown>).phone;
+          const phone = typeof rawPhone === "string" ? rawPhone.trim() : undefined;
+
+          // If email is missing or empty, generate a fallback email using phone number
+          let email = user.email;
+          if (!email && phone) {
+            const cleanPhone = phone.replace(/[^0-9]/g, "");
+            email = `${cleanPhone}@agromate.dev`;
+          }
+
+          return {
+            data: {
+              ...user,
+              email,
+              role,
+              phoneNumber: phone,
+              phone: phone,
+            },
+          };
+        },
+      },
+    },
+  },
+
   user: {
     additionalFields: {
       // Surfaced on the farmer profile and used by the admin dashboard.
       location: { type: "string", required: false },
       phone: { type: "string", required: false },
+      phoneNumber: { type: "string", required: false },
+      role: { type: "string", required: false, defaultValue: "FARMER" },
+      locale: { type: "string", required: false, defaultValue: "bn" },
     },
   },
 
   plugins: [
+    phoneNumber({
+      sendOTP: async () => {}, // OTP not required
+      requireVerification: false,
+    }),
     admin({
       ac,
       roles: {

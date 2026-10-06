@@ -54,7 +54,7 @@ export const updateOwnProfile = asyncHandler(async (req: Request, res: Response)
     throw AppError.unauthorized("User is not authenticated");
   }
 
-  const { specialization, bio, experienceYears, qualifications, categoryIds } = req.body;
+  const { specialization, organization, bio, experienceYears, qualifications, categoryIds } = req.body;
   if (!specialization) {
     throw AppError.unprocessable("specialization is required");
   }
@@ -62,6 +62,7 @@ export const updateOwnProfile = asyncHandler(async (req: Request, res: Response)
   const profile = await upsertOwnProfileService({
     userId,
     specialization,
+    organization,
     bio,
     experienceYears: experienceYears ? Number(experienceYears) : 0,
     qualifications,

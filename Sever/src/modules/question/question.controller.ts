@@ -17,29 +17,29 @@ export const createQuestion = asyncHandler(async (req: Request, res: Response): 
     throw AppError.unauthorized("User is not authenticated");
   }
 
-  const { title, content, image, imageUrl, category } = req.body;
-  if (!title || !content) {
-    throw AppError.unprocessable("Title and content are required");
+  // content is the older name for description
+  const { title, description = req.body.content, image, imageUrl, cropId } = req.body;
+  if (!title) {
+    throw AppError.unprocessable("Title is required");
   }
 
   const question = await createQuestionService({
     userId,
     title,
-    content,
-    image,
-    imageUrl,
-    category,
+    description,
+    imageUrl: imageUrl ?? image,
+    cropId,
   });
 
   sendSuccess(res, 201, "Question posted successfully", question);
 });
 
 export const getQuestions = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { status, search, category, page, limit } = req.query;
+  const { status, search, cropId, page, limit } = req.query;
   const result = await getQuestionsService({
     status: typeof status === "string" ? status : undefined,
     search: typeof search === "string" ? search : undefined,
-    category: typeof category === "string" ? category : undefined,
+    cropId: typeof cropId === "string" ? cropId : undefined,
     page: page ? Number(page) : undefined,
     limit: limit ? Number(limit) : undefined,
   });

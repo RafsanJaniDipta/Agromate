@@ -16,12 +16,13 @@ export const createExpense = asyncHandler(async (req: Request, res: Response): P
     throw AppError.unauthorized("User is not authenticated");
   }
 
-  const { cropCycleId, category, amount, date, notes, description } = req.body;
-  if (!cropCycleId || !category || amount === undefined) {
-    throw AppError.unprocessable("cropCycleId, category, and amount are required");
+  const { farmId, cropCycleId, category, amount, date, notes, description } = req.body;
+  if ((!farmId && !cropCycleId) || !category || amount === undefined) {
+    throw AppError.unprocessable("farmId or cropCycleId, category, and amount are required");
   }
 
   const expense = await createExpenseService({
+    farmId,
     cropCycleId,
     category,
     amount: Number(amount),
@@ -32,7 +33,7 @@ export const createExpense = asyncHandler(async (req: Request, res: Response): P
   });
 
   if (!expense) {
-    throw AppError.notFound("Crop cycle not found or unauthorized");
+    throw AppError.notFound("Farm or crop cycle not found or unauthorized");
   }
 
   sendSuccess(res, 201, "Expense recorded successfully", expense);

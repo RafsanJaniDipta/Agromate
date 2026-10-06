@@ -1,5 +1,7 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
+import { parseEnum } from "../../utils/enum.js";
+import { CropCycleStatus } from "../../generated/prisma/client.js";
 
 export interface CreateCropCycleInput {
   fieldId: string;
@@ -13,7 +15,7 @@ export interface CreateCropCycleInput {
 }
 
 export interface UpdateCropCycleInput {
-  status?: any;
+  status?: string;
   growthStage?: string;
   expectedHarvestDate?: Date | string;
   actualHarvestDate?: Date | string;
@@ -37,10 +39,9 @@ export const createCropCycle = serviceHandler(async (data: CreateCropCycleInput)
       fieldId: data.fieldId,
       cropId: data.cropId,
       plantingDate: new Date(pDate),
-      startDate: new Date(pDate),
       expectedHarvestDate: data.expectedHarvestDate ? new Date(data.expectedHarvestDate) : undefined,
-      growthStage: data.growthStage ?? "PLANTED",
-      status: "PLANNED" as any,
+      growthStage: data.growthStage,
+      status: "PLANNED",
       notes: data.notes,
     },
     include: {
@@ -61,13 +62,13 @@ export const getCropCycles = serviceHandler(async (userId: string, fieldId?: str
     where: {
       field: { farmId: { in: farmIds } },
       ...(fieldId ? { fieldId } : {}),
-      ...(status ? { status: status as any } : {}),
+      ...(status ? { status: parseEnum(CropCycleStatus, status, "status") } : {}),
     },
     include: {
       field: true,
       crop: true,
     },
-    orderBy: { startDate: "desc" },
+    orderBy: { plantingDate: "desc" },
   });
 });
 
@@ -86,7 +87,6 @@ export const getCalendarEvents = serviceHandler(async (userId: string, fromStr?:
       field: { farmId: { in: farmIds } },
       OR: [
         { plantingDate: { gte: fromDate, lte: toDate } },
-        { startDate: { gte: fromDate, lte: toDate } },
         { expectedHarvestDate: { gte: fromDate, lte: toDate } },
       ],
     },
@@ -146,7 +146,7 @@ export const updateCropCycle = serviceHandler(async (id: string, userId: string,
   return await prisma.cropCycle.update({
     where: { id },
     data: {
-      ...(data.status !== undefined ? { status: data.status } : {}),
+      ...(data.status !== undefined ? { status: parseEnum(CropCycleStatus, data.status, "status") } : {}),
       ...(data.growthStage !== undefined ? { growthStage: data.growthStage } : {}),
       ...(data.expectedHarvestDate ? { expectedHarvestDate: new Date(data.expectedHarvestDate) } : {}),
       ...(data.actualHarvestDate ? { actualHarvestDate: new Date(data.actualHarvestDate) } : {}),

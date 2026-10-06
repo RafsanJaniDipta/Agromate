@@ -18,7 +18,7 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
-  role: string;
+  role?: string | null;
   location?: string | null;
 }
 
@@ -34,6 +34,9 @@ declare global {
 
 export async function authenticate(req: Request, _res: Response, next: NextFunction): Promise<void> {
   try {
+    // Better Auth reads both the session cookie AND the Authorization: Bearer <token> header
+    // from the forwarded node headers — no extra work needed on our side.
+    // The token is the `token` value returned by the login response.
     const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
 
     if (!session) {
@@ -51,7 +54,7 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
       id: session.user.id,
       email: session.user.email,
       name: session.user.name,
-      role: session.user.role,
+      role: session.user.role ?? "FARMER",
       location: session.user.location,
     };
     req.session = { id: session.session.id, expiresAt: session.session.expiresAt };
@@ -75,7 +78,7 @@ export async function optionalAuthenticate(req: Request, _res: Response, next: N
         id: session.user.id,
         email: session.user.email,
         name: session.user.name,
-        role: session.user.role,
+        role: session.user.role ?? "FARMER",
         location: session.user.location,
       };
     }

@@ -1,31 +1,29 @@
-import { Router } from "express";
+import express, { Router } from "express";
 import { toNodeHandler } from "better-auth/node";
 
 import { auth } from "../../config/auth.js";
+import { handleRegister, handleLogin } from "./auth.controller.js";
 
 /**
- * Better Auth route mount (Masud — Day 2).
+ * Auth routes, mounted at /api/auth BEFORE express.json() in app.ts.
+ * Rate limiting for the whole tree lives in app.ts.
  *
- * Handles the entire /api/auth/* surface:
- *   POST /api/auth/sign-up/email   register
- *   POST /api/auth/sign-in/email   login
- *   POST /api/auth/sign-out        logout
- *   GET  /api/auth/get-session     "me"
+ * Phone flow used by the client (our { success, message, data } envelope):
+ *   POST /api/auth/register   name, phone, password, locale?
+ *   POST /api/auth/login      phone, password, remember? -> sets session cookie
  *
- * IMPORTANT — ordering. This handler must be mounted BEFORE express.json() in
- * app.ts. It needs the raw request stream; if a body parser runs first the
- * stream is already consumed and every auth call hangs or 400s.
+ * Everything else falls through to Better Auth (its own response shape):
+ *   POST /api/auth/sign-out
+ *   GET  /api/auth/get-session
  *
- * Response shape note: these routes do NOT use our { success, message, data }
- * envelope — Better Auth returns its own contract ({ user, token } etc).
- * The client must handle both. Everything else in the API uses the envelope.
+ * Better Auth reads the raw body stream, so only the phone routes get a JSON parser.
  */
 
-import { handleRegister, handleLogin } from "./auth.controller.js";
+const parseJson = express.json({ limit: "10kb" });
 
 export const authRouter = Router();
 
-authRouter.post("/register", handleRegister);
-authRouter.post("/login", handleLogin);
+authRouter.post("/register", parseJson, handleRegister);
+authRouter.post("/login", parseJson, handleLogin);
 
-authRouter.all("/{*any}", toNodeHandler(auth));
+authRouter.all("/{*any}", toNodeHandler(auth));

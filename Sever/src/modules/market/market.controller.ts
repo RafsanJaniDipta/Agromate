@@ -12,16 +12,18 @@ import {
 } from "./market.service.js";
 
 export const createMarketPrice = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { cropName, pricePerKg, pricePerUnit, location, source, date } = req.body;
-  const price = pricePerKg ?? pricePerUnit;
-  if (!cropName || !location || price === undefined) {
-    throw AppError.unprocessable("cropName, location, and pricePerKg (or pricePerUnit) are required");
+  const { cropId, cropName, district, location, pricePerUnit, pricePerKg, unit, source, date } = req.body;
+  const price = pricePerUnit ?? pricePerKg;
+  if ((!cropId && !cropName) || price === undefined || Number.isNaN(Number(price))) {
+    throw AppError.unprocessable("cropId (or cropName) and a numeric pricePerUnit are required");
   }
 
   const marketPrice = await createMarketPriceService({
+    cropId,
     cropName,
-    pricePerKg: Number(price),
-    location,
+    district: district ?? location,
+    pricePerUnit: Number(price),
+    unit,
     source,
     date,
   });
@@ -30,10 +32,11 @@ export const createMarketPrice = asyncHandler(async (req: Request, res: Response
 });
 
 export const getMarketPrices = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { cropName, location, page, limit } = req.query;
+  // location is the older name for district
+  const { cropName, district = req.query.location, page, limit } = req.query;
   const result = await getMarketPricesService({
     cropName: typeof cropName === "string" ? cropName : undefined,
-    location: typeof location === "string" ? location : undefined,
+    district: typeof district === "string" ? district : undefined,
     page: page ? Number(page) : undefined,
     limit: limit ? Number(limit) : undefined,
   });

@@ -24,7 +24,6 @@ export const createFarm = serviceHandler(async (data: CreateFarmInput) => {
     data: {
       name: data.name,
       location: data.location,
-      totalArea: area,
       areaInAcres: area,
       soilType: data.soilType,
       userId: data.userId,
@@ -62,7 +61,7 @@ export const updateFarm = serviceHandler(async (id: string, userId: string, data
     data: {
       ...(data.name !== undefined ? { name: data.name } : {}),
       ...(data.location !== undefined ? { location: data.location } : {}),
-      ...(area !== undefined ? { totalArea: area, areaInAcres: area } : {}),
+      ...(area !== undefined ? { areaInAcres: area } : {}),
       ...(data.soilType !== undefined ? { soilType: data.soilType } : {}),
     },
     include: { fields: true },
