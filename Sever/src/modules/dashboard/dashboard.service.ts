@@ -1,6 +1,13 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
 
+// Crop cycles still in the ground (not harvested or failed)
+const ACTIVE_CYCLE_STATUSES = ["PLANNED", "PLANTED", "GROWING"] as const;
+
+// Harvest revenue is quantity × sale price per unit
+const revenueOf = (harvests: { quantity: number; pricePerUnit: number }[]) =>
+  harvests.reduce((sum, h) => sum + h.quantity * h.pricePerUnit, 0);
+
 export const getSummary = serviceHandler(async (userId: string) => {
   const farms = await prisma.farm.findMany({
     where: { userId },
@@ -8,31 +15,32 @@ export const getSummary = serviceHandler(async (userId: string) => {
   });
   const farmIds = farms.map((f) => f.id);
 
-  const [activeFarms, totalFields, activeCropCycles, expenseAgg, harvestAgg] = await Promise.all([
-    prisma.farm.count({ where: { userId, ...( { status: "ACTIVE" } as any ) } }),
+  const [totalFarms, totalFields, activeCropCycles, expenseAgg, harvests] = await Promise.all([
+    prisma.farm.count({ where: { userId } }),
     prisma.field.count({ where: { farmId: { in: farmIds } } }),
     prisma.cropCycle.count({
       where: {
         field: { farmId: { in: farmIds } },
-        status: { in: ["PLANTED", "GROWING", "HARVESTING", "PLANNED"] as any },
+        status: { in: [...ACTIVE_CYCLE_STATUSES] },
       },
     }),
     prisma.expense.aggregate({
       where: { farmId: { in: farmIds } },
       _sum: { amount: true },
     }),
-    prisma.harvest.aggregate({
+    prisma.harvest.findMany({
       where: { cropCycle: { field: { farmId: { in: farmIds } } } },
-      _sum: { quantity: true },
+      select: { quantity: true, pricePerUnit: true },
     }),
   ]);
 
   return {
-    activeFarms,
+    totalFarms,
     totalFields,
     activeCropCycles,
     totalExpenses: expenseAgg._sum.amount || 0,
-    totalHarvestQuantity: harvestAgg._sum.quantity || 0,
+    totalHarvestQuantity: harvests.reduce((sum, h) => sum + h.quantity, 0),
+    totalRevenue: revenueOf(harvests),
   };
 });
 
@@ -46,6 +54,7 @@ export const getCropDistribution = serviceHandler(async (userId: string) => {
   const activeCycles = await prisma.cropCycle.findMany({
     where: {
       field: { farmId: { in: farmIds } },
+      status: { in: [...ACTIVE_CYCLE_STATUSES] },
     },
     include: {
       crop: true,
@@ -57,7 +66,7 @@ export const getCropDistribution = serviceHandler(async (userId: string) => {
 
   for (const cycle of activeCycles) {
     const cropName = cycle.crop.name;
-    const fieldArea = Number((cycle.field as any).area ?? (cycle.field as any).sizeInHectares ?? 0);
+    const fieldArea = cycle.field.areaInAcres ?? 0;
 
     const existing = map.get(cropName) || { cropName, count: 0, area: 0 };
     existing.count += 1;
@@ -82,7 +91,7 @@ export const getFinancialSummary = serviceHandler(async (userId: string, _period
     }),
     prisma.harvest.findMany({
       where: { cropCycle: { field: { farmId: { in: farmIds } } } },
-      select: { totalRevenue: true },
+      select: { quantity: true, pricePerUnit: true },
     }),
     prisma.expense.findMany({
       where: { farmId: { in: farmIds } },
@@ -92,7 +101,7 @@ export const getFinancialSummary = serviceHandler(async (userId: string, _period
   ]);
 
   const totalExpenses = expenseAgg._sum.amount || 0;
-  const totalRevenue = harvests.reduce((sum, h) => sum + (h.totalRevenue || 0), 0);
+  const totalRevenue = revenueOf(harvests);
   const netProfit = totalRevenue - totalExpenses;
 
   const monthlyMap = new Map<string, number>();

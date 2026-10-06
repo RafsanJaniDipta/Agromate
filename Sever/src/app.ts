@@ -3,12 +3,12 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
-import { toNodeHandler } from "better-auth/node";
 
 import { env, isProduction } from "./config/env.js";
-import { auth } from "./config/auth.js";
+import { authRouter } from "./modules/auth/auth.routes.js";
 import { routes } from "./routes/index.js";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js";
+import { requireTrustedOrigin } from "./middlewares/origin.middleware.js";
 
 /**
  * Express application assembly (Masud — Day 1).
@@ -20,17 +20,23 @@ import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js
 export function createApp(): Application {
   const app = express();
 
+  // The client front-ends allowed to call this API with the user's cookie
+  const clientOrigins = env.CLIENT_URL.split(",").map((origin) => origin.trim());
+
   // Trust the first proxy hop so rate limiting sees real client IPs in production.
   app.set("trust proxy", 1);
 
   app.use(helmet());
   app.use(
     cors({
-      origin: isProduction ? env.CLIENT_URL.split(",").map((o) => o.trim()) : true,
+      origin: clientOrigins,
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     }),
   );
+
+  // Before every route, including auth, so no cookie-backed change can come from another site
+  app.use("/api", requireTrustedOrigin(clientOrigins));
 
   app.use(
     "/api/auth",
@@ -48,11 +54,16 @@ export function createApp(): Application {
 
   // Better Auth MUST come before any body parser. It reads the raw request
   // stream itself; express.json() consumes it first and auth calls then hang.
-  // Mounted at the root because the handler owns the whole /api/auth/* tree.
-  app.all("/api/auth/{*any}", toNodeHandler(auth));
+  // Phone register/login parse their own JSON; everything else is Better Auth.
+  app.use("/api/auth", authRouter);
 
+  // JSON only: HTML forms can't send it cross-site without a CORS preflight
   app.use(express.json({ limit: "1mb" }));
-  app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+  // Express 5 leaves req.body undefined for other content types; handlers expect an object
+  app.use((req, _res, next) => {
+    req.body ??= {};
+    next();
+  });
 
   if (!isProduction) {
     app.use(morgan("dev"));

@@ -1,13 +1,16 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
+import { parseEnum } from "../../utils/enum.js";
+import { QuestionStatus, type Prisma } from "../../generated/prisma/client.js";
+
+const isAdmin = (role: string) => role.toUpperCase() === "ADMIN";
 
 export interface CreateQuestionInput {
   userId: string;
   title: string;
-  content: string;
-  image?: string;
+  description?: string;
   imageUrl?: string;
-  category?: string;
+  cropId?: string;
 }
 
 export interface AddAnswerInput {
@@ -17,15 +20,13 @@ export interface AddAnswerInput {
 }
 
 export const createQuestion = serviceHandler(async (data: CreateQuestionInput) => {
-  const img = data.image ?? data.imageUrl;
   return await prisma.question.create({
     data: {
       userId: data.userId,
       title: data.title,
-      content: data.content,
-      imageUrl: img,
-      category: data.category ?? "General",
-      status: "PENDING" as any,
+      description: data.description,
+      imageUrl: data.imageUrl,
+      cropId: data.cropId,
     },
     include: {
       user: { select: { id: true, name: true, image: true, role: true } },
@@ -36,7 +37,7 @@ export const createQuestion = serviceHandler(async (data: CreateQuestionInput) =
 export const getQuestions = serviceHandler(async (params: {
   status?: string;
   search?: string;
-  category?: string;
+  cropId?: string;
   page?: number;
   limit?: number;
 }) => {
@@ -44,14 +45,14 @@ export const getQuestions = serviceHandler(async (params: {
   const limit = params.limit && params.limit > 0 ? params.limit : 10;
   const skip = (page - 1) * limit;
 
-  const where: any = {
-    ...(params.status ? { status: params.status as any } : {}),
-    ...(params.category ? { category: params.category } : {}),
+  const where: Prisma.QuestionWhereInput = {
+    ...(params.status ? { status: parseEnum(QuestionStatus, params.status, "status") } : {}),
+    ...(params.cropId ? { cropId: params.cropId } : {}),
     ...(params.search
       ? {
           OR: [
             { title: { contains: params.search, mode: "insensitive" } },
-            { content: { contains: params.search, mode: "insensitive" } },
+            { description: { contains: params.search, mode: "insensitive" } },
           ],
         }
       : {}),
@@ -66,6 +67,7 @@ export const getQuestions = serviceHandler(async (params: {
       orderBy: { createdAt: "desc" },
       include: {
         user: { select: { id: true, name: true, image: true, role: true } },
+        crop: { select: { id: true, name: true, nameBn: true } },
         _count: { select: { answers: true } },
       },
     }),
@@ -104,16 +106,23 @@ export const addAnswer = serviceHandler(async (data: AddAnswerInput) => {
   const question = await prisma.question.findUnique({ where: { id: data.questionId } });
   if (!question) return null;
 
-  const answer = await prisma.answer.create({
-    data: {
-      questionId: data.questionId,
-      userId: data.userId,
-      content: data.content,
-    },
-    include: {
-      user: { select: { id: true, name: true, image: true, role: true } },
-    },
-  });
+  // The first answer moves an open question out of the experts' waiting list
+  const [answer] = await prisma.$transaction([
+    prisma.answer.create({
+      data: {
+        questionId: data.questionId,
+        userId: data.userId,
+        content: data.content,
+      },
+      include: {
+        user: { select: { id: true, name: true, image: true, role: true } },
+      },
+    }),
+    prisma.question.updateMany({
+      where: { id: data.questionId, status: "OPEN" },
+      data: { status: "ANSWERED" },
+    }),
+  ]);
 
   return answer;
 });
@@ -122,13 +131,13 @@ export const updateQuestionStatus = serviceHandler(async (id: string, userId: st
   const question = await prisma.question.findUnique({ where: { id } });
   if (!question) return null;
 
-  if (userRole !== "ADMIN" && question.userId !== userId) {
+  if (!isAdmin(userRole) && question.userId !== userId) {
     return false;
   }
 
   return await prisma.question.update({
     where: { id },
-    data: { status: status as any },
+    data: { status: parseEnum(QuestionStatus, status, "status") },
     include: {
       user: { select: { id: true, name: true, image: true, role: true } },
     },
@@ -139,7 +148,7 @@ export const deleteQuestion = serviceHandler(async (id: string, userId: string, 
   const question = await prisma.question.findUnique({ where: { id } });
   if (!question) return false;
 
-  if (userRole !== "ADMIN" && question.userId !== userId) {
+  if (!isAdmin(userRole) && question.userId !== userId) {
     return false;
   }
 

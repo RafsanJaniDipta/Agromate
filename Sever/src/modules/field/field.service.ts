@@ -29,7 +29,6 @@ export const createField = serviceHandler(async (data: CreateFieldInput) => {
     data: {
       farmId: data.farmId,
       name: data.name,
-      area: areaVal,
       areaInAcres: areaVal,
       soilType: data.soilType,
     },
@@ -55,7 +54,7 @@ export const getFieldById = serviceHandler(async (id: string, userId: string) =>
       farm: true,
       cropCycles: {
         include: { crop: true },
-        orderBy: { startDate: "desc" },
+        orderBy: { plantingDate: "desc" },
       },
     },
   });
@@ -83,7 +82,7 @@ export const updateField = serviceHandler(async (id: string, userId: string, dat
     where: { id },
     data: {
       ...(data.name !== undefined ? { name: data.name } : {}),
-      ...(areaVal !== undefined ? { area: areaVal, areaInAcres: areaVal } : {}),
+      ...(areaVal !== undefined ? { areaInAcres: areaVal } : {}),
       ...(data.soilType !== undefined ? { soilType: data.soilType } : {}),
     },
   });

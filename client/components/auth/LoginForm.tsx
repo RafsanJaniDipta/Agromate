@@ -4,11 +4,12 @@ import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api";
+import { dashboardFor } from "@/lib/session";
 import { PasswordField, TextField } from "@/components/auth/AuthFields";
 
 type Status = "idle" | "sending" | "error";
 
-// Phone + password login: posts to the backend's /auth/login and goes home on success.
+// Phone + password login: posts to the backend's /api/auth/login, then opens the dashboard for the user's role.
 export default function LoginForm() {
   const t = useTranslations("auth");
   const router = useRouter();
@@ -19,11 +20,11 @@ export default function LoginForm() {
     setStatus("sending");
 
     try {
-      await api("/auth/login", {
+      const { data } = await api<{ data: { role: string } }>("/api/auth/login", {
         method: "POST",
         body: JSON.stringify(Object.fromEntries(new FormData(event.currentTarget))),
       });
-      router.push("/");
+      router.push(dashboardFor(data.role));
     } catch {
       setStatus("error");
     }

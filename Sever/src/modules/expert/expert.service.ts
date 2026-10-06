@@ -4,6 +4,7 @@ import { serviceHandler } from "../../utils/serviceHandler.js";
 export interface UpsertExpertProfileInput {
   userId: string;
   specialization: string;
+  organization?: string;
   bio?: string;
   experienceYears?: number;
   qualifications?: string;
@@ -12,13 +13,13 @@ export interface UpsertExpertProfileInput {
 export const getVerifiedExperts = serviceHandler(async (specialization?: string) => {
   const experts = await prisma.expertProfile.findMany({
     where: {
-      status: "VERIFIED" as any,
+      status: "VERIFIED",
       ...(specialization ? { specialization: { contains: specialization, mode: "insensitive" } } : {}),
     },
     include: {
       user: { select: { id: true, name: true, email: true, image: true, location: true, phone: true } },
     },
-    orderBy: { rating: "desc" },
+    orderBy: { experienceYears: "desc" },
   });
 
   return experts;
@@ -28,7 +29,7 @@ export const getVerifiedExpertById = serviceHandler(async (id: string) => {
   const expert = await prisma.expertProfile.findFirst({
     where: {
       OR: [{ id }, { userId: id }],
-      status: "VERIFIED" as any,
+      status: "VERIFIED",
     },
     include: {
       user: { select: { id: true, name: true, email: true, image: true, location: true, phone: true } },
@@ -54,24 +55,27 @@ export const upsertOwnProfile = serviceHandler(async (data: UpsertExpertProfileI
     where: { userId: data.userId },
   });
 
-  const newStatus = existing && (existing as any).status === "REJECTED" ? ("PENDING" as any) : (existing as any)?.status ?? ("PENDING" as any);
+  // Editing a rejected profile sends it back for review; otherwise the status is kept
+  const status = !existing || existing.status === "REJECTED" ? "PENDING" : existing.status;
 
   const profile = await prisma.expertProfile.upsert({
     where: { userId: data.userId },
     create: {
       userId: data.userId,
       specialization: data.specialization,
+      organization: data.organization,
       bio: data.bio,
       experienceYears: data.experienceYears ?? 0,
       qualifications: data.qualifications,
-      status: "PENDING" as any,
+      status,
     },
     update: {
       specialization: data.specialization,
+      organization: data.organization,
       bio: data.bio,
       experienceYears: data.experienceYears,
       qualifications: data.qualifications,
-      status: newStatus,
+      status,
     },
     include: {
       user: { select: { id: true, name: true, email: true, image: true, location: true, phone: true } },

@@ -1,11 +1,16 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
+import { parseEnum } from "../../utils/enum.js";
+import { ExpenseCategory, type Prisma } from "../../generated/prisma/client.js";
 
 export interface CreateExpenseInput {
-  cropCycleId: string;
+  // A farm-wide expense needs only farmId; a crop expense gives cropCycleId and the farm follows from it
+  farmId?: string;
+  cropCycleId?: string;
   category: string;
   amount: number;
   date?: Date | string;
+  // Older clients send this name for description
   notes?: string;
   description?: string;
   userId: string;
@@ -19,25 +24,35 @@ export interface UpdateExpenseInput {
   description?: string;
 }
 
-export const createExpense = serviceHandler(async (data: CreateExpenseInput) => {
-  const cycle = await prisma.cropCycle.findUnique({
-    where: { id: data.cropCycleId },
-    include: { field: { include: { farm: true } } },
-  });
-
-  if (!cycle || cycle.field.farm.userId !== data.userId) {
-    return null;
+// The farm the expense belongs to, or null when it isn't the user's
+async function resolveOwnFarmId(data: CreateExpenseInput): Promise<string | null> {
+  if (data.cropCycleId) {
+    const cycle = await prisma.cropCycle.findFirst({
+      where: { id: data.cropCycleId, field: { farm: { userId: data.userId } } },
+      select: { field: { select: { farmId: true } } },
+    });
+    return cycle?.field.farmId ?? null;
   }
+
+  const farm = await prisma.farm.findFirst({
+    where: { id: data.farmId, userId: data.userId },
+    select: { id: true },
+  });
+  return farm?.id ?? null;
+}
+
+export const createExpense = serviceHandler(async (data: CreateExpenseInput) => {
+  const farmId = await resolveOwnFarmId(data);
+  if (!farmId) return null;
 
   return await prisma.expense.create({
     data: {
-      farmId: cycle.field.farmId,
+      farmId,
       cropCycleId: data.cropCycleId,
-      category: data.category as any,
+      category: parseEnum(ExpenseCategory, data.category, "category"),
       amount: data.amount,
       date: data.date ? new Date(data.date) : new Date(),
-      ...( { notes: data.notes ?? data.description } as any ),
-      description: data.notes ?? data.description,
+      description: data.description ?? data.notes,
     },
     include: { cropCycle: true },
   });
@@ -61,10 +76,10 @@ export const getExpenses = serviceHandler(async (
   const farms = await prisma.farm.findMany({ where: { userId }, select: { id: true } });
   const farmIds = farms.map((f) => f.id);
 
-  const where: any = {
+  const where: Prisma.ExpenseWhereInput = {
     farmId: { in: farmIds },
     ...(params.cropCycleId ? { cropCycleId: params.cropCycleId } : {}),
-    ...(params.category ? { category: params.category } : {}),
+    ...(params.category ? { category: parseEnum(ExpenseCategory, params.category, "category") } : {}),
     ...(params.from || params.to
       ? {
           date: {
@@ -125,11 +140,10 @@ export const updateExpense = serviceHandler(async (id: string, userId: string, d
   return await prisma.expense.update({
     where: { id },
     data: {
-      ...(data.category !== undefined ? { category: data.category as any } : {}),
+      ...(data.category !== undefined ? { category: parseEnum(ExpenseCategory, data.category, "category") } : {}),
       ...(data.amount !== undefined ? { amount: data.amount } : {}),
       ...(data.date ? { date: new Date(data.date) } : {}),
-      ...(data.notes !== undefined ? { notes: data.notes, description: data.notes } : {}),
-      ...(data.description !== undefined ? { description: data.description } : {}),
+      ...((data.description ?? data.notes) !== undefined ? { description: data.description ?? data.notes } : {}),
     },
     include: { cropCycle: true },
   });
