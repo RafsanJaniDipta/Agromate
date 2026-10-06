@@ -84,7 +84,7 @@
           }
         },
         {
-          "name": "Update Profile",
+          "name": "Update Profile (Farmer / General)",
           "request": {
             "method": "PATCH",
             "header": [
@@ -92,7 +92,21 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Rahim Uddin\",\n  \"location\": \"Bogura\",\n  \"phone\": \"+8801700000000\"\n}"
+              "raw": "{\n  \"name\": \"Rahim Uddin\",\n  \"location\": \"Bogura\",\n  \"phone\": \"+8801700000000\",\n  \"language\": \"bn\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+          }
+        },
+        {
+          "name": "Update Profile (Expert User)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. Tariqul Islam\",\n  \"phone\": \"+8801800112233\",\n  \"location\": \"Gazipur\",\n  \"specialization\": \"Pest Management & Soil Health\",\n  \"organization\": \"Bangladesh Agricultural Research Institute\",\n  \"experienceYears\": 8,\n  \"bio\": \"Senior Agronomist specializing in rice disease management and sustainable farming.\",\n  \"qualifications\": \"PhD in Agronomy, BARI\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
           }

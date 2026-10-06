@@ -31,13 +31,7 @@ export const getUserById = asyncHandler(async (req: Request, res: Response): Pro
 
 export const updateProfile = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.id;
-  const { name, location, phone, image } = req.body;
-  const updatedUser = await updateUserProfileService(userId, {
-    name,
-    location,
-    phone,
-    image,
-  });
+  const updatedUser = await updateUserProfileService(userId, req.body);
 
   sendSuccess(res, 200, "User profile updated successfully", updatedUser);
 });

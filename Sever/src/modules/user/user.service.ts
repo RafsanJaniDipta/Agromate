@@ -6,7 +6,14 @@ export interface UpdateUserProfileInput {
   phone?: string;
   location?: string;
   language?: string;
+  locale?: string;
   image?: string;
+  // Expert profile fields
+  specialization?: string;
+  organization?: string;
+  experienceYears?: number;
+  bio?: string;
+  qualifications?: string;
 }
 
 export const getUserById = serviceHandler(async (id: string) => {
@@ -20,10 +27,23 @@ export const getUserById = serviceHandler(async (id: string) => {
       phone: true,
       location: true,
       language: true,
+      locale: true,
       banned: true,
       image: true,
       createdAt: true,
       updatedAt: true,
+      expertProfile: {
+        select: {
+          id: true,
+          specialization: true,
+          organization: true,
+          experienceYears: true,
+          bio: true,
+          qualifications: true,
+          status: true,
+          rejectionReason: true,
+        },
+      },
     },
   });
 
@@ -37,46 +57,69 @@ export const getUserById = serviceHandler(async (id: string) => {
     phone: user.phone,
     location: user.location,
     language: user.language ?? "en",
+    locale: user.locale ?? "bn",
     isActive: !user.banned,
     image: user.image,
+    expertProfile: user.expertProfile,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
   };
 });
 
 export const updateUserProfile = serviceHandler(async (id: string, data: UpdateUserProfileInput) => {
-  const updated = await prisma.user.update({
-    where: { id },
-    data: {
-      ...(data.name !== undefined ? { name: data.name } : {}),
-      ...(data.phone !== undefined ? { phone: data.phone } : {}),
-      ...(data.location !== undefined ? { location: data.location } : {}),
-      ...(data.language !== undefined ? { language: data.language } : {}),
-      ...(data.image !== undefined ? { image: data.image } : {}),
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      phone: true,
-      location: true,
-      language: true,
-      banned: true,
-      image: true,
-      updatedAt: true,
-    },
-  });
+  // Update core user fields if provided
+  const hasUserUpdates =
+    data.name !== undefined ||
+    data.phone !== undefined ||
+    data.location !== undefined ||
+    data.language !== undefined ||
+    data.locale !== undefined ||
+    data.image !== undefined;
 
-  return {
-    id: updated.id,
-    name: updated.name,
-    email: updated.email,
-    role: updated.role ?? "FARMER",
-    phone: updated.phone,
-    location: updated.location,
-    language: updated.language ?? "en",
-    isActive: !updated.banned,
-    image: updated.image,
-  };
+  if (hasUserUpdates) {
+    await prisma.user.update({
+      where: { id },
+      data: {
+        ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.phone !== undefined ? { phone: data.phone } : {}),
+        ...(data.location !== undefined ? { location: data.location } : {}),
+        ...(data.language !== undefined ? { language: data.language } : {}),
+        ...(data.locale !== undefined ? { locale: data.locale } : {}),
+        ...(data.image !== undefined ? { image: data.image } : {}),
+      },
+    });
+  }
+
+  // Update or create ExpertProfile if expert fields are provided
+  const hasExpertFields =
+    data.specialization !== undefined ||
+    data.organization !== undefined ||
+    data.experienceYears !== undefined ||
+    data.bio !== undefined ||
+    data.qualifications !== undefined;
+
+  if (hasExpertFields) {
+    await prisma.expertProfile.upsert({
+      where: { userId: id },
+      create: {
+        userId: id,
+        specialization: data.specialization ?? "General Agriculture",
+        organization: data.organization,
+        experienceYears: data.experienceYears ?? 0,
+        bio: data.bio,
+        qualifications: data.qualifications,
+      },
+      update: {
+        ...(data.specialization !== undefined ? { specialization: data.specialization } : {}),
+        ...(data.organization !== undefined ? { organization: data.organization } : {}),
+        ...(data.experienceYears !== undefined ? { experienceYears: data.experienceYears } : {}),
+        ...(data.bio !== undefined ? { bio: data.bio } : {}),
+        ...(data.qualifications !== undefined ? { qualifications: data.qualifications } : {}),
+      },
+    });
+  }
+
+  return getUserById(id);
 });
 
 export const getAllUsers = serviceHandler(async (options: { role?: string; page?: number; limit?: number } = {}) => {
@@ -99,8 +142,15 @@ export const getAllUsers = serviceHandler(async (options: { role?: string; page?
         location: true,
         phone: true,
         language: true,
+        locale: true,
         banned: true,
         createdAt: true,
+        expertProfile: {
+          select: {
+            specialization: true,
+            status: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
