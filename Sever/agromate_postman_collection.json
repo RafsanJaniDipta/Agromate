@@ -96,6 +96,112 @@
             },
             "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
           }
+        },
+        {
+          "name": "Upload Profile Picture (Cloudinary)",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/users/me/avatar", "host": ["{{baseUrl}}"], "path": ["users", "me", "avatar"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Farmers Review & Success Stories",
+      "item": [
+        {
+          "name": "Get Upload Signature (Farmer or Admin)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/success-stories/upload-signature", "host": ["{{baseUrl}}"], "path": ["success-stories", "upload-signature"] }
+          }
+        },
+        {
+          "name": "Submit a Success Story (Farmer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameBn\": \"আব্দুল করিম\",\n  \"roleBn\": \"আমন ধানচাষি\",\n  \"locationBn\": \"দিনাজপুর\",\n  \"quoteBn\": \"ঝড়ের দুই দিন আগেই আবহাওয়ার সতর্কবার্তা পেয়েছিলাম। আগেভাগে ধান কেটে পুরো ফসলই বাঁচাতে পেরেছি।\",\n  \"imageUrl\": \"https://res.cloudinary.com/agromate/image/upload/stories/karim.webp\",\n  \"imageKey\": \"stories/karim.webp\",\n  \"yieldChangePercent\": 35,\n  \"costChangePercent\": -20,\n  \"incomeChangePercent\": 40,\n  \"consent\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/success-stories", "host": ["{{baseUrl}}"], "path": ["success-stories"] }
+          }
+        },
+        {
+          "name": "View My Submitted Stories (Farmer)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/success-stories/mine", "host": ["{{baseUrl}}"], "path": ["success-stories", "mine"] }
+          }
+        },
+        {
+          "name": "Edit My Success Story (Farmer)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quoteBn\": \"ঝড়ের দুই দিন আগেই আবহাওয়ার সতর্কবার্তা পেয়েছিলাম। আগেভাগে ধান কেটে পুরো ফসলই নতুন প্রযুক্তিতে বাঁচাতে পেরেছি।\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/success-stories/mine/:id", "host": ["{{baseUrl}}"], "path": ["success-stories", "mine", ":id"] }
+          }
+        },
+        {
+          "name": "Delete My Success Story (Farmer)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/success-stories/mine/:id", "host": ["{{baseUrl}}"], "path": ["success-stories", "mine", ":id"] }
+          }
+        },
+        {
+          "name": "Get Stories for Moderation (Admin)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/success-stories/admin?status=PENDING", "host": ["{{baseUrl}}"], "path": ["success-stories", "admin"], "query": [{ "key": "status", "value": "PENDING" }] }
+          }
+        },
+        {
+          "name": "Review & Approve Story (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameEn\": \"Abdul Karim\",\n  \"roleEn\": \"Aman Rice Farmer\",\n  \"locationEn\": \"Dinajpur\",\n  \"quoteEn\": \"I received weather alerts two days before the storm and saved my entire crop from damage.\",\n  \"status\": \"APPROVED\",\n  \"isFeatured\": true,\n  \"sortOrder\": 1,\n  \"imageFocus\": \"50% 40%\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/success-stories/:id/review", "host": ["{{baseUrl}}"], "path": ["success-stories", ":id", "review"] }
+          }
+        },
+        {
+          "name": "Delete Story (Admin)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/success-stories/:id", "host": ["{{baseUrl}}"], "path": ["success-stories", ":id"] }
+          }
+        },
+        {
+          "name": "Public Homepage Stories (Public)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/success-stories?locale=bn&limit=4", "host": ["{{baseUrl}}"], "path": ["success-stories"], "query": [{ "key": "locale", "value": "bn" }, { "key": "limit", "value": "4" }] }
+          }
         }
       ]
     },
