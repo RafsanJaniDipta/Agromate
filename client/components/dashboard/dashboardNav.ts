@@ -43,6 +43,7 @@ export const dashboardNav: Record<Role, DashboardNav> = {
     tabs: [
       { href: "/dashboard", key: "dashboard" },
       { href: "/dashboard/diagnose", key: "diagnose" },
+      { href: "/dashboard/crops", key: "crops" },
       { href: "#", key: "fields" },
       { href: "#", key: "analytics" },
       { href: "#", key: "reports" },
@@ -50,7 +51,7 @@ export const dashboardNav: Record<Role, DashboardNav> = {
     links: [
       { href: "/dashboard", key: "home", Icon: HomeIcon },
       { href: "#", key: "map", Icon: MapIcon },
-      { href: "#", key: "crops", Icon: WheatIcon },
+      { href: "/dashboard/crops", key: "crops", Icon: WheatIcon },
       { href: "/dashboard/diagnose", key: "diagnose", Icon: LeafIcon },
       { href: "#", key: "equipment", Icon: TractorIcon },
       { href: "#", key: "livestock", Icon: CowIcon },

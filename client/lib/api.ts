@@ -13,7 +13,6 @@ export async function api<T>(path: string, options?: RequestInit): Promise<T> {
     // Sends the session cookie, which lives on the API's origin
     credentials: "include",
     ...options,
-    credentials: "include",
   });
 
   if (!res.ok) {
