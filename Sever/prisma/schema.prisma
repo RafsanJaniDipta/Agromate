@@ -49,6 +49,7 @@ model User {
   reminders                 Reminder[]
   aiConversations           AIConversation[]
   supportTickets            SupportTicket[]
+  successStories            SuccessStory[]
 
   @@unique([email])
   @@map("user")
@@ -148,6 +149,12 @@ enum NotificationType {
 enum MessageSender {
   USER
   ASSISTANT
+}
+
+enum StoryStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 // -------------------------------------------------------------
@@ -565,3 +572,45 @@ model ExpertCategory {
 
   @@map("expert_category")
 }
+
+model SuccessStory {
+  id         String   @id @default(uuid(7)) @db.Uuid
+
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  nameBn     String?  @db.VarChar(40)
+  nameEn     String?  @db.VarChar(40)
+  roleBn     String?  @db.VarChar(30)
+  roleEn     String?  @db.VarChar(30)
+  locationBn String?  @db.VarChar(30)
+  locationEn String?  @db.VarChar(30)
+  quoteBn    String?  @db.VarChar(200)
+  quoteEn    String?  @db.VarChar(200)
+
+  imageUrl   String
+  imageKey   String
+  imageFocus String   @default("50% 50%")
+
+  yieldChangePercent  Int
+  costChangePercent   Int
+  incomeChangePercent Int
+
+  consentAt  DateTime
+
+  status          StoryStatus @default(PENDING)
+  rejectionReason String?
+  reviewedById    String?     @db.Uuid
+  reviewedAt      DateTime?
+
+  isFeatured Boolean  @default(false)
+  sortOrder  Int      @default(0)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([status, isFeatured, sortOrder])
+  @@index([userId])
+  @@map("success_story")
+}
+

@@ -28,8 +28,6 @@ const loginPages: Record<Role, string> = {
 
 export const dashboardFor = (role?: string | null) => dashboards[toRole(role)];
 
-export const loginPageFor = (role: Role) => loginPages[role];
-
 export async function getCurrentUser(): Promise<CurrentUser> {
   const { data } = await api<{ data: CurrentUser & { role: string } }>("/api/users/me");
   return { ...data, role: toRole(data.role) };

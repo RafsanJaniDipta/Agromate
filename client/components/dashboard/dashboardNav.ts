@@ -8,7 +8,6 @@ import {
   HomeIcon,
   LeafIcon,
   MapIcon,
-  SettingsIcon,
   ShieldIcon,
   TractorIcon,
   UserIcon,
@@ -43,7 +42,11 @@ export const dashboardNav: Record<Role, DashboardNav> = {
     tabs: [
       { href: "/dashboard", key: "dashboard" },
       { href: "/dashboard/diagnose", key: "diagnose" },
+<<<<<<< HEAD
       { href: "/dashboard/crops", key: "crops" },
+=======
+      { href: "/dashboard/profile", key: "profile" },
+>>>>>>> d2cff56ab9afa98ce296c3e60478e7a96c98d41d
       { href: "#", key: "fields" },
       { href: "#", key: "analytics" },
       { href: "#", key: "reports" },
@@ -58,7 +61,8 @@ export const dashboardNav: Record<Role, DashboardNav> = {
       { href: "#", key: "storage", Icon: BarnIcon },
       { href: "#", key: "analytics", Icon: ChartIcon },
     ],
-    footerLinks: [{ href: "#", key: "settings", Icon: SettingsIcon }, helpLink],
+    // Profile takes the old "settings" placeholder's spot so the rail still fits short pages
+    footerLinks: [{ href: "/dashboard/profile", key: "profile", Icon: UserIcon }, helpLink],
   },
   EXPERT: {
     tabs: [

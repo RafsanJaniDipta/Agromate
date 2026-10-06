@@ -77,6 +77,10 @@ export function errorHandler(
     appError = AppError.unauthorized("Invalid token");
   } else if (err?.name === "TokenExpiredError") {
     appError = AppError.unauthorized("Session expired, please log in again");
+  } else if (err?.name === "MulterError") {
+    // Upload problems are the client's: too big, too many files, wrong field name
+    const tooBig = (err as Error & { code?: string }).code === "LIMIT_FILE_SIZE";
+    appError = new AppError(tooBig ? 413 : 400, tooBig ? "Image must be 5 MB or smaller" : err.message);
   } else if (err?.name === "PrismaClientInitializationError") {
     appError = new AppError(503, "Database unavailable");
   } else {

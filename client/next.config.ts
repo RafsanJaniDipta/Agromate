@@ -16,6 +16,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  images: {
+    // Profile pictures are uploaded to Cloudinary by the API
+    remotePatterns: [new URL("https://res.cloudinary.com/**")],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
