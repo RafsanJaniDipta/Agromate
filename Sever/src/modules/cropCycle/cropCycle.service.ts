@@ -2,6 +2,7 @@ import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
 import { parseEnum } from "../../utils/enum.js";
 import { CropCycleStatus } from "../../generated/prisma/client.js";
+import { addDays, buildTaskInputs, getCropPlan } from "../cropPlan/cropPlan.engine.js";
 
 export interface CreateCropCycleInput {
   fieldId: string;
@@ -32,22 +33,61 @@ export const createCropCycle = serviceHandler(async (data: CreateCropCycleInput)
     return null;
   }
 
+  const crop = await prisma.crop.findUnique({ where: { id: data.cropId } });
+  if (!crop) {
+    return null;
+  }
+
   const pDate = data.plantingDate ?? data.startDate ?? new Date();
 
-  return await prisma.cropCycle.create({
-    data: {
-      fieldId: data.fieldId,
-      cropId: data.cropId,
-      plantingDate: new Date(pDate),
-      expectedHarvestDate: data.expectedHarvestDate ? new Date(data.expectedHarvestDate) : undefined,
-      growthStage: data.growthStage,
-      status: "PLANNED",
-      notes: data.notes,
-    },
-    include: {
-      field: true,
-      crop: true,
-    },
+  // Derive the default time frame from the crop's cultivation plan, otherwise
+  // from the crop's durationDays field.
+  const plan = await getCropPlan(crop.name, crop.id);
+  const defaultDurationDays = plan?.durationDays ?? crop.durationDays ?? null;
+  const actualDurationDays = defaultDurationDays;
+
+  return await prisma.$transaction(async (tx) => {
+    const cycle = await tx.cropCycle.create({
+      data: {
+        fieldId: data.fieldId,
+        cropId: data.cropId,
+        plantingDate: new Date(pDate),
+        expectedHarvestDate: data.expectedHarvestDate
+          ? new Date(data.expectedHarvestDate)
+          : actualDurationDays
+            ? addDays(new Date(pDate), actualDurationDays)
+            : undefined,
+        growthStage: data.growthStage,
+        status: "PLANNED",
+        notes: data.notes,
+      },
+      include: {
+        field: true,
+        crop: true,
+      },
+    });
+
+    // Auto-generate the cultivation task list from the demo dataset.
+    if (plan) {
+      const actualSpanDays =
+        data.expectedHarvestDate && cycle.expectedHarvestDate
+          ? Math.max(
+              1,
+              Math.round(
+                (cycle.expectedHarvestDate.getTime() - cycle.plantingDate.getTime()) / 86_400_000,
+              ),
+            )
+          : defaultDurationDays;
+
+      const inputs = buildTaskInputs({
+        plan,
+        plantingDate: cycle.plantingDate,
+        actualDurationDays: actualSpanDays,
+      });
+      await tx.growthTask.createMany({ data: inputs.map((t) => ({ ...t, cropCycleId: cycle.id })) });
+    }
+
+    return cycle;
   });
 });
 
