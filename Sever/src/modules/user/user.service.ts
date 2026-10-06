@@ -1,12 +1,44 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
+import { AppError } from "../../utils/AppError.js";
+import { normalizePhoneNumber } from "../../utils/phone.js";
+
+// Bangladeshi mobile number after normalising, e.g. 017XXXXXXXX
+const BD_MOBILE = /^01[3-9]\d{8}$/;
+
+// The phone is the farmer's login, so it must be valid and belong to no one else
+async function checkedPhone(userId: string, raw: string): Promise<string> {
+  const phone = normalizePhoneNumber(raw);
+  if (!BD_MOBILE.test(phone)) {
+    throw AppError.unprocessable("Enter an 11-digit mobile number, e.g. 017XXXXXXXX");
+  }
+
+  const taken = await prisma.user.findFirst({
+    where: {
+      id: { not: userId },
+      OR: [{ phone: { in: [phone, `+88${phone}`, `88${phone}`] } }, { phoneNumber: phone }],
+    },
+    select: { id: true },
+  });
+  if (taken) {
+    throw AppError.conflict("This phone number is already used by another account");
+  }
+  return phone;
+}
 
 export interface UpdateUserProfileInput {
   name?: string;
   phone?: string;
   location?: string;
   language?: string;
+  locale?: string;
   image?: string;
+  // Expert profile fields
+  specialization?: string;
+  organization?: string;
+  experienceYears?: number;
+  bio?: string;
+  qualifications?: string;
 }
 
 export const getUserById = serviceHandler(async (id: string) => {
@@ -20,10 +52,23 @@ export const getUserById = serviceHandler(async (id: string) => {
       phone: true,
       location: true,
       language: true,
+      locale: true,
       banned: true,
       image: true,
       createdAt: true,
       updatedAt: true,
+      expertProfile: {
+        select: {
+          id: true,
+          specialization: true,
+          organization: true,
+          experienceYears: true,
+          bio: true,
+          qualifications: true,
+          status: true,
+          rejectionReason: true,
+        },
+      },
     },
   });
 
@@ -37,46 +82,77 @@ export const getUserById = serviceHandler(async (id: string) => {
     phone: user.phone,
     location: user.location,
     language: user.language ?? "en",
+    locale: user.locale ?? "bn",
     isActive: !user.banned,
     image: user.image,
+    expertProfile: user.expertProfile,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
   };
 });
 
 export const updateUserProfile = serviceHandler(async (id: string, data: UpdateUserProfileInput) => {
-  const updated = await prisma.user.update({
-    where: { id },
-    data: {
-      ...(data.name !== undefined ? { name: data.name } : {}),
-      ...(data.phone !== undefined ? { phone: data.phone } : {}),
-      ...(data.location !== undefined ? { location: data.location } : {}),
-      ...(data.language !== undefined ? { language: data.language } : {}),
-      ...(data.image !== undefined ? { image: data.image } : {}),
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      phone: true,
-      location: true,
-      language: true,
-      banned: true,
-      image: true,
-      updatedAt: true,
-    },
-  });
+  const name = data.name?.trim();
+  if (data.name !== undefined && !name) {
+    throw AppError.unprocessable("Name cannot be empty");
+  }
+  const phone = data.phone !== undefined ? await checkedPhone(id, data.phone) : undefined;
 
-  return {
-    id: updated.id,
-    name: updated.name,
-    email: updated.email,
-    role: updated.role ?? "FARMER",
-    phone: updated.phone,
-    location: updated.location,
-    language: updated.language ?? "en",
-    isActive: !updated.banned,
-    image: updated.image,
+  // Core account fields
+  const userData = {
+    ...(name ? { name } : {}),
+    // phoneNumber is what Better Auth's phone sign-in looks up; keep both in step
+    ...(phone ? { phone, phoneNumber: phone } : {}),
+    ...(data.location !== undefined ? { location: data.location.trim() || null } : {}),
+    ...(data.language !== undefined ? { language: data.language } : {}),
+    ...(data.locale !== undefined ? { locale: data.locale } : {}),
+    ...(data.image !== undefined ? { image: data.image } : {}),
   };
+  if (Object.keys(userData).length) {
+    await prisma.user.update({ where: { id }, data: userData });
+  }
+
+  // Expert profile fields
+  const hasExpertFields =
+    data.specialization !== undefined ||
+    data.organization !== undefined ||
+    data.experienceYears !== undefined ||
+    data.bio !== undefined ||
+    data.qualifications !== undefined;
+
+  if (hasExpertFields) {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { role: true, expertProfile: { select: { status: true } } },
+    });
+    // Otherwise a farmer could create a PENDING profile that shows up as an expert application
+    if (user?.role?.toUpperCase() !== "EXPERT") {
+      throw AppError.forbidden("Only experts can edit expert profile fields");
+    }
+
+    await prisma.expertProfile.upsert({
+      where: { userId: id },
+      create: {
+        userId: id,
+        specialization: data.specialization ?? "General Agriculture",
+        organization: data.organization,
+        experienceYears: data.experienceYears ?? 0,
+        bio: data.bio,
+        qualifications: data.qualifications,
+      },
+      update: {
+        ...(data.specialization !== undefined ? { specialization: data.specialization } : {}),
+        ...(data.organization !== undefined ? { organization: data.organization } : {}),
+        ...(data.experienceYears !== undefined ? { experienceYears: data.experienceYears } : {}),
+        ...(data.bio !== undefined ? { bio: data.bio } : {}),
+        ...(data.qualifications !== undefined ? { qualifications: data.qualifications } : {}),
+        // Editing a rejected profile sends it back for review, as /experts/me does
+        ...(user.expertProfile?.status === "REJECTED" ? { status: "PENDING" as const } : {}),
+      },
+    });
+  }
+
+  return getUserById(id);
 });
 
 export const getAllUsers = serviceHandler(async (options: { role?: string; page?: number; limit?: number } = {}) => {
@@ -99,8 +175,15 @@ export const getAllUsers = serviceHandler(async (options: { role?: string; page?
         location: true,
         phone: true,
         language: true,
+        locale: true,
         banned: true,
         createdAt: true,
+        expertProfile: {
+          select: {
+            specialization: true,
+            status: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
