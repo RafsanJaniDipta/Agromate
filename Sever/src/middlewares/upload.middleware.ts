@@ -1,5 +1,7 @@
 import multer from "multer";
 
+import { AppError } from "../utils/AppError.js";
+
 /**
  * Multer middleware configured to keep files in memory.
  *
@@ -14,7 +16,7 @@ const imageFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
-    cb(new Error("Only image files are allowed"));
+    cb(AppError.unprocessable("Only image files are allowed"));
   }
 };
 

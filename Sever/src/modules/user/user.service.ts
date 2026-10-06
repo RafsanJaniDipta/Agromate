@@ -1,5 +1,30 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
+import { AppError } from "../../utils/AppError.js";
+import { normalizePhoneNumber } from "../../utils/phone.js";
+
+// Bangladeshi mobile number after normalising, e.g. 017XXXXXXXX
+const BD_MOBILE = /^01[3-9]\d{8}$/;
+
+// The phone is the farmer's login, so it must be valid and belong to no one else
+async function checkedPhone(userId: string, raw: string): Promise<string> {
+  const phone = normalizePhoneNumber(raw);
+  if (!BD_MOBILE.test(phone)) {
+    throw AppError.unprocessable("Enter an 11-digit mobile number, e.g. 017XXXXXXXX");
+  }
+
+  const taken = await prisma.user.findFirst({
+    where: {
+      id: { not: userId },
+      OR: [{ phone: { in: [phone, `+88${phone}`, `88${phone}`] } }, { phoneNumber: phone }],
+    },
+    select: { id: true },
+  });
+  if (taken) {
+    throw AppError.conflict("This phone number is already used by another account");
+  }
+  return phone;
+}
 
 export interface UpdateUserProfileInput {
   name?: string;
@@ -43,12 +68,19 @@ export const getUserById = serviceHandler(async (id: string) => {
 });
 
 export const updateUserProfile = serviceHandler(async (id: string, data: UpdateUserProfileInput) => {
+  const name = data.name?.trim();
+  if (data.name !== undefined && !name) {
+    throw AppError.unprocessable("Name cannot be empty");
+  }
+  const phone = data.phone !== undefined ? await checkedPhone(id, data.phone) : undefined;
+
   const updated = await prisma.user.update({
     where: { id },
     data: {
-      ...(data.name !== undefined ? { name: data.name } : {}),
-      ...(data.phone !== undefined ? { phone: data.phone } : {}),
-      ...(data.location !== undefined ? { location: data.location } : {}),
+      ...(name ? { name } : {}),
+      // phoneNumber is what Better Auth's phone sign-in looks up; keep both in step
+      ...(phone ? { phone, phoneNumber: phone } : {}),
+      ...(data.location !== undefined ? { location: data.location.trim() || null } : {}),
       ...(data.language !== undefined ? { language: data.language } : {}),
       ...(data.image !== undefined ? { image: data.image } : {}),
     },

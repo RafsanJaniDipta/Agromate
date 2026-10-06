@@ -8,7 +8,7 @@ import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import Logo from "@/components/shared/Logo";
 import { dashboardNav } from "@/components/dashboard/dashboardNav";
 import { countUnreadNotifications } from "@/lib/notifications";
-import { loginPageFor, signOut, type Role } from "@/lib/session";
+import { signOut, type Role } from "@/lib/session";
 
 const roundButton =
   "flex size-11 items-center justify-center rounded-full border border-white/10 bg-black/40 backdrop-blur-xl transition hover:bg-white/15";
@@ -26,9 +26,10 @@ export default function DashboardTopBar({ role }: { role: Role }) {
   }, []);
 
   async function handleSignOut() {
-    // Leave even if the server call fails; the session expires on its own
+    // Leave even if the server call fails; the session expires on its own.
+    // Every role goes back to the home page.
     await signOut().catch(() => {});
-    router.replace(loginPageFor(role));
+    router.replace("/");
   }
 
   return (
