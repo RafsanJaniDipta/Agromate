@@ -461,6 +461,30 @@ model Answer {
   @@map("answer")
 }
 
+model ExpertCategory {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  slug      String   @unique
+  nameBn    String   @map("name_bn")
+  nameEn    String   @map("name_en")
+  icon      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  expertProfiles ExpertProfileCategory[]
+
+  @@map("expert_category")
+}
+
+model ExpertProfileCategory {
+  expertProfileId String         @db.Uuid
+  expertProfile   ExpertProfile  @relation(fields: [expertProfileId], references: [id], onDelete: Cascade)
+  categoryId      String         @db.Uuid
+  category        ExpertCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([expertProfileId, categoryId])
+  @@map("expert_profile_category")
+}
+
 model ExpertProfile {
   id              String       @id @default(uuid(7)) @db.Uuid
   userId          String       @unique @db.Uuid
@@ -474,6 +498,8 @@ model ExpertProfile {
   rejectionReason String?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+
+  categories ExpertProfileCategory[]
 
   @@index([status])
   @@map("expert_profile")

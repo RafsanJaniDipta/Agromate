@@ -1,5 +1,6 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
+import { createAndDispatchNotification } from "../notification/notification.service.js";
 
 export interface CreateAnswerInput {
   questionId: string;
@@ -14,10 +15,14 @@ export interface UpdateAnswerInput {
 }
 
 export const createAnswer = serviceHandler(async (data: CreateAnswerInput) => {
-  const user = await prisma.user.findUnique({ where: { id: data.userId } });
+  const [user, question] = await Promise.all([
+    prisma.user.findUnique({ where: { id: data.userId } }),
+    prisma.question.findUnique({ where: { id: data.questionId } }),
+  ]);
+
   const isExpertAnswer = data.isExpertAnswer ?? user?.role === "EXPERT";
 
-  return await prisma.answer.create({
+  const answer = await prisma.answer.create({
     data: {
       ...data,
       isExpertAnswer,
@@ -26,7 +31,21 @@ export const createAnswer = serviceHandler(async (data: CreateAnswerInput) => {
       user: { select: { id: true, name: true, image: true, role: true } },
     },
   });
+
+  // Notify question owner if answered by someone else
+  if (question && question.userId !== data.userId) {
+    void createAndDispatchNotification({
+      userId: question.userId,
+      title: isExpertAnswer ? "বিশেষজ্ঞের উত্তর" : "নতুন উত্তর",
+      message: `${user?.name ?? "একজন ইউজার"} আপনার প্রশ্নের উত্তর দিয়েছেন: "${question.title.substring(0, 30)}..."`,
+      type: "SUCCESS",
+      referenceId: question.id,
+    });
+  }
+
+  return answer;
 });
+
 
 export const getAnswersByQuestionId = serviceHandler(async (questionId: string) => {
   return await prisma.answer.findMany({
