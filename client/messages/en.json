@@ -393,9 +393,11 @@
       "reports": "Reports",
       "questions": "Questions",
       "profile": "My profile",
+      "stories": "Success stories",
       "overview": "Overview",
       "users": "Users",
-      "marketPrices": "Market prices"
+      "marketPrices": "Market prices",
+      "successStories": "Success stories"
     },
     "sidebar": {
       "label": "Farm tools",
@@ -411,9 +413,11 @@
       "help": "Help",
       "questions": "Questions",
       "profile": "My profile",
+      "stories": "Success stories",
       "overview": "Overview",
       "users": "Users",
-      "marketPrices": "Market prices"
+      "marketPrices": "Market prices",
+      "successStories": "Success stories"
     },
     "weather": {
       "title": "Weather",

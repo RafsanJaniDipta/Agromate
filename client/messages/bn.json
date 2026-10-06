@@ -393,9 +393,11 @@
       "reports": "রিপোর্ট",
       "questions": "প্রশ্ন",
       "profile": "আমার প্রোফাইল",
+      "stories": "সাফল্যের গল্প",
       "overview": "সারসংক্ষেপ",
       "users": "ব্যবহারকারী",
-      "marketPrices": "বাজারদর"
+      "marketPrices": "বাজারদর",
+      "successStories": "সাফল্যের গল্প"
     },
     "sidebar": {
       "label": "খামারের টুলস",
@@ -411,9 +413,11 @@
       "help": "সাহায্য",
       "questions": "প্রশ্ন",
       "profile": "আমার প্রোফাইল",
+      "stories": "সাফল্যের গল্প",
       "overview": "সারসংক্ষেপ",
       "users": "ব্যবহারকারী",
-      "marketPrices": "বাজারদর"
+      "marketPrices": "বাজারদর",
+      "successStories": "সাফল্যের গল্প"
     },
     "weather": {
       "title": "আবহাওয়া",
