@@ -3,6 +3,12 @@ import { serviceHandler } from "../../utils/serviceHandler.js";
 import { parseEnum } from "../../utils/enum.js";
 import { ExpenseCategory, type Prisma } from "../../generated/prisma/client.js";
 
+// Sent with every expense, so lists can say which place, crop and field it was for
+const expenseDetails = {
+  farm: { select: { id: true, name: true } },
+  cropCycle: { include: { crop: true, field: true } },
+} as const;
+
 export interface CreateExpenseInput {
   // A farm-wide expense needs only farmId; a crop expense gives cropCycleId and the farm follows from it
   farmId?: string;
@@ -54,7 +60,7 @@ export const createExpense = serviceHandler(async (data: CreateExpenseInput) => 
       date: data.date ? new Date(data.date) : new Date(),
       description: data.description ?? data.notes,
     },
-    include: { cropCycle: true },
+    include: expenseDetails,
   });
 });
 
@@ -97,7 +103,7 @@ export const getExpenses = serviceHandler(async (
       skip,
       take: limit,
       orderBy: { date: "desc" },
-      include: { cropCycle: true },
+      include: expenseDetails,
     }),
     prisma.expense.aggregate({
       where,
@@ -145,7 +151,7 @@ export const updateExpense = serviceHandler(async (id: string, userId: string, d
       ...(data.date ? { date: new Date(data.date) } : {}),
       ...((data.description ?? data.notes) !== undefined ? { description: data.description ?? data.notes } : {}),
     },
-    include: { cropCycle: true },
+    include: expenseDetails,
   });
 });
 

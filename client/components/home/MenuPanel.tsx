@@ -10,6 +10,7 @@ import ArrowIcon from "@/components/shared/ArrowIcon";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import Logo from "@/components/shared/Logo";
 import { navLinks } from "@/components/home/navLinks";
+import { dashboardFor, signOut, type CurrentUser } from "@/lib/session";
 
 // Same easing as the site's blur-in animation
 const panelEasing = "ease-[cubic-bezier(0.22,1,0.36,1)]";
@@ -34,8 +35,15 @@ function revealStyles(isOpen: boolean, order: number) {
   };
 }
 
+type MenuPanelProps = {
+  // undefined while checking, null for a visitor
+  user: CurrentUser | null | undefined;
+  onSignedOut: () => void;
+};
+
 // Site menu for every screen size: the bar button drops a dark panel from the top; the cross closes it.
-export default function MenuPanel() {
+// Visitors get Log in / Create account; signed-in members get their dashboard and Log out instead.
+export default function MenuPanel({ user, onSignedOut }: MenuPanelProps) {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const lenis = useLenis();
@@ -57,6 +65,13 @@ export default function MenuPanel() {
   };
 
   const actionsReveal = revealStyles(isOpen, navLinks.length);
+
+  async function handleSignOut() {
+    closeMenu();
+    // The visitor view is right even if the server call fails; the session expires on its own
+    await signOut().catch(() => {});
+    onSignedOut();
+  }
 
   // Move focus into the panel when it opens, so keyboard users land inside it
   useEffect(() => {
@@ -162,12 +177,25 @@ export default function MenuPanel() {
                     style={actionsReveal.style}
                     className={`flex w-full flex-col gap-2.5 md:max-w-xs md:justify-self-end md:pt-5 ${actionsReveal.className}`}
                   >
-                    <Link href="/login" onClick={closeMenu} className={outlineButton}>
-                      {t("login")}
-                    </Link>
-                    <Link href="/register" onClick={closeMenu} className={outlineButton}>
-                      {t("register")}
-                    </Link>
+                    {user ? (
+                      <>
+                        <Link href={dashboardFor(user.role)} onClick={closeMenu} className={outlineButton}>
+                          {t("account.dashboard")}
+                        </Link>
+                        <button type="button" onClick={handleSignOut} className={outlineButton}>
+                          {t("account.signOut")}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link href="/login" onClick={closeMenu} className={outlineButton}>
+                          {t("login")}
+                        </Link>
+                        <Link href="/register" onClick={closeMenu} className={outlineButton}>
+                          {t("register")}
+                        </Link>
+                      </>
+                    )}
                     <Link
                       href="/support"
                       onClick={closeMenu}

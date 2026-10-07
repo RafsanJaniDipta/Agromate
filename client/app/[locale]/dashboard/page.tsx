@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { resolveLocale } from "@/i18n/params";
-import { getDashboard } from "@/lib/dashboard";
 import DailyTasksCard from "@/components/dashboard/DailyTasksCard";
-import FieldMapCard from "@/components/dashboard/FieldMapCard";
-import HarvestChart from "@/components/dashboard/HarvestChart";
-import {
-  EquipmentCard,
-  RevenueCard,
-  WaterUsageCard,
-  YieldCard,
-} from "@/components/dashboard/StatCards";
+import FarmOverview from "@/components/dashboard/FarmOverview";
+import FarmPhotoCard from "@/components/dashboard/FarmPhotoCard";
+import { RemindersSyncProvider } from "@/components/dashboard/RemindersSync";
+import UpcomingCard from "@/components/dashboard/UpcomingCard";
 import WeatherWidget from "@/components/dashboard/WeatherWidget";
 
 export async function generateMetadata({
@@ -22,33 +16,27 @@ export async function generateMetadata({
   return { title: t("dashboardTitle") };
 }
 
-// Farm dashboard home. All numbers come from getDashboard(), so going live with the API
-// only means switching off the sample data in lib/dashboard.ts.
+// Farm dashboard home. Each card loads its own data in the browser (with the login cookie),
+// so one slow or failed source doesn't hold up the rest.
 export default async function DashboardPage({ params }: PageProps<"/[locale]/dashboard">) {
   await resolveLocale(params);
-  const cookieStore = await cookies();
-  const { weather, fields, tasks, stats, harvest } = await getDashboard(cookieStore.toString());
 
   return (
     <div className="grid gap-5 lg:grid-cols-[18rem_1fr]">
-      {/* Left column: weather and today's tasks */}
+      {/* Left column: weather, today's tasks and what's coming up.
+          The two task cards share reminders, so adding one updates the other. */}
       <div className="flex flex-col gap-5">
-        <WeatherWidget weather={weather} />
-        <DailyTasksCard initialTasks={tasks} />
+        <WeatherWidget detailsHref="/dashboard/weather" />
+        <RemindersSyncProvider>
+          <DailyTasksCard />
+          <UpcomingCard />
+        </RemindersSyncProvider>
       </div>
 
-      {/* Right column: field map, KPI row and harvest chart */}
+      {/* Right column: farm photo, KPI row and the money chart */}
       <div className="flex min-w-0 flex-col gap-5">
-        <FieldMapCard fields={fields} />
-
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          <YieldCard stat={stats.yield} />
-          <WaterUsageCard stat={stats.water} />
-          <EquipmentCard stat={stats.equipment} />
-          <RevenueCard stat={stats.revenue} />
-        </div>
-
-        <HarvestChart months={harvest} />
+        <FarmPhotoCard />
+        <FarmOverview />
       </div>
     </div>
   );

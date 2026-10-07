@@ -204,6 +204,9 @@ export async function reviewSuccessStory(
     where: { id: storyId },
     data: {
       ...input,
+      // A reason only makes sense on a rejected story, and only approved stories can be featured
+      ...(targetStatus !== "REJECTED" && { rejectionReason: null }),
+      ...(targetStatus !== "APPROVED" && { isFeatured: false }),
       reviewedById: adminUserId,
       reviewedAt: new Date(),
     },

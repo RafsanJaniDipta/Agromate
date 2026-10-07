@@ -23,7 +23,7 @@ export default function SupportForm() {
     setStatus("sending");
 
     try {
-      await api("/support", {
+      await api("/api/support", {
         method: "POST",
         body: JSON.stringify({ ...Object.fromEntries(new FormData(form)), locale }),
       });

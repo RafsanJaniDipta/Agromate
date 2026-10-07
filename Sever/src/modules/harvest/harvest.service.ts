@@ -83,7 +83,7 @@ export const getHarvests = serviceHandler(async (
       take: limit,
       orderBy: { harvestDate: "desc" },
       include: {
-        cropCycle: { include: { crop: true } },
+        cropCycle: { include: { crop: true, field: true } },
       },
     }),
     prisma.harvest.aggregate({

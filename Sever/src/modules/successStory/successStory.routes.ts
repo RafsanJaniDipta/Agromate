@@ -11,6 +11,7 @@ import {
   getPublicSuccessStoriesHandler,
   getUploadSignatureHandler,
   reviewSuccessStoryHandler,
+  translateStoryHandler,
   updateFarmerStoryHandler,
 } from "./successStory.controller.js";
 import {
@@ -84,6 +85,14 @@ successStoryRouter.patch(
   adminOnly,
   validate({ body: adminReviewSuccessStorySchema }),
   reviewSuccessStoryHandler,
+);
+
+// AI fills in the language the farmer didn't write in, for the admin to check before approving
+successStoryRouter.post(
+  "/:id/translate",
+  authenticate,
+  adminOnly,
+  translateStoryHandler,
 );
 
 successStoryRouter.delete(
