@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations, type Locale } from "next-intl";
 import { MapPinIcon, QuoteIcon } from "@/components/icons";
 import SliderButtons from "@/components/home/SliderButtons";
+import { getLiveHomeStories, type PublicStory } from "@/lib/successStories";
+
+// How often an open home page checks for newly approved stories
+const LIVE_REFRESH_MS = 30_000;
 
 type Story = {
   id: string;
@@ -19,7 +23,10 @@ type Story = {
   income: string;
 };
 
-// Sample stories: swap in real farmers (with their consent), quotes and numbers before launch.
+// How many stories the section shows; sample stories fill the places real ones don't
+const STORY_SLOTS = 4;
+
+// Sample stories, shown until enough real ones are approved by an admin.
 // Photos are free Pexels stock shot in Bangladesh, e.g. pexels.com/photo/36062685.
 // `focus` is the face's position, so round avatar crops keep the face in view.
 // Text for each id lives in messages under stories.items
@@ -177,11 +184,48 @@ function StoryPicker({ stories, activeIndex, onSelect, onTimerEnd }: StoryPicker
 }
 
 // Farmer testimonials: photo and quote side by side, switched by the picker or arrows.
-export default function SuccessStoriesSection() {
+// Approved stories from farmers (`realStories`) come first.
+export default function SuccessStoriesSection({ realStories = [] }: { realStories?: PublicStory[] }) {
   const t = useTranslations("stories");
+  const format = useFormatter();
+  const locale = useLocale() as Locale;
   const [activeIndex, setActiveIndex] = useState(0);
+  // Starts with the server's list, then keeps itself fresh while the page is open
+  const [liveStories, setLiveStories] = useState(realStories);
 
-  const stories: Story[] = storyImages.map(({ id, image, focus }) => ({
+  // Re-checks every 30 seconds while the tab is visible, and right away when the visitor comes back.
+  // A failed check keeps the stories already shown.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return;
+      getLiveHomeStories(locale).then(setLiveStories).catch(() => {});
+    };
+    const timer = setInterval(refresh, LIVE_REFRESH_MS);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [locale]);
+
+  // e.g. 30 -> "+30%", -20 -> "−20%"
+  const percent = (value: number) =>
+    format.number(value / 100, { style: "percent", signDisplay: "exceptZero" });
+
+  const approvedStories: Story[] = liveStories.map((story) => ({
+    id: story.id,
+    image: story.imageUrl,
+    focus: story.imageFocus,
+    name: story.name,
+    role: story.role,
+    location: story.location,
+    quote: story.quote,
+    yield: percent(story.yieldChangePercent),
+    cost: percent(story.costChangePercent),
+    income: percent(story.incomeChangePercent),
+  }));
+
+  const sampleStories: Story[] = storyImages.map(({ id, image, focus }) => ({
     id,
     image,
     focus,
@@ -193,11 +237,15 @@ export default function SuccessStoriesSection() {
     cost: t(`items.${id}.cost`),
     income: t(`items.${id}.income`),
   }));
-  const count = stories.length;
-  const activeStory = stories[activeIndex];
 
-  const showPrevious = () => setActiveIndex((activeIndex - 1 + count) % count);
-  const showNext = () => setActiveIndex((activeIndex + 1) % count);
+  const stories = [...approvedStories, ...sampleStories].slice(0, STORY_SLOTS);
+  const count = stories.length;
+  // The list can shrink when a story is removed, so keep the picked one in range
+  const currentIndex = activeIndex % count;
+  const activeStory = stories[currentIndex];
+
+  const showPrevious = () => setActiveIndex((currentIndex - 1 + count) % count);
+  const showNext = () => setActiveIndex((currentIndex + 1) % count);
 
   return (
     <section id="stories" className="bg-white p-2 md:p-3">
@@ -230,7 +278,7 @@ export default function SuccessStoriesSection() {
           <div data-reveal className="mt-4 [--i:2]">
             <StoryPicker
               stories={stories}
-              activeIndex={activeIndex}
+              activeIndex={currentIndex}
               onSelect={setActiveIndex}
               onTimerEnd={showNext}
             />

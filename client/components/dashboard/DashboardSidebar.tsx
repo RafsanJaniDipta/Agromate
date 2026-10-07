@@ -48,7 +48,8 @@ export default function DashboardSidebar({ role }: { role: Role }) {
   const { links, footerLinks } = dashboardNav[role];
 
   return (
-    <div className="relative hidden w-20 shrink-0 md:block">
+    // min-h keeps every rail icon visible on short pages, since the rail itself is absolutely positioned
+    <div className="relative hidden min-h-172 w-20 shrink-0 md:block">
       <nav
         aria-label={t("label")}
         onMouseEnter={() => setIsOpen(true)}

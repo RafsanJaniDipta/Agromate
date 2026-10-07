@@ -4,9 +4,12 @@ import FarmerHero from "@/components/home/FarmerHero";
 import SolutionsSection from "@/components/home/SolutionsSection";
 import SuccessStoriesSection from "@/components/home/SuccessStoriesSection";
 import WhyChooseSection from "@/components/home/WhyChooseSection";
+import { getHomeStories } from "@/lib/successStories";
 
 export default async function Home({ params }: PageProps<"/[locale]">) {
-  await resolveLocale(params);
+  const locale = await resolveLocale(params);
+  // If the API is down the section still shows its sample stories
+  const approvedStories = await getHomeStories(locale).catch(() => []);
 
   return (
     <>
@@ -14,7 +17,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
       <AboutSection />
       <SolutionsSection />
       <WhyChooseSection />
-      <SuccessStoriesSection />
+      <SuccessStoriesSection realStories={approvedStories} />
     </>
   );
 }

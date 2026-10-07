@@ -1,5 +1,7 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
+import { parseFieldBoundary } from "../../utils/fieldBoundary.js";
+import { Prisma } from "../../generated/prisma/client.js";
 
 export interface CreateFieldInput {
   farmId: string;
@@ -7,6 +9,8 @@ export interface CreateFieldInput {
   area?: number;
   areaInAcres?: number;
   soilType?: string;
+  // GeoJSON Polygon drawn on the map; checked by parseFieldBoundary
+  boundary?: unknown;
   userId: string;
 }
 
@@ -15,9 +19,16 @@ export interface UpdateFieldInput {
   area?: number;
   areaInAcres?: number;
   soilType?: string;
+  // `null` removes the outline
+  boundary?: unknown;
 }
 
+// Prisma stores "no outline" as a database NULL, which needs its own marker for JSON columns
+const toBoundaryColumn = (boundary: ReturnType<typeof parseFieldBoundary>) =>
+  boundary === null ? Prisma.DbNull : boundary;
+
 export const createField = serviceHandler(async (data: CreateFieldInput) => {
+  const boundary = parseFieldBoundary(data.boundary);
   const farm = await prisma.farm.findFirst({
     where: { id: data.farmId, userId: data.userId },
   });
@@ -31,6 +42,7 @@ export const createField = serviceHandler(async (data: CreateFieldInput) => {
       name: data.name,
       areaInAcres: areaVal,
       soilType: data.soilType,
+      ...(boundary ? { boundary } : {}),
     },
   });
 });
@@ -77,6 +89,7 @@ export const updateField = serviceHandler(async (id: string, userId: string, dat
   }
 
   const areaVal = data.area ?? data.areaInAcres;
+  const boundary = parseFieldBoundary(data.boundary);
 
   return await prisma.field.update({
     where: { id },
@@ -84,6 +97,7 @@ export const updateField = serviceHandler(async (id: string, userId: string, dat
       ...(data.name !== undefined ? { name: data.name } : {}),
       ...(areaVal !== undefined ? { areaInAcres: areaVal } : {}),
       ...(data.soilType !== undefined ? { soilType: data.soilType } : {}),
+      ...(boundary !== undefined ? { boundary: toBoundaryColumn(boundary) } : {}),
     },
   });
 });

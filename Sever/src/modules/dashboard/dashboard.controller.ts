@@ -34,8 +34,12 @@ export const getFinancialSummary = asyncHandler(async (req: Request, res: Respon
     throw AppError.unauthorized("User is not authenticated");
   }
 
-  const { period } = req.query;
-  const summary = await getFinancialSummaryService(userId, typeof period === "string" ? period : undefined);
+  // ?year=2026; any other value falls back to this year
+  const year = Number(req.query.year);
+  const summary = await getFinancialSummaryService(
+    userId,
+    Number.isInteger(year) && year > 2000 && year < 2100 ? year : undefined,
+  );
   sendSuccess(res, 200, "Financial summary fetched successfully", summary);
 });
 
