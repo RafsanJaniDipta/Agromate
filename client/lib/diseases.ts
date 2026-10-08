@@ -1,52 +1,17 @@
 import { api } from "@/lib/api";
-import type { Crop } from "@/lib/crops";
+import type {
+  ConfidenceLevel,
+  DiagnoseError,
+  Diagnosis,
+  Envelope,
+  PaginatedResponse,
+  SavedDiagnosis,
+} from "@/types";
+import { CONFIDENCE_LEVELS, DIAGNOSE_ERRORS } from "@/types";
 
-// Crop disease check, powered by Google Gemini (image understanding).
-// The farmer sends a photo of any part of the plant (leaf, fruit, stem, root, flower,
-// grain or the whole plant); /api/diagnose asks Gemini to name the crop and the likely
-// problem, and returns a short, structured answer in the farmer's language.
+export { CONFIDENCE_LEVELS, DIAGNOSE_ERRORS };
+export type { ConfidenceLevel, DiagnoseError, Diagnosis, SavedDiagnosis };
 
-export const CONFIDENCE_LEVELS = ["high", "medium", "low"] as const;
-export type ConfidenceLevel = (typeof CONFIDENCE_LEVELS)[number];
-
-// What /api/diagnose returns on success
-export type Diagnosis = {
-  isPlant: boolean; // false: no plant/plant part in the photo (or too unclear to judge)
-  crop: string; // crop name as recognised by Gemini, in the farmer's language
-  healthy: boolean;
-  disease: string; // disease name in the farmer's language; empty when healthy
-  confidence: ConfidenceLevel;
-  symptoms: string; // what in the photo points to this
-  advice: string[]; // a few short, practical next steps
-};
-
-// Error codes /api/diagnose can return; each has a message in "dashboard.diagnose.errors"
-export const DIAGNOSE_ERRORS = [
-  "badImage",
-  "tooLarge",
-  "notConfigured",
-  "busy",
-  "upstream",
-  "network",
-] as const;
-export type DiagnoseError = (typeof DIAGNOSE_ERRORS)[number];
-
-// A finished check kept in the farmer's history (saved by the API with its photo)
-export type SavedDiagnosis = {
-  id: string;
-  imageUrl: string;
-  cropName: string;
-  isHealthy: boolean;
-  disease: string; // empty when healthy
-  confidence: ConfidenceLevel;
-  symptoms: string;
-  advice: string[];
-  // The farmer's planted crop the photo was from, when they picked one
-  cropCycle: { id: string; crop: Pick<Crop, "name" | "nameBn">; field: { name: string } } | null;
-  createdAt: string;
-};
-
-type Envelope<T> = { data: T };
 
 // Keeps a check in the history. The photo is the same (already shrunk) one Gemini looked at.
 export async function saveDiagnosis(photo: Blob, diagnosis: Diagnosis, cropCycleId?: string) {
