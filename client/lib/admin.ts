@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import type { Crop } from "@/lib/crops";
 import { signOut, toRole, type Role } from "@/lib/session";
 
 type SignInResponse = { user: { role?: string | null } };
@@ -32,15 +33,13 @@ export type ExpertApplication = {
   user: { name: string; phone: string | null };
 };
 
-export type Crop = { id: string; name: string; nameBn: string | null };
-
 export type MarketPrice = {
   id: string;
   district: string;
   pricePerUnit: number;
   unit: string;
   date: string;
-  crop: Crop;
+  crop: Pick<Crop, "id" | "name" | "nameBn">;
 };
 
 export type MarketPriceInput = { cropId: string; district: string; pricePerUnit: number; unit: string };
@@ -93,11 +92,6 @@ export async function updateUser(id: string, change: { role?: Role; status?: "AC
     method: "PATCH",
     body: JSON.stringify(change),
   });
-}
-
-export async function getCrops() {
-  const { data } = await api<{ data: Crop[] }>("/api/crops");
-  return data;
 }
 
 export async function getMarketPrices(page: number, limit = 10) {

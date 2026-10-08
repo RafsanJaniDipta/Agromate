@@ -1,42 +1,33 @@
 import {
-  BarnIcon,
   ChartIcon,
   ChatIcon,
+  CloudSunIcon,
   CoinsIcon,
-  CowIcon,
   HelpIcon,
   HomeIcon,
   LeafIcon,
   MapIcon,
   QuoteIcon,
   ShieldIcon,
-  TractorIcon,
+  SproutIcon,
   UserIcon,
   WheatIcon,
 } from "@/components/icons";
 import type { Role } from "@/lib/session";
 import type messages from "@/messages/en.json";
 
-// "#" links are placeholders until those pages exist.
-// `key` is the label's key in the "dashboard.tabs" / "dashboard.sidebar" translations.
+// The sidebar is the dashboard's only menu (a drawer on phones).
+// `key` is the label's key in the "dashboard.sidebar" translations.
 
 // Keys are checked against en.json, so a menu item can't point at a missing label
-type TabKey = Exclude<keyof typeof messages.dashboard.tabs, "label">;
-type RailKey = Exclude<keyof typeof messages.dashboard.sidebar, "label">;
+type RailKey = Exclude<keyof typeof messages.dashboard.sidebar, "label" | "menu" | "closeMenu">;
 
-type Tab = { href: string; key: TabKey };
-type RailLink = {
-  href: string;
-  key: RailKey;
-  Icon: React.ComponentType<{ className?: string }>;
-};
+export type RailLink = { href: string; key: RailKey; Icon: React.ComponentType<{ className?: string }> };
 
 export type DashboardNav = {
-  // Pill tabs in the top bar
-  tabs: Tab[];
-  // Icon rail on the left
+  // Main links, top of the rail
   links: RailLink[];
-  // Pinned to the bottom of the icon rail
+  // Pinned to the bottom of the rail
   footerLinks: RailLink[];
 };
 
@@ -44,38 +35,20 @@ const helpLink: RailLink = { href: "/support", key: "help", Icon: HelpIcon };
 
 export const dashboardNav: Record<Role, DashboardNav> = {
   FARMER: {
-    tabs: [
-      { href: "/dashboard", key: "dashboard" },
-      { href: "/dashboard/diagnose", key: "diagnose" },
-      { href: "/dashboard/crops", key: "crops" },
-      { href: "/dashboard/stories", key: "stories" },
-      { href: "/dashboard/profile", key: "profile" },
-      { href: "#", key: "fields" },
-      { href: "#", key: "analytics" },
-      { href: "#", key: "reports" },
-    ],
     links: [
       { href: "/dashboard", key: "home", Icon: HomeIcon },
-      { href: "#", key: "map", Icon: MapIcon },
-      { href: "/dashboard/crops", key: "crops", Icon: WheatIcon },
+      { href: "/dashboard/fields", key: "fields", Icon: MapIcon },
+      { href: "/dashboard/my-crops", key: "myCrops", Icon: WheatIcon },
+      { href: "/dashboard/accounts", key: "accounts", Icon: CoinsIcon },
+      { href: "/dashboard/crops", key: "cropGuide", Icon: SproutIcon },
+      { href: "/dashboard/weather", key: "weather", Icon: CloudSunIcon },
+      { href: "/dashboard/analytics", key: "analytics", Icon: ChartIcon },
       { href: "/dashboard/diagnose", key: "diagnose", Icon: LeafIcon },
       { href: "/dashboard/stories", key: "stories", Icon: QuoteIcon },
-      { href: "#", key: "equipment", Icon: TractorIcon },
-      { href: "#", key: "livestock", Icon: CowIcon },
-      { href: "#", key: "storage", Icon: BarnIcon },
-      { href: "#", key: "analytics", Icon: ChartIcon },
     ],
-    // Profile takes the old "settings" placeholder's spot so the rail still fits short pages
-    footerLinks: [
-      { href: "/dashboard/profile", key: "profile", Icon: UserIcon },
-      helpLink,
-    ],
+    footerLinks: [{ href: "/dashboard/profile", key: "profile", Icon: UserIcon }, helpLink],
   },
   EXPERT: {
-    tabs: [
-      { href: "/expert", key: "questions" },
-      { href: "/expert/profile", key: "profile" },
-    ],
     links: [
       { href: "/expert", key: "questions", Icon: ChatIcon },
       { href: "/expert/profile", key: "profile", Icon: UserIcon },
@@ -83,15 +56,10 @@ export const dashboardNav: Record<Role, DashboardNav> = {
     footerLinks: [helpLink],
   },
   ADMIN: {
-    tabs: [
-      { href: "/admin", key: "overview" },
-      { href: "/admin/users", key: "users" },
-      { href: "/admin/market-prices", key: "marketPrices" },
-      { href: "/admin/stories", key: "successStories" },
-    ],
     links: [
       { href: "/admin", key: "overview", Icon: ShieldIcon },
       { href: "/admin/users", key: "users", Icon: UserIcon },
+      { href: "/admin/crops", key: "crops", Icon: WheatIcon },
       { href: "/admin/market-prices", key: "marketPrices", Icon: CoinsIcon },
       { href: "/admin/stories", key: "successStories", Icon: QuoteIcon },
     ],

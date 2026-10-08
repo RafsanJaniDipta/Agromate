@@ -1,8 +1,9 @@
 import { Router } from "express";
 import {
   getCurrentWeather,
+  getDistricts,
   getWeatherForecast,
-  getWeatherHistory,
+  locatePlace,
 } from "./weather.controller.js";
 import { authenticate } from "../../middlewares/auth.middleware.js";
 
@@ -12,4 +13,5 @@ weatherRouter.use(authenticate);
 
 weatherRouter.get("/current", getCurrentWeather);
 weatherRouter.get("/forecast", getWeatherForecast);
-weatherRouter.get("/history", getWeatherHistory);
+weatherRouter.get("/districts", getDistricts);
+weatherRouter.get("/locate", locatePlace);

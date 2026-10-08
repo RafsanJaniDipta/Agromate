@@ -3,15 +3,22 @@ import { asyncHandler } from "../../utils/asyncHandler.js";
 import { sendSuccess } from "../../utils/apiResponse.js";
 import { AppError } from "../../utils/AppError.js";
 import {
+  getAllCategories as getAllCategoriesService,
   getVerifiedExperts as getVerifiedExpertsService,
   getVerifiedExpertById as getVerifiedExpertByIdService,
   getOwnProfile as getOwnProfileService,
   upsertOwnProfile as upsertOwnProfileService,
 } from "./expert.service.js";
 
+export const getAllCategories = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
+  const categories = await getAllCategoriesService();
+  sendSuccess(res, 200, "Expert categories fetched successfully", categories);
+});
+
 export const getVerifiedExperts = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { specialization } = req.query;
+  const { specialization, category } = req.query;
   const experts = await getVerifiedExpertsService(
+    typeof category === "string" ? category : undefined,
     typeof specialization === "string" ? specialization : undefined,
   );
   sendSuccess(res, 200, "Verified experts fetched successfully", experts);
@@ -47,7 +54,7 @@ export const updateOwnProfile = asyncHandler(async (req: Request, res: Response)
     throw AppError.unauthorized("User is not authenticated");
   }
 
-  const { specialization, organization, bio, experienceYears, qualifications } = req.body;
+  const { specialization, organization, bio, experienceYears, qualifications, categoryIds } = req.body;
   if (!specialization) {
     throw AppError.unprocessable("specialization is required");
   }
@@ -59,12 +66,14 @@ export const updateOwnProfile = asyncHandler(async (req: Request, res: Response)
     bio,
     experienceYears: experienceYears ? Number(experienceYears) : 0,
     qualifications,
+    categoryIds: Array.isArray(categoryIds) ? categoryIds : undefined,
   });
 
   sendSuccess(res, 200, "Expert profile saved successfully", profile);
 });
 
 export const ExpertController = {
+  getAllCategories,
   getVerifiedExperts,
   getVerifiedExpertById,
   getOwnProfile,

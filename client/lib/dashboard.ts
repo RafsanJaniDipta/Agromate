@@ -1,80 +1,50 @@
-import { cache } from "react";
 import { api } from "@/lib/api";
-import { mockDashboard } from "@/lib/mocks/dashboard";
-import { normalizeCode } from "@/lib/normalizeCode";
-import {
-  FIELD_HEALTH_LEVELS,
-  TASK_CATEGORIES,
-  WEATHER_CONDITIONS,
-  type DailyTask,
-  type DashboardData,
-} from "@/types/dashboard";
+import type { ExpenseCategory } from "@/lib/ledger";
 
-// Flip to false once the backend dashboard endpoints are live
-const USE_MOCK_DATA = true;
+// The farmer dashboard's numbers. Money is in taka; months are 1 = January … 12 = December.
 
-// The server wraps every response as { success, message, data }
-type ApiEnvelope<T> = { success: boolean; message: string; data: T };
+export type DashboardSummary = {
+  totalFarms: number;
+  totalFields: number;
+  // Crops still on the field (planned, planted or growing)
+  activeCropCycles: number;
+  totalExpenses: number;
+  totalRevenue: number;
+};
 
-// Browser requests send the login cookie along, so the API knows whose farm it is
-const withSession: RequestInit = { credentials: "include" };
+export type MonthMoney = { month: number; expenses: number; income: number };
 
-// Fixes the spelling of a task's category code ("Watering" → "watering")
-const normalizeTask = (task: DailyTask): DailyTask => ({
-  ...task,
-  category: normalizeCode(task.category, TASK_CATEGORIES, "general"),
-});
+export type FinancialSummary = {
+  // All-time totals
+  totalExpenses: number;
+  totalRevenue: number;
+  netProfit: number;
+  // The year the rest is about
+  year: number;
+  yearTotals: { expenses: number; income: number; profit: number };
+  months: MonthMoney[];
+  // Biggest first
+  expensesByCategory: { category: ExpenseCategory; amount: number }[];
+};
 
-// Fixes the spelling of every fixed code in the response, so the UI can translate them
-function normalizeDashboard(data: DashboardData): DashboardData {
-  return {
-    ...data,
-    weather: {
-      ...data.weather,
-      condition: normalizeCode(data.weather.condition, WEATHER_CONDITIONS, "cloudy"),
-    },
-    fields: data.fields.map((field) => ({
-      ...field,
-      health: normalizeCode(field.health, FIELD_HEALTH_LEVELS, "healthy"),
-    })),
-    tasks: data.tasks.map(normalizeTask),
-  };
+// One crop on the farmer's fields right now
+export type CropShare = { cropName: string; cropNameBn: string | null; count: number; area: number };
+
+type Envelope<T> = { data: T };
+
+export async function getDashboardSummary() {
+  const { data } = await api<Envelope<DashboardSummary>>("/api/dashboard/summary");
+  return data;
 }
 
-// Everything the dashboard page shows, in one request.
-// Runs on the server, so the visitor's cookies are forwarded by hand.
-// Wrapped in cache() so the layout and the page share one fetch per request.
-export const getDashboard = cache(async (cookieHeader: string): Promise<DashboardData> => {
-  if (USE_MOCK_DATA) return normalizeDashboard(mockDashboard);
-
-  const { data } = await api<ApiEnvelope<DashboardData>>("/api/dashboard", {
-    headers: { "Content-Type": "application/json", cookie: cookieHeader },
-    cache: "no-store", // always show the farm's latest numbers
-  });
-  return normalizeDashboard(data);
-});
-
-// Marks a daily task as done or not done.
-export async function setTaskDone(taskId: string, done: boolean): Promise<void> {
-  if (USE_MOCK_DATA) return;
-
-  await api(`/api/dashboard/tasks/${taskId}`, {
-    ...withSession,
-    method: "PATCH",
-    body: JSON.stringify({ done }),
-  });
+// Defaults to this year
+export async function getFinancialSummary(year?: number) {
+  const query = year ? `?year=${year}` : "";
+  const { data } = await api<Envelope<FinancialSummary>>(`/api/dashboard/financial-summary${query}`);
+  return data;
 }
 
-// Creates a new daily task and returns it with its server id.
-export async function createTask(title: string): Promise<DailyTask> {
-  if (USE_MOCK_DATA) {
-    return { id: crypto.randomUUID(), title, category: "general", done: false };
-  }
-
-  const { data } = await api<ApiEnvelope<DailyTask>>("/api/dashboard/tasks", {
-    ...withSession,
-    method: "POST",
-    body: JSON.stringify({ title }),
-  });
-  return normalizeTask(data);
+export async function getCropDistribution() {
+  const { data } = await api<Envelope<CropShare[]>>("/api/dashboard/crop-distribution");
+  return data;
 }

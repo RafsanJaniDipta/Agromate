@@ -1,8 +1,25 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
 import { parseEnum } from "../../utils/enum.js";
+import { AppError } from "../../utils/AppError.js";
 import { CropCycleStatus } from "../../generated/prisma/client.js";
 import { addDays, buildTaskInputs, getCropPlan } from "../cropPlan/cropPlan.engine.js";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Turns a client-sent date into a Date; a bad value becomes a 422 instead of a database error
+function parseDate(value: Date | string, field: string): Date {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw AppError.unprocessable(`Invalid ${field}`);
+  }
+  return date;
+}
+
+// Like parseDate, but keeps `undefined` (leave unchanged) and `null` (clear) as they are
+function parseOptionalDate(value: Date | string | null | undefined, field: string) {
+  return value === undefined || value === null ? value : parseDate(value, field);
+}
 
 export interface CreateCropCycleInput {
   fieldId: string;
@@ -10,17 +27,21 @@ export interface CreateCropCycleInput {
   plantingDate?: Date | string;
   startDate?: Date | string;
   expectedHarvestDate?: Date | string;
+  // Defaults to PLANNED; a crop already in the ground can start as PLANTED or GROWING
+  status?: string;
   growthStage?: string;
   notes?: string;
   userId: string;
 }
 
+// `null` clears a date or the notes; a missing key leaves it unchanged
 export interface UpdateCropCycleInput {
   status?: string;
   growthStage?: string;
-  expectedHarvestDate?: Date | string;
-  actualHarvestDate?: Date | string;
-  notes?: string;
+  plantingDate?: Date | string;
+  expectedHarvestDate?: Date | string | null;
+  actualHarvestDate?: Date | string | null;
+  notes?: string | null;
 }
 
 export const createCropCycle = serviceHandler(async (data: CreateCropCycleInput) => {
@@ -35,59 +56,31 @@ export const createCropCycle = serviceHandler(async (data: CreateCropCycleInput)
 
   const crop = await prisma.crop.findUnique({ where: { id: data.cropId } });
   if (!crop) {
-    return null;
+    throw AppError.notFound("Crop not found");
   }
 
-  const pDate = data.plantingDate ?? data.startDate ?? new Date();
+  const plantingDate = parseDate(data.plantingDate ?? data.startDate ?? new Date(), "plantingDate");
+  // Without a date from the farmer, the harvest is expected once the crop's growing days have passed
+  const expectedHarvestDate = data.expectedHarvestDate
+    ? parseDate(data.expectedHarvestDate, "expectedHarvestDate")
+    : crop.durationDays
+      ? new Date(plantingDate.getTime() + crop.durationDays * DAY_MS)
+      : undefined;
 
-  // Derive the default time frame from the crop's cultivation plan, otherwise
-  // from the crop's durationDays field.
-  const plan = await getCropPlan(crop.name, crop.id);
-  const defaultDurationDays = plan?.durationDays ?? crop.durationDays ?? null;
-  const actualDurationDays = defaultDurationDays;
-
-  return await prisma.$transaction(async (tx) => {
-    const cycle = await tx.cropCycle.create({
-      data: {
-        fieldId: data.fieldId,
-        cropId: data.cropId,
-        plantingDate: new Date(pDate),
-        expectedHarvestDate: data.expectedHarvestDate
-          ? new Date(data.expectedHarvestDate)
-          : actualDurationDays
-            ? addDays(new Date(pDate), actualDurationDays)
-            : undefined,
-        growthStage: data.growthStage,
-        status: "PLANNED",
-        notes: data.notes,
-      },
-      include: {
-        field: true,
-        crop: true,
-      },
-    });
-
-    // Auto-generate the cultivation task list from the demo dataset.
-    if (plan) {
-      const actualSpanDays =
-        data.expectedHarvestDate && cycle.expectedHarvestDate
-          ? Math.max(
-              1,
-              Math.round(
-                (cycle.expectedHarvestDate.getTime() - cycle.plantingDate.getTime()) / 86_400_000,
-              ),
-            )
-          : defaultDurationDays;
-
-      const inputs = buildTaskInputs({
-        plan,
-        plantingDate: cycle.plantingDate,
-        actualDurationDays: actualSpanDays,
-      });
-      await tx.growthTask.createMany({ data: inputs.map((t) => ({ ...t, cropCycleId: cycle.id })) });
-    }
-
-    return cycle;
+  return await prisma.cropCycle.create({
+    data: {
+      fieldId: data.fieldId,
+      cropId: data.cropId,
+      plantingDate,
+      expectedHarvestDate,
+      growthStage: data.growthStage,
+      status: data.status ? parseEnum(CropCycleStatus, data.status, "status") : "PLANNED",
+      notes: data.notes,
+    },
+    include: {
+      field: true,
+      crop: true,
+    },
   });
 });
 
@@ -183,13 +176,23 @@ export const updateCropCycle = serviceHandler(async (id: string, userId: string,
     return null;
   }
 
+  const status = data.status !== undefined ? parseEnum(CropCycleStatus, data.status, "status") : undefined;
+  let actualHarvestDate = parseOptionalDate(data.actualHarvestDate, "actualHarvestDate");
+  // Marking a crop harvested without a date records today as the harvest day
+  if (status === "HARVESTED" && actualHarvestDate === undefined && !cycle.actualHarvestDate) {
+    actualHarvestDate = new Date();
+  }
+
   return await prisma.cropCycle.update({
     where: { id },
     data: {
-      ...(data.status !== undefined ? { status: parseEnum(CropCycleStatus, data.status, "status") } : {}),
+      ...(status !== undefined ? { status } : {}),
       ...(data.growthStage !== undefined ? { growthStage: data.growthStage } : {}),
-      ...(data.expectedHarvestDate ? { expectedHarvestDate: new Date(data.expectedHarvestDate) } : {}),
-      ...(data.actualHarvestDate ? { actualHarvestDate: new Date(data.actualHarvestDate) } : {}),
+      ...(data.plantingDate !== undefined ? { plantingDate: parseDate(data.plantingDate, "plantingDate") } : {}),
+      ...(data.expectedHarvestDate !== undefined
+        ? { expectedHarvestDate: parseOptionalDate(data.expectedHarvestDate, "expectedHarvestDate") }
+        : {}),
+      ...(actualHarvestDate !== undefined ? { actualHarvestDate } : {}),
       ...(data.notes !== undefined ? { notes: data.notes } : {}),
     },
     include: {

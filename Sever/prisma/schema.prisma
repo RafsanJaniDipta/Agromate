@@ -167,6 +167,8 @@ model Farm {
   location    String
   areaInAcres Float?   @default(0)
   soilType    String?
+  // Photo of the whole place the farmer uploaded (Cloudinary), shown on the dashboard
+  imageUrl    String?  @map("image_url")
   userId      String   @db.Uuid
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
@@ -187,6 +189,8 @@ model Field {
   farm        Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
   areaInAcres Float?   @default(0)
   soilType    String?
+  // The field's outline drawn on the satellite map: a GeoJSON Polygon in [longitude, latitude]
+  boundary    Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -201,7 +205,13 @@ model Crop {
   name            String   @unique
   nameBn          String?  @map("name_bn")
   category        String?
+  // Legacy free-text season ("Rabi / Winter"); replaced by the month fields below.
+  // Kept until every branch on the shared database stops reading it.
   season          String?
+  // Months the crop can be planted (sown or transplanted), 1 = January … 12 = December.
+  // May wrap past December (11 → 1).
+  sowingStartMonth Int?   @map("sowing_start_month")
+  sowingEndMonth   Int?   @map("sowing_end_month")
   idealSoil       String?
   optimalTemp     Float?
   optimalRainfall Float?
@@ -413,9 +423,15 @@ model DiseaseDetection {
   cropCycleId     String?    @db.Uuid
   cropCycle       CropCycle? @relation(fields: [cropCycleId], references: [id], onDelete: SetNull)
   imageUrl        String
+  // From the AI check (Gemini), in the language the farmer used at the time
+  cropName        String?    @map("crop_name")
+  isHealthy       Boolean    @default(false) @map("is_healthy")
+  // "high" | "medium" | "low": how sure the AI was
+  confidenceLevel String?    @map("confidence_level")
   detectedDisease String     @default("Unknown")
   confidenceScore Float      @default(0)
   symptoms        String?
+  // The AI's advice steps as a JSON array of strings
   recommendations String?
   severity        String?
   createdAt       DateTime   @default(now())
@@ -526,6 +542,30 @@ model Answer {
   @@map("answer")
 }
 
+model ExpertCategory {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  slug      String   @unique
+  nameBn    String   @map("name_bn")
+  nameEn    String   @map("name_en")
+  icon      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  expertProfiles ExpertProfileCategory[]
+
+  @@map("expert_category")
+}
+
+model ExpertProfileCategory {
+  expertProfileId String         @db.Uuid
+  expertProfile   ExpertProfile  @relation(fields: [expertProfileId], references: [id], onDelete: Cascade)
+  categoryId      String         @db.Uuid
+  category        ExpertCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([expertProfileId, categoryId])
+  @@map("expert_profile_category")
+}
+
 model ExpertProfile {
   id              String       @id @default(uuid(7)) @db.Uuid
   userId          String       @unique @db.Uuid
@@ -539,6 +579,8 @@ model ExpertProfile {
   rejectionReason String?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+
+  categories ExpertProfileCategory[]
 
   @@index([status])
   @@map("expert_profile")

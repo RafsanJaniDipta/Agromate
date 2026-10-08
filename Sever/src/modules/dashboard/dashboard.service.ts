@@ -62,64 +62,81 @@ export const getCropDistribution = serviceHandler(async (userId: string) => {
     },
   });
 
-  const map = new Map<string, { cropName: string; count: number; area: number }>();
+  // One row per crop: how many fields grow it and their total area (acres)
+  const map = new Map<string, { cropName: string; cropNameBn: string | null; count: number; area: number }>();
 
   for (const cycle of activeCycles) {
-    const cropName = cycle.crop.name;
     const fieldArea = cycle.field.areaInAcres ?? 0;
 
-    const existing = map.get(cropName) || { cropName, count: 0, area: 0 };
+    const existing = map.get(cycle.crop.id) ?? {
+      cropName: cycle.crop.name,
+      cropNameBn: cycle.crop.nameBn,
+      count: 0,
+      area: 0,
+    };
     existing.count += 1;
     existing.area += fieldArea;
-    map.set(cropName, existing);
+    map.set(cycle.crop.id, existing);
   }
 
   return Array.from(map.values());
 });
 
-export const getFinancialSummary = serviceHandler(async (userId: string, _period?: string) => {
+// Bangladesh is UTC+6; months are counted in local time so a 1 AM expense lands on the right day
+const BD_OFFSET_MS = 6 * 60 * 60 * 1000;
+const bdDate = (date: Date) => new Date(date.getTime() + BD_OFFSET_MS);
+
+// Money in and out: all-time totals, plus month by month and by expense type for one year
+export const getFinancialSummary = serviceHandler(async (userId: string, year = bdDate(new Date()).getUTCFullYear()) => {
   const farms = await prisma.farm.findMany({
     where: { userId },
     select: { id: true },
   });
   const farmIds = farms.map((f) => f.id);
 
-  const [expenseAgg, harvests, expenses] = await Promise.all([
-    prisma.expense.aggregate({
+  const [expenses, harvests] = await Promise.all([
+    prisma.expense.findMany({
       where: { farmId: { in: farmIds } },
-      _sum: { amount: true },
+      select: { date: true, amount: true, category: true },
     }),
     prisma.harvest.findMany({
       where: { cropCycle: { field: { farmId: { in: farmIds } } } },
-      select: { quantity: true, pricePerUnit: true },
-    }),
-    prisma.expense.findMany({
-      where: { farmId: { in: farmIds } },
-      select: { date: true, amount: true },
-      orderBy: { date: "asc" },
+      select: { harvestDate: true, quantity: true, pricePerUnit: true },
     }),
   ]);
 
-  const totalExpenses = expenseAgg._sum.amount || 0;
+  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
   const totalRevenue = revenueOf(harvests);
-  const netProfit = totalRevenue - totalExpenses;
 
-  const monthlyMap = new Map<string, number>();
-  for (const exp of expenses) {
-    const monthStr = exp.date ? new Date(exp.date).toISOString().slice(0, 7) : "Unknown";
-    monthlyMap.set(monthStr, (monthlyMap.get(monthStr) || 0) + exp.amount);
+  // January … December of `year`
+  const months = Array.from({ length: 12 }, (_, index) => ({ month: index + 1, expenses: 0, income: 0 }));
+  const expensesByCategory = new Map<string, number>();
+
+  for (const expense of expenses) {
+    const date = bdDate(expense.date);
+    if (date.getUTCFullYear() !== year) continue;
+    months[date.getUTCMonth()]!.expenses += expense.amount; // month index is always 0–11
+    expensesByCategory.set(expense.category, (expensesByCategory.get(expense.category) ?? 0) + expense.amount);
+  }
+  for (const harvest of harvests) {
+    const date = bdDate(harvest.harvestDate);
+    if (date.getUTCFullYear() !== year) continue;
+    months[date.getUTCMonth()]!.income += harvest.quantity * harvest.pricePerUnit;
   }
 
-  const monthlyExpenses = Array.from(monthlyMap.entries()).map(([month, amount]) => ({
-    month,
-    amount,
-  }));
+  const yearExpenses = months.reduce((sum, month) => sum + month.expenses, 0);
+  const yearIncome = months.reduce((sum, month) => sum + month.income, 0);
 
   return {
     totalExpenses,
     totalRevenue,
-    netProfit,
-    monthlyExpenses,
+    netProfit: totalRevenue - totalExpenses,
+    year,
+    yearTotals: { expenses: yearExpenses, income: yearIncome, profit: yearIncome - yearExpenses },
+    months,
+    expensesByCategory: Array.from(expensesByCategory, ([category, amount]) => ({ category, amount })).sort(
+      (a, b) => b.amount - a.amount,
+    ),
   };
 });
 

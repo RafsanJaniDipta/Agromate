@@ -17,7 +17,7 @@ export const createCropCycle = asyncHandler(async (req: Request, res: Response):
     throw AppError.unauthorized("User is not authenticated");
   }
 
-  const { fieldId, cropId, plantingDate, startDate, expectedHarvestDate, growthStage, notes } = req.body;
+  const { fieldId, cropId, plantingDate, startDate, expectedHarvestDate, status, growthStage, notes } = req.body;
   if (!fieldId || !cropId) {
     throw AppError.unprocessable("fieldId and cropId are required");
   }
@@ -28,6 +28,7 @@ export const createCropCycle = asyncHandler(async (req: Request, res: Response):
     plantingDate,
     startDate,
     expectedHarvestDate,
+    status,
     growthStage,
     notes,
     userId,

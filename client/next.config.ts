@@ -11,11 +11,18 @@ const securityHeaders = [
   { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  // The disease check takes photos; nothing here needs the mic or location
-  { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=()" },
+  // Only this site may ask for the camera (disease check photos) and location (weather for where
+  // the farmer is now); nothing here needs the mic
+  { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=(self)" },
 ];
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Turbopack's on-disk dev cache kept serving a deleted file (app/layout.tsx) after every
+    // edit, because the project lives in a OneDrive folder whose syncing hides file deletions
+    // from the watcher. Without the cache the dev server starts a few seconds slower but stays correct.
+    turbopackFileSystemCacheForDev: false,
+  },
   images: {
     // Profile pictures are uploaded to Cloudinary by the API
     remotePatterns: [new URL("https://res.cloudinary.com/**")],

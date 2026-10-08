@@ -1,4 +1,3 @@
-import { useFormatter } from "next-intl";
 import DashCard from "@/components/dashboard/DashCard";
 
 type StatCardProps = {
@@ -17,21 +16,5 @@ export default function StatCard({ icon, title, children }: StatCardProps) {
       </h2>
       <div className="mt-3 flex flex-1 flex-col">{children}</div>
     </DashCard>
-  );
-}
-
-// Signed percent change, e.g. "+12.4%" in green or "−3.1%" in red.
-export function ChangeBadge({ percent }: { percent: number }) {
-  const format = useFormatter();
-  const color = percent >= 0 ? "text-green-400" : "text-red-400";
-
-  return (
-    <span className={`text-xs ${color}`}>
-      {format.number(percent / 100, {
-        style: "percent",
-        maximumFractionDigits: 1,
-        signDisplay: "exceptZero",
-      })}
-    </span>
   );
 }

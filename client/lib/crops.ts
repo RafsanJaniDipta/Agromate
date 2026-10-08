@@ -1,101 +1,77 @@
-import { cache } from "react";
 import { api } from "@/lib/api";
-import type { Crop, CropCycleSummary, CropPlan, Farm, Field } from "@/types/crops";
+import { isMonthInRange } from "@/lib/months";
 
-// The server wraps every response as { success, message, data }
-type ApiEnvelope<T> = { success: boolean; message: string; data: T };
-
-// Browser requests send the login cookie along, so the API knows whose farm it is
-const withSession: RequestInit = { credentials: "include" };
-
-export type CropsPageData = {
-  crops: Crop[];
-  cycles: CropCycleSummary[];
-  fields: Field[];
-  // True when at least one request failed; the page renders with what it has
-  loadError: boolean;
+// A crop in the shared catalog. Name and description are kept in both languages.
+export type Crop = {
+  id: string;
+  name: string;
+  nameBn: string | null;
+  category: string | null;
+  // Months it can be planted, 1 = January … 12 = December. May wrap past December (11 → 1).
+  sowingStartMonth: number | null;
+  sowingEndMonth: number | null;
+  idealSoil: string | null;
+  // °C
+  optimalTemp: number | null;
+  // mm
+  optimalRainfall: number | null;
+  durationDays: number | null;
+  description: string | null;
+  descriptionBn: string | null;
 };
 
-// Everything the crop-planning page needs, in parallel requests.
-// Runs on the server, so the visitor's cookies are forwarded by hand.
-// Failures degrade to empty arrays so the page still chunks in.
-export const getCropsPage = cache(async (cookieHeader: string): Promise<CropsPageData> => {
-  const [cropsRes, cyclesRes, farmsRes] = await Promise.allSettled([
-    api<ApiEnvelope<Crop[]>>("/api/crops", { cache: "no-store" }),
-    api<ApiEnvelope<CropCycleSummary[]>>("/api/crop-cycles", {
-      headers: { "Content-Type": "application/json", cookie: cookieHeader },
-      cache: "no-store",
-    }),
-    api<ApiEnvelope<Farm[]>>("/api/farms", {
-      headers: { "Content-Type": "application/json", cookie: cookieHeader },
-      cache: "no-store",
-    }),
-  ]);
+// What the admin form sends; `null` clears an optional field
+export type CropInput = Omit<Crop, "id">;
 
-  const fields =
-    farmsRes.status === "fulfilled" ? farmsRes.value.data.flatMap((farm) => farm.fields) : [];
+// `from`–`to` (months 1–12) keeps only crops that can be planted in that period
+export type CropFilter = { search?: string; from?: number; to?: number };
 
-  return {
-    crops: cropsRes.status === "fulfilled" ? cropsRes.value.data : [],
-    cycles: cyclesRes.status === "fulfilled" ? cyclesRes.value.data : [],
-    fields,
-    loadError:
-      cropsRes.status !== "fulfilled" ||
-      cyclesRes.status !== "fulfilled" ||
-      farmsRes.status !== "fulfilled",
-  };
-});
+// Shows the Bangla text on the Bangla site, falling back to English when it's missing
+export function cropName(crop: Pick<Crop, "name" | "nameBn">, locale: string) {
+  return locale === "bn" ? (crop.nameBn ?? crop.name) : crop.name;
+}
 
-// Starts a crop cycle; the backend auto-builds its milestones + tasks.
-export async function createCropCycle(input: {
-  fieldId: string;
-  cropId: string;
-  plantingDate: string;
-  expectedHarvestDate?: string;
-}): Promise<CropCycleSummary> {
-  const { data } = await api<ApiEnvelope<CropCycleSummary>>("/api/crop-cycles", {
-    ...withSession,
+export function cropDescription(crop: Crop, locale: string) {
+  return locale === "bn" ? (crop.descriptionBn ?? crop.description) : crop.description;
+}
+
+// Whether a crop is usually planted in `month` (1–12); "unknown" when its planting time isn't set
+export type PlantingFit = "inSeason" | "otherSeason" | "unknown";
+
+export function plantingFit(crop: Crop, month: number): PlantingFit {
+  if (crop.sowingStartMonth === null || crop.sowingEndMonth === null) return "unknown";
+  return isMonthInRange(month, crop.sowingStartMonth, crop.sowingEndMonth) ? "inSeason" : "otherSeason";
+}
+
+export async function getCrops({ search, from, to }: CropFilter = {}) {
+  const query = new URLSearchParams();
+  if (search) query.set("search", search);
+  if (from && to) {
+    query.set("from", String(from));
+    query.set("to", String(to));
+  }
+
+  const queryString = query.size > 0 ? `?${query}` : "";
+  const { data } = await api<{ data: Crop[] }>(`/api/crops${queryString}`);
+  return data;
+}
+
+export async function createCrop(input: CropInput) {
+  const { data } = await api<{ data: Crop }>("/api/crops", {
     method: "POST",
     body: JSON.stringify(input),
   });
   return data;
 }
 
-// Loads one cycle's growth plan: milestones + tasks + progress.
-export async function getCyclePlan(cycleId: string): Promise<CropPlan> {
-  const { data } = await api<ApiEnvelope<CropPlan>>(`/api/crop-cycles/${cycleId}/plan`, withSession);
+export async function updateCrop(id: string, input: CropInput) {
+  const { data } = await api<{ data: Crop }>(`/api/crops/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
   return data;
 }
 
-// Marks a plan task done or reopens it.
-export async function setPlanTaskDone(cycleId: string, taskId: string, isDone: boolean): Promise<void> {
-  await api(`/api/crop-cycles/${cycleId}/tasks/${taskId}`, {
-    ...withSession,
-    method: "PATCH",
-    body: JSON.stringify({ isDone }),
-  });
-}
-
-// --- Date helpers ----------------------------------------------------------
-
-// "2026-10-01" → "1 Oct" in the active locale
-export function formatDay(locale: string, iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(date);
-}
-
-// Local timezone-safe value for <input type="date">
-export function toDateInputValue(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-export function addDays(iso: string, days: number): string {
-  const date = new Date(iso);
-  date.setDate(date.getDate() + days);
-  return toDateInputValue(date);
+export async function deleteCrop(id: string) {
+  await api(`/api/crops/${id}`, { method: "DELETE" });
 }

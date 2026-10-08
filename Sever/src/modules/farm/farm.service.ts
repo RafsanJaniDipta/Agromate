@@ -76,10 +76,23 @@ export const deleteFarm = serviceHandler(async (id: string, userId: string) => {
   return true;
 });
 
+// Saves (or with null, clears) the photo of one of the user's farms; null when it isn't theirs
+export const setFarmPhoto = serviceHandler(async (id: string, userId: string, imageUrl: string | null) => {
+  const farm = await prisma.farm.findFirst({ where: { id, userId } });
+  if (!farm) return null;
+
+  return await prisma.farm.update({
+    where: { id },
+    data: { imageUrl },
+    include: { fields: true },
+  });
+});
+
 export const FarmService = {
   createFarm,
   getFarmsByUserId,
   getFarmById,
   updateFarm,
   deleteFarm,
+  setFarmPhoto,
 };

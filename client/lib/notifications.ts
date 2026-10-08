@@ -1,9 +1,23 @@
 import { api } from "@/lib/api";
 
-type Notification = { id: string; isRead: boolean };
+export type Notification = {
+  id: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+};
 
-// How many of the signed-in user's notifications are still unread
-export async function countUnreadNotifications() {
+// The signed-in user's notifications, newest first
+export async function getNotifications() {
   const { data } = await api<{ data: Notification[] }>("/api/notifications");
-  return data.filter((notification) => !notification.isRead).length;
+  return data;
+}
+
+export async function markNotificationRead(id: string) {
+  await api(`/api/notifications/${id}/read`, { method: "PATCH" });
+}
+
+export async function markAllNotificationsRead() {
+  await api("/api/notifications/read-all", { method: "PATCH" });
 }

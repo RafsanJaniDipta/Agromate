@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { resolveLocale } from "@/i18n/params";
-import CropPlanner from "@/components/dashboard/crops/CropPlanner";
-import { getCropsPage } from "@/lib/crops";
+import DashCard from "@/components/dashboard/DashCard";
+import CropCatalog from "@/components/dashboard/crops/CropCatalog";
 
 export async function generateMetadata({
   params,
@@ -13,12 +12,19 @@ export async function generateMetadata({
   return { title: t("cropsTitle") };
 }
 
-// Crop planning: pick a crop, choose a field and a planting date, and AgroMate
-// builds the whole growing plan (milestones + tasks) scaled to that window.
+// Farmer's crop guide: what each crop needs and how long it takes to grow.
 export default async function CropsPage({ params }: PageProps<"/[locale]/dashboard/crops">) {
-  await resolveLocale(params);
-  const cookieStore = await cookies();
-  const { crops, cycles, fields, loadError } = await getCropsPage(cookieStore.toString());
+  const locale = await resolveLocale(params);
+  const t = await getTranslations({ locale, namespace: "dashboard.cropsPage" });
 
-  return <CropPlanner initialCycles={cycles} crops={crops} fields={fields} loadError={loadError} />;
+  return (
+    <div className="flex flex-col gap-5">
+      <DashCard>
+        <h1 className="text-2xl font-semibold md:text-3xl">{t("title")}</h1>
+        <p className="mt-2 max-w-2xl text-sm text-white/70 md:text-base">{t("intro")}</p>
+      </DashCard>
+
+      <CropCatalog />
+    </div>
+  );
 }

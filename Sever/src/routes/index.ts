@@ -19,6 +19,7 @@ import { adminRouter } from "../modules/admin/admin.routes.js";
 import { reminderRouter } from "../modules/reminder/reminder.routes.js";
 import { supportRouter } from "../modules/support/support.routes.js";
 import { successStoryRouter } from "../modules/successStory/successStory.routes.js";
+import { diseaseDetectionRouter } from "../modules/diseaseDetection/diseaseDetection.routes.js";
 
 export const routes = Router();
 
@@ -41,6 +42,7 @@ routes.use("/ai", aiRouter);
 routes.use("/admin", adminRouter);
 routes.use("/support", supportRouter);
 routes.use("/success-stories", successStoryRouter);
+routes.use("/disease-detections", diseaseDetectionRouter);
 
 
 

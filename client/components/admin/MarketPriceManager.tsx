@@ -10,11 +10,10 @@ import { darkInput, darkLabel, primaryButton, secondaryButton } from "@/componen
 import {
   createMarketPrice,
   deleteMarketPrice,
-  getCrops,
   getMarketPrices,
-  type Crop,
   type MarketPrice,
 } from "@/lib/admin";
+import { cropName, getCrops, type Crop } from "@/lib/crops";
 
 const PAGE_SIZE = 10;
 const UNITS = ["KG", "MAUND", "TON"] as const;
@@ -35,8 +34,6 @@ export default function MarketPriceManager() {
   const [formStatus, setFormStatus] = useState<FormStatus>("idle");
   const [loadFailed, setLoadFailed] = useState(false);
 
-  // Crop names are stored in both languages; fall back to English when Bangla is missing
-  const cropLabel = (crop: Crop) => (locale === "bn" ? (crop.nameBn ?? crop.name) : crop.name);
   // Older rows may hold a unit we have no label for; show those as stored
   const unitLabel = (unit: string) => (isKnownUnit(unit) ? t(`units.${unit}`) : unit);
 
@@ -95,7 +92,7 @@ export default function MarketPriceManager() {
             <select id="price-crop" name="cropId" required className={darkInput}>
               {crops.map((crop) => (
                 <option key={crop.id} value={crop.id} className="bg-zinc-900">
-                  {cropLabel(crop)}
+                  {cropName(crop, locale)}
                 </option>
               ))}
             </select>
@@ -137,7 +134,7 @@ export default function MarketPriceManager() {
             {prices.map((price) => (
               <li key={price.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
                 <div>
-                  <p className="font-medium">{cropLabel(price.crop)}</p>
+                  <p className="font-medium">{cropName(price.crop, locale)}</p>
                   <p className="text-xs text-white/60">
                     {price.district} · {format.dateTime(new Date(price.date), { dateStyle: "medium" })}
                   </p>

@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { sendSuccess } from "../../utils/apiResponse.js";
 import type { StoryStatus } from "./successStory.types.js";
+import { translateStoryText } from "./successStory.translate.js";
 import {
   createSuccessStory,
   deleteAdminStory,
@@ -69,6 +70,14 @@ export const reviewSuccessStoryHandler = asyncHandler(
     const storyId = String(req.params.id || "");
     const updated = await reviewSuccessStory(storyId, adminUserId, req.body);
     sendSuccess(res, 200, "Success story reviewed successfully", updated);
+  },
+);
+
+// AI suggestions for the text missing in one language; nothing is saved
+export const translateStoryHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const suggestions = await translateStoryText(String(req.params.id || ""));
+    sendSuccess(res, 200, "Translation suggestions ready", suggestions);
   },
 );
 

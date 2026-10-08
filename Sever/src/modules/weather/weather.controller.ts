@@ -1,42 +1,57 @@
 import type { Request, Response } from "express";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { sendSuccess } from "../../utils/apiResponse.js";
+import { AppError } from "../../utils/AppError.js";
+import { DISTRICT_NAMES } from "../../utils/bdDistricts.js";
 import {
   getCurrentWeather as getCurrentWeatherService,
   getWeatherForecast as getWeatherForecastService,
-  getWeatherHistory as getWeatherHistoryService,
+  locatePlace as locatePlaceService,
+  type WeatherQuery,
 } from "./weather.service.js";
 
-export const getCurrentWeather = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+// ?location=… or ?lat=…&lon=…; without either, the signed-in user's own location is used
+function readQuery(req: Request): WeatherQuery {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw AppError.unauthorized("User is not authenticated");
+  }
+
   const { location, lat, lon } = req.query;
-  const data = await getCurrentWeatherService(
-    typeof location === "string" ? location : undefined,
-    typeof lat === "string" ? lat : undefined,
-    typeof lon === "string" ? lon : undefined,
-  );
+  return {
+    userId,
+    location: typeof location === "string" && location.trim() ? location : undefined,
+    lat: typeof lat === "string" ? Number(lat) : undefined,
+    lon: typeof lon === "string" ? Number(lon) : undefined,
+  };
+}
+
+export const getCurrentWeather = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const data = await getCurrentWeatherService(readQuery(req));
   sendSuccess(res, 200, "Current weather fetched successfully", data);
 });
 
 export const getWeatherForecast = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { location, days } = req.query;
-  const data = await getWeatherForecastService(
-    typeof location === "string" ? location : undefined,
-    days ? Number(days) : 7,
-  );
+  const { days } = req.query;
+  const data = await getWeatherForecastService(readQuery(req), days ? Number(days) : 7);
   sendSuccess(res, 200, "Weather forecast fetched successfully", data);
 });
 
-export const getWeatherHistory = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { location, days } = req.query;
-  const data = await getWeatherHistoryService(
-    typeof location === "string" ? location : undefined,
-    days ? Number(days) : 30,
-  );
-  sendSuccess(res, 200, "Past weather fetched successfully", data);
+// ?location=… → coordinates for opening a map there (the user's own place when left out)
+export const locatePlace = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const data = await locatePlaceService(readQuery(req));
+  sendSuccess(res, 200, "Place located successfully", data);
+});
+
+// Bangladesh's 64 districts, for a location picker; either name works as ?location=
+export const getDistricts = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
+  const districts = Object.entries(DISTRICT_NAMES).map(([nameBn, nameEn]) => ({ nameBn, nameEn }));
+  sendSuccess(res, 200, "Districts fetched successfully", districts);
 });
 
 export const WeatherController = {
   getCurrentWeather,
   getWeatherForecast,
-  getWeatherHistory,
+  getDistricts,
+  locatePlace,
 };

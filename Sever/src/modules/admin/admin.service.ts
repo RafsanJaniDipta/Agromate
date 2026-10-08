@@ -3,11 +3,13 @@ import { serviceHandler } from "../../utils/serviceHandler.js";
 import { AppError } from "../../utils/AppError.js";
 import { parseEnum } from "../../utils/enum.js";
 import { ExpertStatus } from "../../generated/prisma/client.js";
+import { createAndDispatchNotification } from "../notification/notification.service.js";
 
 export interface PaginationOptions {
   page?: number;
   limit?: number;
 }
+
 
 const USER_ROLES = ["FARMER", "EXPERT", "ADMIN"];
 
@@ -192,7 +194,7 @@ export const reviewExpertApplication = serviceHandler(async (
     throw AppError.notFound("Expert profile not found");
   }
 
-  return prisma.expertProfile.update({
+  const updatedProfile = await prisma.expertProfile.update({
     where: { userId },
     data: {
       status: decision,
@@ -202,7 +204,22 @@ export const reviewExpertApplication = serviceHandler(async (
       user: { select: { id: true, name: true, phone: true, email: true } },
     },
   });
+
+  // Dispatch live notification to expert user
+  void createAndDispatchNotification({
+    userId,
+    title: decision === "VERIFIED" ? "বিশেষজ্ঞ প্রোফাইল অনুমোদিত" : "বিশেষজ্ঞ আবেদন প্রত্যাখ্যাত",
+    message:
+      decision === "VERIFIED"
+        ? "অভিনন্দন! আপনার বিশেষজ্ঞ আবেদনটি অনুমোদন করা হয়েছে। আপনি এখন কৃষকদের প্রশ্নের উত্তর দিতে পারবেন।"
+        : `আপনার আবেদনটি প্রত্যাখ্যান করা হয়েছে।${rejectionReason ? ` কারণ: ${rejectionReason}` : ""}`,
+    type: decision === "VERIFIED" ? "SUCCESS" : "ALERT",
+    referenceId: profile.id,
+  });
+
+  return updatedProfile;
 });
+
 
 export const AdminService = {
   getExpertApplications,
