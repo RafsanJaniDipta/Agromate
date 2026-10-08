@@ -216,16 +216,57 @@ model Crop {
   optimalTemp     Float?
   optimalRainfall Float?
   durationDays    Int?
+  planDurationDays    Int?  @map("plan_duration_days")
+  planDurationLabel   String? @map("plan_duration_label")
   description     String?
   descriptionBn  String?  @map("description_bn")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  cropCycles   CropCycle[]
-  questions    Question[]
-  marketPrices MarketPrice[]
+  cropCycles        CropCycle[]
+  questions         Question[]
+  marketPrices      MarketPrice[]
+  milestoneTemplates CropMilestoneTemplate[]
 
   @@map("crop")
+}
+
+// Per-crop cultivation plan templates. Seeded from src/data/crop-plans.json
+// (the editable seed source). At runtime the growth-plan feature reads these
+// rows instead of the JSON file. Each crop has 5-6 milestones, each with tasks.
+model CropMilestoneTemplate {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  cropId    String   @db.Uuid
+  crop      Crop     @relation(fields: [cropId], references: [id], onDelete: Cascade)
+  name      String
+  nameBn    String?
+  dayStart  Int
+  dayEnd    Int
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tasks CropTaskTemplate[]
+
+  @@unique([cropId, sortOrder])
+  @@index([cropId])
+  @@map("crop_milestone_template")
+}
+
+model CropTaskTemplate {
+  id           String                @id @default(uuid(7)) @db.Uuid
+  milestoneId  String                @db.Uuid
+  milestone    CropMilestoneTemplate @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  title        String
+  titleBn      String?
+  description  String?
+  suggestedDay Int
+  sortOrder    Int                   @default(0)
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  @@index([milestoneId])
+  @@map("crop_task_template")
 }
 
 model Guide {
@@ -276,10 +317,34 @@ model CropCycle {
   reminders         Reminder[]
   diseaseDetections DiseaseDetection[]
   aiConversations   AIConversation[]
+  growthTasks       GrowthTask[]
 
   @@index([fieldId])
   @@index([cropId])
   @@map("crop_cycle")
+}
+
+// Instance of a task on a crop cycle, generated from the crop's cultivation
+// plan dataset (src/data/crop-plans.json). Milestones are derived groups of
+// these tasks at read time, so no separate milestone table is needed.
+model GrowthTask {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  cropCycleId  String    @db.Uuid
+  cropCycle    CropCycle @relation(fields: [cropCycleId], references: [id], onDelete: Cascade)
+  milestone    String // milestone group name, e.g. "Land Preparation & Sowing"
+  milestoneBn  String?
+  title        String
+  titleBn      String?
+  description  String?
+  suggestedDay Int // day offset from planting date (0-based)
+  dueDate      DateTime?
+  isDone       Boolean   @default(false)
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([cropCycleId])
+  @@map("growth_task")
 }
 
 model Reminder {

@@ -2,6 +2,7 @@ import "dotenv/config";
 import { prisma } from "../src/config/database.js";
 import { auth } from "../src/config/auth.js";
 import { env } from "../src/config/env.js";
+import { readCropPlansJson } from "../src/modules/cropPlan/cropPlan.engine.js";
 
 /**
  * AgroMate Database Seed Script (Admin, Expert, Farmer + Starter Crops).
@@ -54,6 +55,18 @@ async function main() {
       descriptionBn: "শীতকালীন গুরুত্বপূর্ণ অর্থকরী ফসল।",
     },
     {
+      name: "Maize",
+      nameBn: "ভুট্টা",
+      category: "Cereal",
+      season: "Kharif-2 / Summer",
+      idealSoil: "Sandy Loam",
+      optimalTemp: 27.0,
+      optimalRainfall: 80.0,
+      durationDays: 120,
+      description: "Summer cereal grown for grain and fodder, sensitive to fall armyworm.",
+      descriptionBn: "দানার জন্য চাষকৃত গ্রীষ্মকালীন ফসল।",
+    },
+    {
       name: "Tomato",
       nameBn: "টমেটো",
       category: "Vegetable",
@@ -102,6 +115,61 @@ async function main() {
     });
   }
   console.log(`✅ Seeded ${starterCrops.length} starter crops.`);
+
+  // -------------------------------------------------------------
+  // 2. Crop-plan templates (milestones + tasks) from demo dataset
+  // -------------------------------------------------------------
+  console.log("\n🌾 Seeding crop-plan templates from src/data/crop-plans.json...");
+  const planTemplates = readCropPlansJson();
+  let plantedCrops = 0;
+
+  for (const [planKey, plan] of Object.entries(planTemplates)) {
+    const crop = await prisma.crop.findFirst({
+      where: { name: { contains: planKey, mode: "insensitive" } },
+    });
+    if (!crop) {
+      console.log(`  ⏭️  No crop row matches plan "${planKey}" — skipped.`);
+      continue;
+    }
+
+    await prisma.crop.update({
+      where: { id: crop.id },
+      data: {
+        planDurationDays: plan.durationDays,
+        planDurationLabel: plan.durationLabel ?? null,
+      },
+    });
+
+    // Rebuild the crop's template rows (templates are not referenced by
+    // anything, so delete + recreate is safe and idempotent for a seed).
+    await prisma.cropTaskTemplate.deleteMany({ where: { milestone: { cropId: crop.id } } });
+    await prisma.cropMilestoneTemplate.deleteMany({ where: { cropId: crop.id } });
+
+    for (const [mi, milestone] of plan.milestones.entries()) {
+      await prisma.cropMilestoneTemplate.create({
+        data: {
+          cropId: crop.id,
+          name: milestone.name,
+          nameBn: milestone.nameBn,
+          dayStart: milestone.dayStart,
+          dayEnd: milestone.dayEnd,
+          sortOrder: mi,
+          tasks: {
+            create: milestone.tasks.map((task, ti) => ({
+              title: task.title,
+              titleBn: task.titleBn,
+              description: task.description,
+              suggestedDay: task.suggestedDay,
+              sortOrder: ti,
+            })),
+          },
+        },
+      });
+    }
+    plantedCrops++;
+    console.log(`  ✅ "${crop.name}": ${plan.milestones.length} milestones seeded.`);
+  }
+  console.log(`✅ Crop-plan templates seeded for ${plantedCrops} crops.`);
 
   // -------------------------------------------------------------
   // 2. Admin User

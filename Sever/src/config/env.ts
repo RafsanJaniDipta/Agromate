@@ -43,6 +43,9 @@ const envSchema = z.object({
   AI_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
 
   // External APIs (Irfan)
+  // Empty WEATHER_API_KEY is allowed on purpose: the weather service falls
+  // back to clearly-flagged sample data in development when the key is
+  // missing or rejected, per the assignment's testing-fallback rule.
   WEATHER_API_KEY: z.string().default(""),
   MARKET_API_KEY: z.string().default(""),
 

@@ -1,0 +1,457 @@
+{
+  "_comment": "Seed source for the crop-culture dataset (Irfan). Run `bunx tsx prisma/seed.ts` to load this into the database (crop_milestone_template / crop_task_template + crop.planDurationDays). At runtime the server reads the plans from the DATABASE, not this file. Keyed by lowercase crop name; matched to Crop rows case-insensitively. dayStart/dayEnd/suggestedDay are day offsets from the planting date. All dates are scaled proportionally if the farmer sets a custom expectedHarvestDate.",
+  "rice": {
+    "durationDays": 130,
+    "durationLabel": "~4 months",
+    "milestones": [
+      {
+        "name": "Land Preparation & Sowing",
+        "nameBn": "জমি প্রস্তুতি ও বীজ বপন",
+        "dayStart": 0,
+        "dayEnd": 15,
+        "tasks": [
+          { "title": "Plough 2-3 times and level the field", "titleBn": "চাষ করে জমি সমান করা", "suggestedDay": 0, "description": "Level the field so water spreads evenly across plots." },
+          { "title": "Prepare seedbed and sow sprouted seeds", "titleBn": "বীজতলা তৈরি ও অঙ্কুরিত বীজ বপন", "suggestedDay": 3, "description": "Soak seeds 24h, keep them moist until they sprout, then sow." },
+          { "title": "Apply first dose of Urea", "titleBn": "ইউরিয়া সারের প্রথম ডোজ প্রয়োগ", "suggestedDay": 10, "description": "Broadcast urea evenly after the seedlings are established." }
+        ]
+      },
+      {
+        "name": "Germination & Seedling Care",
+        "nameBn": "অঙ্কুরোদগম ও চারা পরিচর্যা",
+        "dayStart": 15,
+        "dayEnd": 25,
+        "tasks": [
+          { "title": "Keep 3-5 cm of standing water", "titleBn": "৩-৫ সেমি পানি ধরে রাখা", "suggestedDay": 16, "description": "Maintain a shallow water layer to help seedlings establish." },
+          { "title": "Thin out overcrowded seedlings", "titleBn": "ঘন চারা পাতলা করা", "suggestedDay": 20, "description": "Remove weak seedlings so every hill has 3-4 healthy plants." }
+        ]
+      },
+      {
+        "name": "Vegetative Growth & Weeding",
+        "nameBn": "বৃদ্ধি ও আগাছা নিয়ন্ত্রণ",
+        "dayStart": 25,
+        "dayEnd": 60,
+        "tasks": [
+          { "title": "First weeding", "titleBn": "প্রথমবার আগাছা নিড়ান", "suggestedDay": 28, "description": "Remove weeds by hand or hoe before they compete with the crop." },
+          { "title": "Apply second Urea dose", "titleBn": "দ্বিতীয় ইউরিয়া ডোজ প্রয়োগ", "suggestedDay": 35, "description": "Top-dress urea during active tiller growth." },
+          { "title": "Scout for stem borer and leaf roller", "titleBn": "মাজরা ও পাতা মোড়া পোকা পর্যবেক্ষণ", "suggestedDay": 45, "description": "Check for dead hearts and folded leaves; act if damage appears." },
+          { "title": "Second weeding", "titleBn": "দ্বিতীয়বার আগাছা নিড়ান", "suggestedDay": 50, "description": "Keep the field clean until canopy closes." }
+        ]
+      },
+      {
+        "name": "Tillering & Water Management",
+        "nameBn": "কুশি গঠন ও পানি ব্যবস্থাপনা",
+        "dayStart": 60,
+        "dayEnd": 90,
+        "tasks": [
+          { "title": "Keep field saturated during tillering", "titleBn": "কুশি পর্যায়ে জমি ভেজা রাখা", "suggestedDay": 62, "description": "Consistent moisture maximizes productive tillers." },
+          { "title": "Apply third dose (Urea + Potash)", "titleBn": "তৃতীয় সার প্রয়োগ (ইউরিয়া + পটাশ)", "suggestedDay": 70, "description": "Support tiller survival and stem strength." },
+          { "title": "Monitor for blast disease", "titleBn": "ব্লাস্ট রোগ পর্যবেক্ষণ", "suggestedDay": 80, "description": "Look for spindle-shaped lesions on leaves and act early." }
+        ]
+      },
+      {
+        "name": "Flowering & Grain Filling",
+        "nameBn": "ফুল আসা ও দানা ভরাট",
+        "dayStart": 90,
+        "dayEnd": 115,
+        "tasks": [
+          { "title": "Reduce water to shallow level", "titleBn": "পানি হালকা করা", "suggestedDay": 92, "description": "Lower the water layer to let the panicle breathe." },
+          { "title": "Foliar spray to support grain filling", "titleBn": "দানা ভরাটে ফলিয়ার স্প্রে", "suggestedDay": 100, "description": "Micronutrient spray improves filled-grain percentage." },
+          { "title": "Guard against birds and rodents", "titleBn": "পাখি ও ইদুর থেকে রক্ষা", "suggestedDay": 108, "description": "Scare birds and control rodents as grain matures." }
+        ]
+      },
+      {
+        "name": "Harvest & Threshing",
+        "nameBn": "ফসল তোলা ও মাড়াই",
+        "dayStart": 115,
+        "dayEnd": 130,
+        "tasks": [
+          { "title": "Check grain hardness before harvest", "titleBn": "দানা শক্ত কিনা পরীক্ষা করা", "suggestedDay": 116, "description": "Grain should break cleanly — not chalky — when pressed." },
+          { "title": "Harvest at 80-90% maturity", "titleBn": "৮০-৯০% পাকলে ফসল তোলা", "suggestedDay": 120, "description": "Delay causes lodging and shattering losses." },
+          { "title": "Thresh, dry and store properly", "titleBn": "মাড়াই, শুকানো ও সংরক্ষণ", "suggestedDay": 125, "description": "Dry grain below 14% moisture before storage." }
+        ]
+      }
+    ]
+  },
+  "wheat": {
+    "durationDays": 110,
+    "durationLabel": "~3.5 months",
+    "milestones": [
+      {
+        "name": "Land Preparation & Sowing",
+        "nameBn": "জমি প্রস্তুতি ও বীজ বপন",
+        "dayStart": 0,
+        "dayEnd": 10,
+        "tasks": [
+          { "title": "Plough and prepare fine tilth", "titleBn": "চাষ করে মাটি ঝুরঝুরা করা", "suggestedDay": 0, "description": "Fine seedbed gives uniform germination." },
+          { "title": "Sow seed 2-3 cm deep with spacing", "titleBn": "৩-৪ সেমি গভীরে বীজ বপন", "suggestedDay": 4, "description": "Row spacing of 20-22 cm for best yield." },
+          { "title": "First irrigation after sowing", "titleBn": "বপনের পর প্রথম সেচ", "suggestedDay": 8, "description": "Light irrigation helps germination." }
+        ]
+      },
+      {
+        "name": "Germination & Stand Establishment",
+        "nameBn": "অঙ্কুরোদগম ও চারা গঠন",
+        "dayStart": 10,
+        "dayEnd": 25,
+        "tasks": [
+          { "title": "Check germination and fill gaps", "titleBn": "অঙ্কুরোদগম পরীক্ষা ও ফাঁকা পূরণ", "suggestedDay": 12, "description": "Re-sow gaps to keep a uniform stand." },
+          { "title": "Thin seedlings where too dense", "titleBn": "ঘন চারা পাতলা করা", "suggestedDay": 18, "description": "Avoid overcrowding that invites disease." },
+          { "title": "Second irrigation", "titleBn": "দ্বিতীয় সেচ", "suggestedDay": 25, "description": "Irrigate at crown-root initiation." }
+        ]
+      },
+      {
+        "name": "Tillering & Crop Care",
+        "nameBn": "কুশি গঠন ও পরিচর্যা",
+        "dayStart": 25,
+        "dayEnd": 55,
+        "tasks": [
+          { "title": "First weeding", "titleBn": "প্রথম আগাছা নিড়ান", "suggestedDay": 30, "description": "Weeds steal nutrients during fast tillering." },
+          { "title": "Top-dress Urea at tillering", "titleBn": "কুশি পর্যায়ে ইউরিয়া প্রয়োগ", "suggestedDay": 35, "description": "Boosts tiller count and ear size." },
+          { "title": "Scout for aphids and rust", "titleBn": "এফিড ও মরিচা রোগ পর্যবেক্ষণ", "suggestedDay": 45, "description": "Early detection prevents epidemic spread." },
+          { "title": "Third irrigation", "titleBn": "তৃতীয় সেচ", "suggestedDay": 50, "description": "Irrigate at maximum tillering." }
+        ]
+      },
+      {
+        "name": "Grain Filling",
+        "nameBn": "দানা ভরাট",
+        "dayStart": 55,
+        "dayEnd": 90,
+        "tasks": [
+          { "title": "Irrigate at heading stage", "titleBn": "থোড় বের হওয়ায় সেচ", "suggestedDay": 65, "description": "Critical moisture for grain formation." },
+          { "title": "Monitor for rust disease", "titleBn": "মরিচা রোগ পর্যবেক্ষণ", "suggestedDay": 75, "description": "Yellow or brown pustules need immediate action." },
+          { "title": "Keep the field weed-free", "titleBn": "জমি আগাছামুক্ত রাখা", "suggestedDay": 82, "description": "Late weeds affect grain fill." }
+        ]
+      },
+      {
+        "name": "Harvest",
+        "nameBn": "ফসল তোলা",
+        "dayStart": 90,
+        "dayEnd": 110,
+        "tasks": [
+          { "title": "Check grain maturity", "titleBn": "দানা পাকলো কিনা পরীক্ষা", "suggestedDay": 92, "description": "Straw turns yellow and grain hardens." },
+          { "title": "Harvest the crop", "titleBn": "ফসল কাটা", "suggestedDay": 98, "description": "Harvest promptly to avoid shattering." },
+          { "title": "Thresh and store seed", "titleBn": "মাড়াই ও বীজ সংরক্ষণ", "suggestedDay": 105, "description": "Dry well before bagging." }
+        ]
+      }
+    ]
+  },
+  "potato": {
+    "durationDays": 90,
+    "durationLabel": "3 months",
+    "milestones": [
+      {
+        "name": "Land Preparation & Seed Planting",
+        "nameBn": "জমি প্রস্তুতি ও আলু রোপণ",
+        "dayStart": 0,
+        "dayEnd": 10,
+        "tasks": [
+          { "title": "Deep plough and make ridges", "titleBn": "গভীর চাষ ও আল তৈরি", "suggestedDay": 0, "description": "Loose soil is essential for tuber development." },
+          { "title": "Apply compost and basal fertilizer", "titleBn": "জৈব সার ও বেসাল সার প্রয়োগ", "suggestedDay": 5, "description": "Mix compost and a basal dose into the ridges." },
+          { "title": "Plant sprouted seed tubers", "titleBn": "গজানো আলু রোপণ", "suggestedDay": 8, "description": "Plant 15-20 cm apart with sprouted eyes facing up." }
+        ]
+      },
+      {
+        "name": "Emergence & Hilling",
+        "nameBn": "গজানো ও মাটি তোলা",
+        "dayStart": 10,
+        "dayEnd": 30,
+        "tasks": [
+          { "title": "Check emergence and replace missing plants", "titleBn": "গজানো পরীক্ষা ও ফাঁকা পূরণ", "suggestedDay": 14, "description": "Re-plant gaps so the stand is uniform." },
+          { "title": "First earthing-up", "titleBn": "প্রথমবার মাটি তোলা", "suggestedDay": 22, "description": "Cover stems with soil to encourage stolons." }
+        ]
+      },
+      {
+        "name": "Vegetative Growth & Tuber Initiation",
+        "nameBn": "বৃদ্ধি ও কন্দ গঠন",
+        "dayStart": 30,
+        "dayEnd": 60,
+        "tasks": [
+          { "title": "Second earthing-up", "titleBn": "দ্বিতীয়বার মাটি তোলা", "suggestedDay": 40, "description": "Protect young tubers from sunlight." },
+          { "title": "Spray against late blight", "titleBn": "লেট ব্লাইট রোগের স্প্রে", "suggestedDay": 42, "description": "Humid, cool spells trigger late blight — spray preventively." },
+          { "title": "Irrigate regularly to keep moisture", "titleBn": "নিয়মিত সেচ দিয়ে আর্দ্রতা ধরে রাখা", "suggestedDay": 50, "description": "Even moisture prevents knobby tubers." }
+        ]
+      },
+      {
+        "name": "Tuber Bulking",
+        "nameBn": "কন্দ ভরাট",
+        "dayStart": 60,
+        "dayEnd": 80,
+        "tasks": [
+          { "title": "Maintain soil moisture", "titleBn": "মাটির আর্দ্রতা বজায় রাখা", "suggestedDay": 62, "description": "This is the critical bulking window." },
+          { "title": "Stop watering near maturity", "titleBn": "পরিপক্বতার আগে সেচ বন্ধ করা", "suggestedDay": 78, "description": "Dry soil improves tuber skin set." }
+        ]
+      },
+      {
+        "name": "Harvest",
+        "nameBn": "আলু তোলা",
+        "dayStart": 80,
+        "dayEnd": 90,
+        "tasks": [
+          { "title": "Dry back the vines", "titleBn": "গাছ শুকিয়ে ফেলা", "suggestedDay": 82, "description": "Stop growth so tubers harden." },
+          { "title": "Harvest and cure tubers", "titleBn": "আলু তোলা ও নিরাময়", "suggestedDay": 86, "description": "Cure at room temperature for a week." },
+          { "title": "Sort and store in shade", "titleBn": "বাছাই করে ছায়ায় সংরক্ষণ", "suggestedDay": 88, "description": "Keep only healthy tubers for storage." }
+        ]
+      }
+    ]
+  },
+  "tomato": {
+    "durationDays": 90,
+    "durationLabel": "3 months",
+    "milestones": [
+      {
+        "name": "Seedbed & Sowing",
+        "nameBn": "বীজতলা ও বীজ বপন",
+        "dayStart": 0,
+        "dayEnd": 10,
+        "tasks": [
+          { "title": "Prepare a fine nursery seedbed", "titleBn": "চমৎকার বীজতলা তৈরি", "suggestedDay": 0, "description": "Loose, fertile seedbed raises healthy seedlings." },
+          { "title": "Sow seeds in rows", "titleBn": "সারিতে বীজ বপন", "suggestedDay": 3, "description": "Sow thinly in rows 10 cm apart in the nursery." },
+          { "title": "Mulch the nursery lightly", "titleBn": "বীজতলায় হালকা মালচ", "suggestedDay": 8, "description": "Light mulch keeps moisture for uniform germination." }
+        ]
+      },
+      {
+        "name": "Nursery Care & Transplanting",
+        "nameBn": "চারা পরিচর্যা ও রোপণ",
+        "dayStart": 10,
+        "dayEnd": 25,
+        "tasks": [
+          { "title": "Water nursery daily", "titleBn": "প্রতিদিন বীজতলায় পানি", "suggestedDay": 12, "description": "Keep the nursery gently moist, never waterlogged." },
+          { "title": "Harden off seedlings", "titleBn": "চারা শক্ত করা", "suggestedDay": 20, "description": "Reduce water 4-5 days before transplanting." },
+          { "title": "Transplant at 25 days", "titleBn": "২৫ দিনে চারা রোপণ", "suggestedDay": 24, "description": "Plant 45-60 cm apart with firm soil around roots." }
+        ]
+      },
+      {
+        "name": "Vegetative Growth & Staking",
+        "nameBn": "বৃদ্ধি ও খুঁটি সেঁটে দেওয়া",
+        "dayStart": 25,
+        "dayEnd": 45,
+        "tasks": [
+          { "title": "Install stakes", "titleBn": "খুঁটি স্থাপন", "suggestedDay": 30, "description": "Stake plants to keep fruit off the ground and reduce rot." },
+          { "title": "Top-dress Urea", "titleBn": "ইউরিয়া উপরিসার প্রয়োগ", "suggestedDay": 35, "description": "Boosts leafy growth before flowering begins." },
+          { "title": "Prune side shoots", "titleBn": "পার্শ্ব শাখা ছাঁটাই", "suggestedDay": 40, "description": "Remove lower suckers for strong single stems." }
+        ]
+      },
+      {
+        "name": "Flowering & Fruit Set",
+        "nameBn": "ফুল ও ফল ধরা",
+        "dayStart": 45,
+        "dayEnd": 65,
+        "tasks": [
+          { "title": "Scout for fruit borer", "titleBn": "ফল ছিদ্রকারী পোকা পর্যবেক্ষণ", "suggestedDay": 50, "description": "Check for bore holes and dropped fruit." },
+          { "title": "Spray against late blight", "titleBn": "লেট ব্লাইটের স্প্রে", "suggestedDay": 55, "description": "Damp weather invites late blight — spray preventively." },
+          { "title": "Support heavy fruit trusses", "titleBn": "ভারী ফল ধরে বেঁধে দাওয়া", "suggestedDay": 60, "description": "Tie heavy trusses to stakes so branches don't snap." }
+        ]
+      },
+      {
+        "name": "Fruit Development",
+        "nameBn": "ফল বৃদ্ধি",
+        "dayStart": 65,
+        "dayEnd": 80,
+        "tasks": [
+          { "title": "Irrigate evenly", "titleBn": "সমান পরিমাণে সেচ", "suggestedDay": 68, "description": "Irregular water causes blossom-end rot." },
+          { "title": "Top-dress Potash", "titleBn": "পটাশ উপরিসার প্রয়োগ", "suggestedDay": 72, "description": "Potash improves fruit size and colour." }
+        ]
+      },
+      {
+        "name": "Harvest",
+        "nameBn": "ফসল তোলা",
+        "dayStart": 80,
+        "dayEnd": 90,
+        "tasks": [
+          { "title": "Pick at breaker stage", "titleBn": "পাকা শুরু হলে তোলা", "suggestedDay": 82, "description": "Harvest when fruit turns pink or yellow-green." },
+          { "title": "Harvest every 3-4 days", "titleBn": "প্রতি ৩-৪ দিনে সংগ্রহ", "suggestedDay": 86, "description": "Regular picking boosts the total yield." },
+          { "title": "Sort and pack", "titleBn": "বাছাই ও প্যাকিং", "suggestedDay": 89, "description": "Grade by size and colour, pack without bruising." }
+        ]
+      }
+    ]
+  },
+  "maize": {
+    "durationDays": 120,
+    "durationLabel": "~4 months",
+    "milestones": [
+      {
+        "name": "Land Preparation & Sowing",
+        "nameBn": "জমি প্রস্তুতি ও বীজ বপন",
+        "dayStart": 0,
+        "dayEnd": 12,
+        "tasks": [
+          { "title": "Plough and prepare the seedbed", "titleBn": "চাষ করে বীজতলা প্রস্তুত", "suggestedDay": 0, "description": "Well-drained, fine seedbed for strong roots." },
+          { "title": "Sow seed at 60-75 cm spacing", "titleBn": "৬০-৭৫ সেমি দূরত্বে বীজ বপন", "suggestedDay": 3, "description": "Two seeds per hill, thin later." },
+          { "title": "Irrigate after sowing", "titleBn": "বপনের পর সেচ", "suggestedDay": 8, "description": "Uniform moisture for quick germination." }
+        ]
+      },
+      {
+        "name": "Germination & Thinning",
+        "nameBn": "অঙ্কুরোদগম ও চারা পাতলা",
+        "dayStart": 12,
+        "dayEnd": 30,
+        "tasks": [
+          { "title": "Check germination", "titleBn": "অঙ্কুরোদগম পরীক্ষা", "suggestedDay": 14, "description": "Reseed sparse rows early." },
+          { "title": "Thin to one healthy plant per hill", "titleBn": "প্রতি গর্তে একটি চারা রাখা", "suggestedDay": 20, "description": "Keeps competition low and cobs uniform." },
+          { "title": "Second irrigation", "titleBn": "দ্বিতীয় সেচ", "suggestedDay": 26, "description": "Light irrigation during establishment." }
+        ]
+      },
+      {
+        "name": "Vegetative Growth & Top Dressing",
+        "nameBn": "বৃদ্ধি ও উপরিসার প্রয়োগ",
+        "dayStart": 30,
+        "dayEnd": 70,
+        "tasks": [
+          { "title": "Weed and hoe between rows", "titleBn": "আগাছা নিড়ান ও মই", "suggestedDay": 32, "description": "Loosen soil and remove weeds early." },
+          { "title": "Top-dress Urea", "titleBn": "ইউরিয়া উপরিসার প্রয়োগ", "suggestedDay": 40, "description": "Apply at knee-high stage." },
+          { "title": "Earthing up at knee height", "titleBn": "হাঁটু উচ্চতায় মাটি তোলা", "suggestedDay": 55, "description": "Supports roots and reduces lodging." },
+          { "title": "Monitor for fall armyworm", "titleBn": "ফল আর্মিওয়ার্ম পর্যবেক্ষণ", "suggestedDay": 60, "description": "Whorl damage needs immediate control." }
+        ]
+      },
+      {
+        "name": "Tasseling & Silking",
+        "nameBn": "থোড় ও শুঙ্গ বের হওয়া",
+        "dayStart": 70,
+        "dayEnd": 95,
+        "tasks": [
+          { "title": "Irrigate at tasseling", "titleBn": "থোড় বের হওয়ার সময় সেচ", "suggestedDay": 72, "description": "Critical for pollination success." },
+          { "title": "Inspect cobs for pests", "titleBn": "ভুট্টা পোকা পরীক্ষা", "suggestedDay": 80, "description": "Watch for cob borers at silk stage." }
+        ]
+      },
+      {
+        "name": "Grain Filling",
+        "nameBn": "দানা ভরাট",
+        "dayStart": 95,
+        "dayEnd": 115,
+        "tasks": [
+          { "title": "Last irrigation at grain fill", "titleBn": "দানা ভরাটে সর্বশেষ সেচ", "suggestedDay": 98, "description": "Moisture stress here cuts yield." },
+          { "title": "Watch for cob rot", "titleBn": "কব রট রোগ পর্যবেক্ষণ", "suggestedDay": 105, "description": "Check for fungal growth on cobs." }
+        ]
+      },
+      {
+        "name": "Harvest",
+        "nameBn": "ফসল তোলা",
+        "dayStart": 115,
+        "dayEnd": 120,
+        "tasks": [
+          { "title": "Check husk dryness", "titleBn": "খোসা শুকনো কিনা পরীক্ষা", "suggestedDay": 116, "description": "Husks turn brown and kernels dent." },
+          { "title": "Harvest the cobs", "titleBn": "ভুট্টা তোলা", "suggestedDay": 118, "description": "Harvest before rain damages cobs." },
+          { "title": "Dry and shell the grains", "titleBn": "শুকিয়ে দানা ছাড়ানো", "suggestedDay": 120, "description": "Dry below 14% moisture for storage." }
+        ]
+      }
+    ]
+  },
+  "mustard": {
+    "durationDays": 80,
+    "durationLabel": "~2.5 months",
+    "milestones": [
+      {
+        "name": "Land Preparation & Sowing",
+        "nameBn": "জমি প্রস্তুতি ও বীজ বপন",
+        "dayStart": 0,
+        "dayEnd": 8,
+        "tasks": [
+          { "title": "Plough and level the field", "titleBn": "চাষ করে জমি সমান করা", "suggestedDay": 0, "description": "Fine tilth for tiny seed." },
+          { "title": "Sow seeds thinly, 2-3 cm apart", "titleBn": "চিকন করে বীজ বপন", "suggestedDay": 4, "description": "Thin sowing prevents overcrowding." }
+        ]
+      },
+      {
+        "name": "Germination & Thinning",
+        "nameBn": "অঙ্কুরোদগম ও চারা পাতলা",
+        "dayStart": 8,
+        "dayEnd": 20,
+        "tasks": [
+          { "title": "Check germination and fill gaps", "titleBn": "অঙ্কুরোদগম পরীক্ষা ও ফাঁকা পূরণ", "suggestedDay": 10, "description": "Re-sow missing rows early." },
+          { "title": "Thin seedlings", "titleBn": "চারা পাতলা করা", "suggestedDay": 15, "description": "Keep 10-15 cm spacing between plants." }
+        ]
+      },
+      {
+        "name": "Vegetative Care & Weeding",
+        "nameBn": "বৃদ্ধি পর্যায় ও আগাছা নিয়ন্ত্রণ",
+        "dayStart": 20,
+        "dayEnd": 40,
+        "tasks": [
+          { "title": "First weeding", "titleBn": "প্রথম আগাছা নিড়ান", "suggestedDay": 22, "description": "Early weeds cut mustard yield sharply." },
+          { "title": "Irrigate at rosette stage", "titleBn": "রোসেট পর্যায়ে সেচ", "suggestedDay": 28, "description": "One light irrigation at rosette stage." },
+          { "title": "Scout for aphids", "titleBn": "এফিড পর্যবেক্ষণ", "suggestedDay": 35, "description": "Aphids cluster on tender shoots." }
+        ]
+      },
+      {
+        "name": "Flowering",
+        "nameBn": "ফুল আসা",
+        "dayStart": 40,
+        "dayEnd": 60,
+        "tasks": [
+          { "title": "Top-dress Urea before flowering", "titleBn": "ফুল আসার আগে ইউরিয়া প্রয়োগ", "suggestedDay": 42, "description": "Supports flower and pod development." },
+          { "title": "Monitor pod formation", "titleBn": "শুঁটি গঠন পর্যবেক্ষণ", "suggestedDay": 50, "description": "Check that pods set evenly." }
+        ]
+      },
+      {
+        "name": "Pod Filling & Harvest",
+        "nameBn": "শুঁটি ভরাট ও ফসল তোলা",
+        "dayStart": 60,
+        "dayEnd": 80,
+        "tasks": [
+          { "title": "Stop irrigation near maturity", "titleBn": "পরিপক্বতার আগে সেচ বন্ধ", "suggestedDay": 62, "description": "Speeds uniform maturity." },
+          { "title": "Harvest when pods turn yellowish", "titleBn": "শুঁটি হলদে হলে ফসল তোলা", "suggestedDay": 68, "description": "Avoid over-ripe pods that shatter." },
+          { "title": "Thresh and dry seeds", "titleBn": "মাড়াই ও বীজ শুকানো", "suggestedDay": 74, "description": "Dry seeds well before storage." }
+        ]
+      }
+    ]
+  },
+  "jute": {
+    "durationDays": 125,
+    "durationLabel": "~4 months",
+    "milestones": [
+      {
+        "name": "Land Preparation & Sowing",
+        "nameBn": "জমি প্রস্তুতি ও বীজ বপন",
+        "dayStart": 0,
+        "dayEnd": 12,
+        "tasks": [
+          { "title": "Plough and prepare a fine seedbed", "titleBn": "চাষ করে বীজতলা প্রস্তুত", "suggestedDay": 0, "description": "Smooth seedbed helps tender jute seedlings." },
+          { "title": "Apply basal fertilizer", "titleBn": "বেসাল সার প্রয়োগ", "suggestedDay": 5, "description": "Mix a basal dose into the soil." },
+          { "title": "Sow jute seeds", "titleBn": "পাট বীজ বপন", "suggestedDay": 8, "description": "Sow in rows at the start of the rainy season." }
+        ]
+      },
+      {
+        "name": "Seedling Care & Weeding",
+        "nameBn": "চারা পরিচর্যা ও আগাছা নিয়ন্ত্রণ",
+        "dayStart": 12,
+        "dayEnd": 35,
+        "tasks": [
+          { "title": "First weeding", "titleBn": "প্রথম আগাছা নিড়ান", "suggestedDay": 15, "description": "Protect young seedlings from weed pressure." },
+          { "title": "Thin seedlings", "titleBn": "চারা পাতলা করা", "suggestedDay": 20, "description": "Keep 5-7 cm spacing for straight stems." },
+          { "title": "Second weeding", "titleBn": "দ্বিতীয় আগাছা নিড়ান", "suggestedDay": 30, "description": "Keep rows clean during rapid growth." }
+        ]
+      },
+      {
+        "name": "Vegetative Growth",
+        "nameBn": "বৃদ্ধি পর্যায়",
+        "dayStart": 35,
+        "dayEnd": 70,
+        "tasks": [
+          { "title": "Top-dress Urea", "titleBn": "ইউরিয়া উপরিসার প্রয়োগ", "suggestedDay": 40, "description": "Boosts stem height and fibre yield." },
+          { "title": "Third weeding or earthing up", "titleBn": "তৃতীয় আগাছা নিড়ান", "suggestedDay": 50, "description": "Loosen soil and keep the field clean." },
+          { "title": "Monitor for jute caterpillar", "titleBn": "পাট শুঁয়োপোকা পর্যবেক্ষণ", "suggestedDay": 60, "description": "Check for skeletonised leaves." }
+        ]
+      },
+      {
+        "name": "Retting Preparation",
+        "nameBn": "পচানোর প্রস্তুতি",
+        "dayStart": 70,
+        "dayEnd": 100,
+        "tasks": [
+          { "title": "Stop fertilizing", "titleBn": "সার প্রয়োগ বন্ধ করা", "suggestedDay": 75, "description": "Let stems mature and thicken." },
+          { "title": "Select mature stems", "titleBn": "পরিপক্ব কান্ড নির্বাচন", "suggestedDay": 85, "description": "Flowering stage is ideal for harvest." },
+          { "title": "Cut and bundle stems", "titleBn": "কান্ড কেটে আঁটি বাঁধা", "suggestedDay": 95, "description": "Prepare uniform bundles for retting." }
+        ]
+      },
+      {
+        "name": "Harvest & Retting",
+        "nameBn": "ফসল তোলা ও পচানো",
+        "dayStart": 100,
+        "dayEnd": 125,
+        "tasks": [
+          { "title": "Immerse bundles for retting", "titleBn": "আঁটি জলে ডুবিয়ে রাখা", "suggestedDay": 102, "description": "Clean slow-running water gives best fibre." },
+          { "title": "Check fibre separation", "titleBn": "আঁশ আলাদা হচ্ছে কিনা পরীক্ষা", "suggestedDay": 112, "description": "Fibre parts easily when ready." },
+          { "title": "Extract, wash and dry fibre", "titleBn": "আঁশ ছাড়ানো, ধোয়া ও শুকানো", "suggestedDay": 120, "description": "Wash thoroughly and dry on racks." }
+        ]
+      }
+    ]
+  }
+}
