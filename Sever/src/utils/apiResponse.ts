@@ -1,32 +1,8 @@
 import type { Response } from "express";
+import type { ApiErrorBody, ApiErrorDetail, ApiSuccessBody } from "../types/index.js";
 
-/**
- * Single source of truth for the API response envelope documented in
- * docs/API-Documentation.md.
- *
- *   success -> { success: true,  message, data }
- *   failure -> { success: false, message, errors? }
- *
- * Handlers should never call res.json() with an ad-hoc shape; use these helpers
- * so the contract stays identical on every route.
- */
+export type { ApiErrorBody, ApiErrorDetail, ApiSuccessBody };
 
-export interface ApiErrorDetail {
-  field: string;
-  message: string;
-}
-
-export interface ApiSuccessBody<T> {
-  success: true;
-  message: string;
-  data: T;
-}
-
-export interface ApiErrorBody {
-  success: false;
-  message: string;
-  errors?: ApiErrorDetail[];
-}
 
 export function sendSuccess<T>(
   res: Response,

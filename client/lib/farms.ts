@@ -1,41 +1,11 @@
 import { api } from "@/lib/api";
 import type { FieldBoundary } from "@/lib/geo";
+import type { Envelope, Farm, FarmInput, Field, FieldInput, SoilType } from "@/types";
+import { isSoilType, SOIL_TYPES } from "@/types";
 
-// Soil types the farmer picks from. Saved as these codes so the UI can show them in either language.
-export const SOIL_TYPES = ["CLAY", "CLAY_LOAM", "LOAM", "SANDY_LOAM", "SANDY", "SILT"] as const;
-export type SoilType = (typeof SOIL_TYPES)[number];
+export { isSoilType, SOIL_TYPES };
+export type { Farm, FarmInput, Field, FieldInput, SoilType };
 
-export const isSoilType = (value: string): value is SoilType => (SOIL_TYPES as readonly string[]).includes(value);
-
-// One plot of land inside a farm
-export type Field = {
-  id: string;
-  farmId: string;
-  name: string;
-  areaInAcres: number | null;
-  // A SoilType code; older rows may hold free text
-  soilType: string | null;
-  // Outline drawn on the satellite map, or null when it has not been drawn yet
-  boundary: FieldBoundary | null;
-};
-
-export type Farm = {
-  id: string;
-  name: string;
-  // Village, upazila or district, as the farmer writes it
-  location: string;
-  areaInAcres: number | null;
-  soilType: string | null;
-  // Photo of the whole place, shown on the dashboard; null until the farmer uploads one
-  imageUrl: string | null;
-  fields: Field[];
-};
-
-export type FarmInput = { name: string; location: string; areaInAcres?: number; soilType: string | null };
-export type FieldInput = { name: string; areaInAcres?: number; soilType: string | null };
-
-// The server wraps every response as { data }
-type Envelope<T> = { data: T };
 
 // The signed-in farmer's farms, each with its fields
 export async function getFarms() {

@@ -3,34 +3,9 @@ import { fromNodeHeaders } from "better-auth/node";
 
 import { auth } from "../config/auth.js";
 import { AppError } from "../utils/AppError.js";
+import type { AuthUser } from "../types/index.js";
+import "../types/express.d.js";
 
-/**
- * Authentication middleware (Masud — Day 2).
- *
- * Better Auth validates the session cookie and returns the user. There is no
- * JWT to verify and no token to parse.
- *
- * Session cookies are cross-origin (Next.js on :3000, API on :5000), so the
- * client must send `credentials: "include"` on every fetch or this rejects.
- */
-
-export interface AuthUser {
-  id: string;
-  email: string;
-  name: string;
-  role?: string | null;
-  location?: string | null;
-}
-
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace Express {
-    interface Request {
-      user?: AuthUser;
-      session?: { id: string; expiresAt: Date };
-    }
-  }
-}
 
 /**
  * Reads the session from the request cookie. When Better Auth extends a
