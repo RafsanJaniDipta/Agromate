@@ -35,7 +35,16 @@ if (!isProduction) {
 /** Fails fast at boot if the database is unreachable (server.ts calls this). */
 export async function connectDatabase(): Promise<void> {
   await prisma.$queryRaw`SELECT 1`;
-  console.log("[db] connected");
+}
+
+/** "agromate @ localhost:5432" — name and host only, never the credentials. */
+export function describeDatabase(): string {
+  try {
+    const url = new URL(env.DATABASE_URL);
+    return `${url.pathname.slice(1)} @ ${url.host}`;
+  } catch {
+    return "database";
+  }
 }
 
 export async function disconnectDatabase(): Promise<void> {

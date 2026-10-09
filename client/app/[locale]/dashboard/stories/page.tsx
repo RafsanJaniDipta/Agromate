@@ -17,7 +17,7 @@ export default async function StoriesPage({ params }: PageProps<"/[locale]/dashb
   const t = await getTranslations({ locale, namespace: "dashboard.storiesPage" });
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <header className="px-1">
         <h1 className="text-2xl font-semibold md:text-3xl">{t("title")}</h1>
         <p className="mt-1 max-w-2xl text-sm text-white/60">{t("intro")}</p>

@@ -18,7 +18,9 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:seed:categories": "tsx prisma/seed-expert-categories.ts",
+    "db:seed:experts": "tsx prisma/seed-demo-experts.ts"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -33,10 +35,12 @@
     "dotenv": "^18.0.4",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
+    "fflate": "^0.8.3",
     "helmet": "^8.3.0",
     "morgan": "^1.12.1",
     "multer": "^2.4.0",
     "pg": "^8.23.1",
+    "socket.io": "^4.8.4",
     "zod": "^4.6.5"
   }
 }

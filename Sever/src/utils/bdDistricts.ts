@@ -90,3 +90,19 @@ export const DISTRICT_ALIASES: Record<string, string> = {
   moulvibazar: "Moulvi Bazar",
   netrokona: "Netrakona",
 };
+
+// Lower case without spaces, so "Bogura Sadar" and "bogurasadar" compare equal
+const squash = (text: string) => text.toLowerCase().replace(/\s+/g, "");
+
+// The district a piece of text names, in the geocoder's spelling, or null.
+// Finds it inside longer text too: "বগুড়া সদর", "Bogura Sadar", "Chattogram district".
+export function districtIn(text: string): string | null {
+  const banglaDistrict = Object.keys(DISTRICT_NAMES).find((district) => text.includes(district));
+  if (banglaDistrict) return DISTRICT_NAMES[banglaDistrict] ?? null;
+
+  const squashed = squash(text);
+  const alias = Object.keys(DISTRICT_ALIASES).find((name) => squashed.includes(name));
+  if (alias) return DISTRICT_ALIASES[alias] ?? null;
+
+  return Object.values(DISTRICT_NAMES).find((name) => squashed.includes(squash(name))) ?? null;
+}

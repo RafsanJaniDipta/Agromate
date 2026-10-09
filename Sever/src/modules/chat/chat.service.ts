@@ -1,176 +1,251 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
 import { AppError } from "../../utils/AppError.js";
+import { emitToUser } from "../../socket/socket.server.js";
+import { markReadByReference, notifyLatest } from "../notification/notification.service.js";
 
-export interface CreateConversationInput {
-  initiatorId: string;
-  targetUserId: string;
-}
+// One-to-one chat between a farmer and an expert, or an expert and an admin.
+// Farmers start chats with verified experts, experts with admins, admins with experts;
+// once a chat exists either side can write. Every new message and read receipt is also
+// pushed live to both people (see socket.server.ts).
 
-export interface SaveMessageInput {
-  conversationId: string;
-  senderId: string;
-  content: string;
-}
+const MESSAGE_MAX_LENGTH = 2000;
+const PAGE_SIZE = 30;
 
-const userSelectFields = {
+type Role = "FARMER" | "EXPERT" | "ADMIN";
+// Older accounts store the role in lower case
+const roleOf = (role: string) => role.toUpperCase() as Role;
+const rolesMatching = (role: Role) => [role, role.toLowerCase()];
+
+// Who each role may start a chat with
+const CAN_START_WITH: Record<Role, Role | null> = {
+  FARMER: "EXPERT",
+  EXPERT: "ADMIN",
+  ADMIN: "EXPERT",
+};
+
+const userFields = {
   id: true,
   name: true,
   image: true,
   role: true,
+  expertProfile: { select: { specialization: true, status: true } },
+} as const;
+
+type UserRow = {
+  id: string;
+  name: string;
+  image: string | null;
+  role: string;
+  expertProfile: { specialization: string; status: string } | null;
 };
 
-/**
- * Get an existing conversation between two users or create a new one.
- * Validates role restrictions:
- * - Admin <-> Expert allowed
- * - Farmer <-> Expert allowed
- * - Farmer <-> Farmer or Farmer <-> Admin restricted
- */
-export const getOrCreateConversation = serviceHandler(async (data: CreateConversationInput) => {
-  if (data.initiatorId === data.targetUserId) {
-    throw AppError.badRequest("Cannot start a conversation with yourself");
-  }
+// The person on the other side of a chat, as the client shows them
+const toChatUser = (user: UserRow) => ({
+  id: user.id,
+  name: user.name,
+  image: user.image,
+  role: roleOf(user.role),
+  specialization: user.expertProfile?.specialization ?? null,
+});
 
-  const [initiator, target] = await Promise.all([
-    prisma.user.findUnique({ where: { id: data.initiatorId }, select: { id: true, role: true } }),
-    prisma.user.findUnique({ where: { id: data.targetUserId }, select: { id: true, role: true } }),
+const messageFields = {
+  id: true,
+  conversationId: true,
+  senderId: true,
+  content: true,
+  isRead: true,
+  createdAt: true,
+} as const;
+
+const myConversations = (userId: string) => ({
+  OR: [{ participantOneId: userId }, { participantTwoId: userId }],
+});
+
+// The other person's id; a chat the user isn't part of looks the same as a missing one
+async function otherParticipantId(conversationId: string, userId: string) {
+  const conversation = await prisma.chatConversation.findUnique({
+    where: { id: conversationId },
+    select: { participantOneId: true, participantTwoId: true },
+  });
+  if (conversation?.participantOneId === userId) return conversation.participantTwoId;
+  if (conversation?.participantTwoId === userId) return conversation.participantOneId;
+  throw AppError.notFound("Conversation not found");
+}
+
+// People the user can start a new chat with
+export const getContacts = serviceHandler(async (userId: string, role: string) => {
+  const target = CAN_START_WITH[roleOf(role)];
+  if (!target) return [];
+
+  const users = await prisma.user.findMany({
+    where: {
+      id: { not: userId },
+      role: { in: rolesMatching(target) },
+      banned: { not: true },
+      // Farmers only see experts the admin has verified; admins see every applicant
+      ...(target === "EXPERT" && {
+        expertProfile: roleOf(role) === "FARMER" ? { status: "VERIFIED" } : { isNot: null },
+      }),
+    },
+    select: userFields,
+    orderBy: { name: "asc" },
+  });
+  return users.map(toChatUser);
+});
+
+// The user's chats that have at least one message, most recent first, with unread counts
+export const getConversations = serviceHandler(async (userId: string) => {
+  const [conversations, unread] = await Promise.all([
+    prisma.chatConversation.findMany({
+      where: { ...myConversations(userId), messages: { some: {} } },
+      include: {
+        participantOne: { select: userFields },
+        participantTwo: { select: userFields },
+        messages: { take: 1, orderBy: { createdAt: "desc" }, select: messageFields },
+      },
+      orderBy: { lastMessageAt: "desc" },
+    }),
+    prisma.chatMessage.groupBy({
+      by: ["conversationId"],
+      where: { isRead: false, senderId: { not: userId }, conversation: myConversations(userId) },
+      _count: { _all: true },
+    }),
   ]);
 
-  if (!initiator || !target) {
-    throw AppError.notFound("One or both users not found");
-  }
-
-  const roles = [initiator.role, target.role];
-  const isExpertInvolved = roles.includes("EXPERT");
-  const isFarmerInvolved = roles.includes("FARMER");
-  const isAdminInvolved = roles.includes("ADMIN");
-
-  // Enforce conversation rules:
-  // 1. Farmer can ONLY talk to Expert.
-  // 2. Admin can ONLY talk to Expert.
-  // 3. Expert can talk to both Farmer and Admin.
-  if (!isExpertInvolved) {
-    throw AppError.forbidden("Conversations are only permitted between Farmers & Experts or Admins & Experts");
-  }
-
-  if (isFarmerInvolved && isAdminInvolved) {
-    throw AppError.forbidden("Direct conversation between Farmers and Admins is not allowed");
-  }
-
-  // Consistent ordering of IDs to respect unique constraint
-  const [p1, p2] = [data.initiatorId, data.targetUserId].sort();
-
-  const existing = await prisma.chatConversation.findUnique({
-    where: {
-      participantOneId_participantTwoId: {
-        participantOneId: p1,
-        participantTwoId: p2,
-      },
-    },
-    include: {
-      participantOne: { select: userSelectFields },
-      participantTwo: { select: userSelectFields },
-    },
-  });
-
-  if (existing) {
-    return existing;
-  }
-
-  return await prisma.chatConversation.create({
-    data: {
-      participantOneId: p1,
-      participantTwoId: p2,
-    },
-    include: {
-      participantOne: { select: userSelectFields },
-      participantTwo: { select: userSelectFields },
-    },
-  });
+  const unreadByConversation = new Map(unread.map((row) => [row.conversationId, row._count._all]));
+  return conversations.map((conversation) => ({
+    id: conversation.id,
+    otherUser: toChatUser(
+      conversation.participantOneId === userId ? conversation.participantTwo : conversation.participantOne,
+    ),
+    lastMessage: conversation.messages[0] ?? null,
+    unreadCount: unreadByConversation.get(conversation.id) ?? 0,
+  }));
 });
 
-/**
- * List all conversations for a specific user (Farmer, Expert, or Admin).
- */
-export const getUserConversations = serviceHandler(async (userId: string) => {
-  return await prisma.chatConversation.findMany({
-    where: {
-      OR: [{ participantOneId: userId }, { participantTwoId: userId }],
-    },
-    include: {
-      participantOne: { select: userSelectFields },
-      participantTwo: { select: userSelectFields },
-      messages: {
-        take: 1,
-        orderBy: { createdAt: "desc" },
-      },
-    },
-    orderBy: { lastMessageAt: "desc" },
+// Opens the chat with `targetUserId`, creating it the first time
+export const startConversation = serviceHandler(async (userId: string, role: string, targetUserId: string) => {
+  if (targetUserId === userId) {
+    throw AppError.badRequest("You can't start a chat with yourself");
+  }
+
+  const target = await prisma.user.findUnique({ where: { id: targetUserId }, select: userFields });
+  if (!target) {
+    throw AppError.notFound("User not found");
+  }
+
+  const myRole = roleOf(role);
+  const allowed =
+    CAN_START_WITH[myRole] === roleOf(target.role) &&
+    // A farmer may only write to an expert the admin has verified
+    (myRole !== "FARMER" || target.expertProfile?.status === "VERIFIED");
+  if (!allowed) {
+    throw AppError.forbidden("You can't start a chat with this user");
+  }
+
+  // Sorted ids give each pair a single row (see the unique index)
+  const [participantOneId, participantTwoId] = [userId, targetUserId].sort() as [string, string];
+  const conversation = await prisma.chatConversation.upsert({
+    where: { participantOneId_participantTwoId: { participantOneId, participantTwoId } },
+    update: {},
+    create: { participantOneId, participantTwoId },
+    select: { id: true },
   });
+
+  return { id: conversation.id, otherUser: toChatUser(target), lastMessage: null, unreadCount: 0 };
 });
 
-/**
- * Fetch paginated message history for a conversation.
- */
-export const getConversationMessages = serviceHandler(
-  async (conversationId: string, limit = 50, cursor?: string) => {
-    return await prisma.chatMessage.findMany({
-      where: { conversationId },
-      take: limit,
-      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-      orderBy: { createdAt: "asc" },
-      include: {
-        sender: { select: userSelectFields },
-      },
-    });
-  }
-);
+// A page of messages, oldest first. `before` is the id of the oldest message already shown.
+export const getMessages = serviceHandler(async (conversationId: string, userId: string, before?: string) => {
+  await otherParticipantId(conversationId, userId);
 
-/**
- * Save a message to database and update lastMessageAt.
- */
-export const saveMessage = serviceHandler(async (data: SaveMessageInput) => {
-  const [message] = await prisma.$transaction([
+  const newestFirst = await prisma.chatMessage.findMany({
+    where: { conversationId },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    // One extra row tells whether older messages remain
+    take: PAGE_SIZE + 1,
+    ...(before && { cursor: { id: before }, skip: 1 }),
+    select: messageFields,
+  });
+
+  return {
+    messages: newestFirst.slice(0, PAGE_SIZE).reverse(),
+    hasMore: newestFirst.length > PAGE_SIZE,
+  };
+});
+
+// Each role's chat page, which the bell opens (the locale is added by the client)
+const MESSAGES_PAGE: Record<Role, string> = {
+  FARMER: "/dashboard/messages",
+  EXPERT: "/expert/messages",
+  ADMIN: "/admin/messages",
+};
+const NOTIFICATION_PREVIEW_LENGTH = 120;
+
+// The recipient's bell shows the newest message of each unread chat (one entry per chat).
+// Text is stored in Bangla, like the other notifications.
+async function notifyRecipient(recipientId: string, conversationId: string, senderName: string, content: string) {
+  const recipient = await prisma.user.findUnique({ where: { id: recipientId }, select: { role: true } });
+  if (!recipient) return;
+
+  await notifyLatest({
+    userId: recipientId,
+    referenceId: conversationId,
+    title: `${senderName}-এর নতুন বার্তা`,
+    message:
+      content.length > NOTIFICATION_PREVIEW_LENGTH ? `${content.slice(0, NOTIFICATION_PREVIEW_LENGTH)}…` : content,
+    type: "INFO",
+    link: `${MESSAGES_PAGE[roleOf(recipient.role)]}?c=${conversationId}`,
+  });
+}
+
+export const sendMessage = serviceHandler(async (conversationId: string, senderId: string, text: unknown) => {
+  const content = typeof text === "string" ? text.trim() : "";
+  if (!content || content.length > MESSAGE_MAX_LENGTH) {
+    throw AppError.unprocessable(`A message must be 1 to ${MESSAGE_MAX_LENGTH} characters`);
+  }
+
+  const recipientId = await otherParticipantId(conversationId, senderId);
+  const [{ sender, ...message }] = await prisma.$transaction([
     prisma.chatMessage.create({
-      data: {
-        conversationId: data.conversationId,
-        senderId: data.senderId,
-        content: data.content,
-      },
-      include: {
-        sender: { select: userSelectFields },
-      },
+      data: { conversationId, senderId, content },
+      select: { ...messageFields, sender: { select: { name: true } } },
     }),
-    prisma.chatConversation.update({
-      where: { id: data.conversationId },
-      data: { lastMessageAt: new Date() },
-    }),
+    prisma.chatConversation.update({ where: { id: conversationId }, data: { lastMessageAt: new Date() } }),
   ]);
 
+  // Saved before the live message goes out: a recipient reading the chat right away
+  // then also clears this notification (see markConversationRead)
+  await notifyRecipient(recipientId, conversationId, sender.name, content).catch(() => {});
+
+  // The sender's other tabs need it too; the name lets the recipient's dashboard show who wrote
+  for (const userId of [recipientId, senderId]) {
+    emitToUser(userId, "chat:message", { conversationId, message, senderName: sender.name });
+  }
   return message;
 });
 
-/**
- * Mark all unread messages in a conversation as read by recipient.
- */
-export const markMessagesAsRead = serviceHandler(
-  async (conversationId: string, recipientId: string) => {
-    return await prisma.chatMessage.updateMany({
-      where: {
-        conversationId,
-        senderId: { not: recipientId },
-        isRead: false,
-      },
-      data: { isRead: true },
-    });
-  }
-);
+// Marks the other person's messages as read and tells them, so their ticks update
+export const markConversationRead = serviceHandler(async (conversationId: string, userId: string) => {
+  const senderId = await otherParticipantId(conversationId, userId);
+  const { count } = await prisma.chatMessage.updateMany({
+    where: { conversationId, senderId, isRead: false },
+    data: { isRead: true },
+  });
 
-export const ChatService = {
-  getOrCreateConversation,
-  getUserConversations,
-  getConversationMessages,
-  saveMessage,
-  markMessagesAsRead,
-};
+  if (count > 0) {
+    emitToUser(senderId, "chat:read", { conversationId, readerId: userId });
+  }
+  // The bell's "new message" entry for this chat has been seen too
+  await markReadByReference(userId, conversationId).catch(() => {});
+  return { conversationId, markedRead: count };
+});
+
+// Unread messages across all chats, for the menu badge
+export const getUnreadCount = serviceHandler(async (userId: string) => {
+  const count = await prisma.chatMessage.count({
+    where: { isRead: false, senderId: { not: userId }, conversation: myConversations(userId) },
+  });
+  return { count };
+});

@@ -486,3 +486,63 @@ export function CameraIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+// Two speech bubbles: the chat menu link
+export function MessagesIcon({ className }: IconProps) {
+  return (
+    <svg {...baseProps} className={className}>
+      <path d="M4 4h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H8l-4 3v-3a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
+      <path d="M19 8h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2v3l-4-3h-4a2 2 0 0 1-2-2" />
+    </svg>
+  );
+}
+
+export function SendIcon({ className }: IconProps) {
+  return (
+    <svg {...baseProps} className={className}>
+      <path d="M21 3 10 14" />
+      <path d="m21 3-6.5 18-4.5-7-7-4.5L21 3Z" />
+    </svg>
+  );
+}
+
+// Two ticks: a chat message has been read
+export function DoubleCheckIcon({ className }: IconProps) {
+  return (
+    <svg {...baseProps} className={className}>
+      <path d="m2 12 5 5 9-10" />
+      <path d="m12.5 16 1 1 9-10" />
+    </svg>
+  );
+}
+
+// Person with a check mark: verified experts
+export function ExpertIcon({ className }: IconProps) {
+  return (
+    <svg {...baseProps} className={className}>
+      <circle cx="10" cy="8" r="4" />
+      <path d="M3 21c0-4 3.1-7 7-7 1.2 0 2.3.3 3.3.8" />
+      <path d="m15.5 18 2 2 4-4.5" />
+    </svg>
+  );
+}
+
+// Price tag: the market prices page
+export function TagIcon({ className }: IconProps) {
+  return (
+    <svg {...baseProps} className={className}>
+      <path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9Z" />
+      <circle cx="7.5" cy="7.5" r="1.5" />
+    </svg>
+  );
+}
+
+// Light bulb: advice
+export function BulbIcon({ className }: IconProps) {
+  return (
+    <svg {...baseProps} className={className}>
+      <path d="M9 18h6M10 21h4" />
+      <path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V17h5v-1.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3Z" />
+    </svg>
+  );
+}

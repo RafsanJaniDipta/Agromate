@@ -3,70 +3,54 @@ import { asyncHandler } from "../../utils/asyncHandler.js";
 import { sendSuccess } from "../../utils/apiResponse.js";
 import { AppError } from "../../utils/AppError.js";
 import {
-  getOrCreateConversation,
-  getUserConversations,
-  getConversationMessages,
-  markMessagesAsRead,
+  getContacts as getContactsService,
+  getConversations as getConversationsService,
+  startConversation as startConversationService,
+  getMessages as getMessagesService,
+  sendMessage as sendMessageService,
+  markConversationRead as markConversationReadService,
+  getUnreadCount as getUnreadCountService,
 } from "./chat.service.js";
 
-/**
- * Get or initialize conversation between current user and an expert/admin/farmer.
- */
-export const initiateConversation = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const currentUserId = req.user?.id;
-  if (!currentUserId) {
-    throw AppError.unauthorized("Authentication required");
-  }
+// Routes use `authenticate`, so the user is always set
+const currentUser = (req: Request) => ({ id: req.user!.id, role: req.user!.role ?? "FARMER" });
+const conversationIdOf = (req: Request) => String(req.params.id ?? "");
 
-  const { targetUserId } = req.body;
-  if (!targetUserId) {
-    throw AppError.unprocessable("Target user ID is required");
-  }
-
-  const conversation = await getOrCreateConversation({
-    initiatorId: currentUserId,
-    targetUserId,
-  });
-
-  sendSuccess(res, 200, "Conversation retrieved successfully", conversation);
+export const getContacts = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { id, role } = currentUser(req);
+  sendSuccess(res, 200, "Contacts fetched successfully", await getContactsService(id, role));
 });
 
-/**
- * Fetch all conversations for the authenticated user.
- */
-export const getMyConversations = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const currentUserId = req.user?.id;
-  if (!currentUserId) {
-    throw AppError.unauthorized("Authentication required");
-  }
-
-  const conversations = await getUserConversations(currentUserId);
-  sendSuccess(res, 200, "Conversations retrieved successfully", conversations);
+export const getConversations = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  sendSuccess(res, 200, "Conversations fetched successfully", await getConversationsService(currentUser(req).id));
 });
 
-/**
- * Get messages in a specific conversation.
- */
+export const startConversation = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { userId: targetUserId } = req.body ?? {};
+  if (typeof targetUserId !== "string" || !targetUserId) {
+    throw AppError.unprocessable("userId is required");
+  }
+
+  const { id, role } = currentUser(req);
+  sendSuccess(res, 200, "Conversation ready", await startConversationService(id, role, targetUserId));
+});
+
 export const getMessages = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const currentUserId = req.user?.id;
-  if (!currentUserId) {
-    throw AppError.unauthorized("Authentication required");
-  }
-
-  const conversationId = String(req.params.conversationId || "");
-  const limit = req.query.limit ? Number(req.query.limit) : 50;
-  const cursor = req.query.cursor ? String(req.query.cursor) : undefined;
-
-  const messages = await getConversationMessages(conversationId, limit, cursor);
-
-  // Mark unread messages as read
-  await markMessagesAsRead(conversationId, currentUserId);
-
-  sendSuccess(res, 200, "Messages retrieved successfully", messages);
+  const before = typeof req.query.before === "string" && req.query.before ? req.query.before : undefined;
+  const page = await getMessagesService(conversationIdOf(req), currentUser(req).id, before);
+  sendSuccess(res, 200, "Messages fetched successfully", page);
 });
 
-export const ChatController = {
-  initiateConversation,
-  getMyConversations,
-  getMessages,
-};
+export const sendMessage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const message = await sendMessageService(conversationIdOf(req), currentUser(req).id, req.body?.content);
+  sendSuccess(res, 201, "Message sent", message);
+});
+
+export const markConversationRead = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const result = await markConversationReadService(conversationIdOf(req), currentUser(req).id);
+  sendSuccess(res, 200, "Conversation marked as read", result);
+});
+
+export const getUnreadCount = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  sendSuccess(res, 200, "Unread count fetched successfully", await getUnreadCountService(currentUser(req).id));
+});

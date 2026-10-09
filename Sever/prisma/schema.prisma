@@ -50,6 +50,10 @@ model User {
   aiConversations           AIConversation[]
   supportTickets            SupportTicket[]
   successStories            SuccessStory[]
+  chatsAsParticipantOne     ChatConversation[]         @relation("ChatParticipantOne")
+  chatsAsParticipantTwo     ChatConversation[]         @relation("ChatParticipantTwo")
+  chatMessages              ChatMessage[]
+  priceReports              PriceReport[]
 
   @@unique([email])
   @@map("user")
@@ -146,6 +150,19 @@ enum NotificationType {
   ALERT
 }
 
+enum PriceCategory {
+  CROP
+  FERTILIZER
+  PESTICIDE
+}
+
+// Where an official price came from
+enum PriceSource {
+  TCB // Trading Corporation of Bangladesh daily Dhaka retail prices, imported automatically
+  GOVERNMENT // prices fixed by the government (fertilizer)
+  ADMIN // entered by an admin (e.g. pesticide MRP)
+}
+
 enum MessageSender {
   USER
   ASSISTANT
@@ -216,8 +233,6 @@ model Crop {
   optimalTemp     Float?
   optimalRainfall Float?
   durationDays    Int?
-  planDurationDays    Int?  @map("plan_duration_days")
-  planDurationLabel   String? @map("plan_duration_label")
   description     String?
   descriptionBn  String?  @map("description_bn")
   createdAt       DateTime @default(now())
@@ -226,47 +241,9 @@ model Crop {
   cropCycles        CropCycle[]
   questions         Question[]
   marketPrices      MarketPrice[]
-  milestoneTemplates CropMilestoneTemplate[]
+  priceItems        PriceItem[]
 
   @@map("crop")
-}
-
-// Per-crop cultivation plan templates. Seeded from src/data/crop-plans.json
-// (the editable seed source). At runtime the growth-plan feature reads these
-// rows instead of the JSON file. Each crop has 5-6 milestones, each with tasks.
-model CropMilestoneTemplate {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  cropId    String   @db.Uuid
-  crop      Crop     @relation(fields: [cropId], references: [id], onDelete: Cascade)
-  name      String
-  nameBn    String?
-  dayStart  Int
-  dayEnd    Int
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  tasks CropTaskTemplate[]
-
-  @@unique([cropId, sortOrder])
-  @@index([cropId])
-  @@map("crop_milestone_template")
-}
-
-model CropTaskTemplate {
-  id           String                @id @default(uuid(7)) @db.Uuid
-  milestoneId  String                @db.Uuid
-  milestone    CropMilestoneTemplate @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
-  title        String
-  titleBn      String?
-  description  String?
-  suggestedDay Int
-  sortOrder    Int                   @default(0)
-  createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
-
-  @@index([milestoneId])
-  @@map("crop_task_template")
 }
 
 model Guide {
@@ -317,34 +294,10 @@ model CropCycle {
   reminders         Reminder[]
   diseaseDetections DiseaseDetection[]
   aiConversations   AIConversation[]
-  growthTasks       GrowthTask[]
 
   @@index([fieldId])
   @@index([cropId])
   @@map("crop_cycle")
-}
-
-// Instance of a task on a crop cycle, generated from the crop's cultivation
-// plan dataset (src/data/crop-plans.json). Milestones are derived groups of
-// these tasks at read time, so no separate milestone table is needed.
-model GrowthTask {
-  id           String    @id @default(uuid(7)) @db.Uuid
-  cropCycleId  String    @db.Uuid
-  cropCycle    CropCycle @relation(fields: [cropCycleId], references: [id], onDelete: Cascade)
-  milestone    String // milestone group name, e.g. "Land Preparation & Sowing"
-  milestoneBn  String?
-  title        String
-  titleBn      String?
-  description  String?
-  suggestedDay Int // day offset from planting date (0-based)
-  dueDate      DateTime?
-  isDone       Boolean   @default(false)
-  completedAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  @@index([cropCycleId])
-  @@map("growth_task")
 }
 
 model Reminder {
@@ -595,24 +548,14 @@ model Notification {
   type        NotificationType @default(INFO)
   isRead      Boolean          @default(false)
   referenceId String?          @db.Uuid
+  // Dashboard page to open when the notification is clicked, without the locale (e.g. "/expert/messages?c=…")
+  link        String?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
   @@index([userId])
   @@index([userId, isRead])
   @@map("notification")
-}
-
-model ExpertCategory {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  slug      String   @unique
-  nameBn    String   @map("name_bn")
-  nameEn    String   @map("name_en")
-  icon      String?
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("expert_category")
 }
 
 model SuccessStory {
@@ -656,3 +599,105 @@ model SuccessStory {
   @@map("success_story")
 }
 
+
+// One-to-one chat. Allowed pairs: farmer ↔ expert and expert ↔ admin.
+// The two ids are stored sorted, so each pair has exactly one conversation.
+model ChatConversation {
+  id               String   @id @default(uuid(7)) @db.Uuid
+  participantOneId String   @db.Uuid
+  participantOne   User     @relation("ChatParticipantOne", fields: [participantOneId], references: [id], onDelete: Cascade)
+  participantTwoId String   @db.Uuid
+  participantTwo   User     @relation("ChatParticipantTwo", fields: [participantTwoId], references: [id], onDelete: Cascade)
+  lastMessageAt    DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  messages ChatMessage[]
+
+  @@unique([participantOneId, participantTwoId])
+  @@index([participantOneId])
+  @@index([participantTwoId])
+  @@map("chat_conversation")
+}
+
+model ChatMessage {
+  id             String           @id @default(uuid(7)) @db.Uuid
+  conversationId String           @db.Uuid
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String           @db.Uuid
+  sender         User             @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  content        String
+  isRead         Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@map("chat_message")
+}
+
+// Something whose price farmers follow: a crop or food item, a fertilizer or a pesticide
+model PriceItem {
+  id        String        @id @default(uuid(7)) @db.Uuid
+  // Stable key used by the importers, e.g. "rice-coarse" or "urea"
+  slug      String        @unique
+  category  PriceCategory
+  nameBn    String        @map("name_bn")
+  nameEn    String        @map("name_en")
+  // What one price is for, e.g. "কেজি" / "kg", "হালি" / "4 pieces", "১০০ মিলি বোতল" / "100 ml bottle"
+  unitBn    String        @map("unit_bn")
+  unitEn    String        @map("unit_en")
+  // Extra detail, e.g. a pesticide's active ingredient and company
+  details   String?
+  // The crop this item belongs to, so farmers see their own crops first
+  cropId    String?       @db.Uuid
+  crop      Crop?         @relation(fields: [cropId], references: [id], onDelete: SetNull)
+  sortOrder Int           @default(0) @map("sort_order")
+  // Hidden items keep their history but aren't listed
+  isActive  Boolean       @default(true) @map("is_active")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  records PriceRecord[]
+  reports PriceReport[]
+
+  @@index([category, isActive])
+  @@map("price_item")
+}
+
+// An official price for one day: lowest and highest (equal when there is a single price)
+model PriceRecord {
+  id        String      @id @default(uuid(7)) @db.Uuid
+  itemId    String      @db.Uuid
+  item      PriceItem   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  // "Dhaka" for TCB, "Bangladesh" for nationwide prices
+  district  String
+  minPrice  Float       @map("min_price")
+  maxPrice  Float       @map("max_price")
+  date      DateTime    @db.Date
+  source    PriceSource
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([itemId, district, date, source])
+  @@index([itemId, date])
+  @@map("price_record")
+}
+
+// What a farmer actually paid (fertilizer, pesticide) or got, reported from the dashboard.
+// One report per farmer, item and day; the district comes from the farmer's profile.
+model PriceReport {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  itemId    String    @db.Uuid
+  item      PriceItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  district  String?
+  price     Float
+  date      DateTime  @db.Date
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([itemId, userId, date])
+  @@index([itemId, district, date])
+  @@map("price_report")
+}

@@ -6,10 +6,12 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { FarmerAccountError, signInStaff } from "@/lib/admin";
 import { dashboardFor } from "@/lib/session";
 import { PasswordField, TextField } from "@/components/auth/AuthFields";
+import DemoLogins from "@/components/auth/DemoLogins";
 
 type Status = "idle" | "sending" | "error" | "farmer";
 
 // Email + password login for admins and experts; each lands on their own dashboard.
+// A demo-admin button below it signs in with one click.
 export default function StaffLoginForm() {
   const t = useTranslations("admin.login");
   const tFields = useTranslations("auth.fields");
@@ -73,6 +75,8 @@ export default function StaffLoginForm() {
             ),
           })}
       </p>
+
+      <DemoLogins offer={["admin"]} />
     </form>
   );
 }

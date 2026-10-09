@@ -112,13 +112,11 @@ export const getPlatformStatistics = serviceHandler(async () => {
     totalUsers,
     totalFarms,
     totalCropCycles,
-    totalQuestions,
     totalDiseaseDetections,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.farm.count(),
     prisma.cropCycle.count(),
-    prisma.question.count(),
     prisma.diseaseDetection.count(),
   ]);
 
@@ -126,7 +124,6 @@ export const getPlatformStatistics = serviceHandler(async () => {
     totalUsers,
     totalFarms,
     totalCropCycles,
-    totalQuestions,
     totalDiseaseDetections,
   };
 });
@@ -178,7 +175,7 @@ export const getExpertApplications = serviceHandler(async (status?: string) => {
   });
 });
 
-// Approves or rejects an expert; only a verified expert can answer questions
+// Approves or rejects an expert; only verified experts are listed for farmers to message
 export const reviewExpertApplication = serviceHandler(async (
   userId: string,
   status: unknown,

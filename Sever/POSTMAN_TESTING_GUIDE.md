@@ -77,18 +77,8 @@ For permission checks, an unauthenticated request to a protected endpoint should
 
 ### 4. Crop Cycles (`Crops & Crop Cycles`)
 1. **Get Crops List**: `GET http://localhost:5000/api/crops` -> Choose a `cropId`.
-2. **Crop Plan Preview (template, before starting)**: `GET http://localhost:5000/api/crops/{cropId}/plan?plantingDate=2026-10-01`
-3. **Create Crop Cycle**: `POST http://localhost:5000/api/crop-cycles` using `fieldId` and `cropId`. The growth plan (milestones + tasks) is auto-generated; `expectedHarvestDate` is derived from the crop's plan (3-4 months). Pass your own `expectedHarvestDate` for a custom timeframe — all task dates scale proportionally.
-4. **Get Crop Cycles**: `GET http://localhost:5000/api/crop-cycles`
-5. **Get Growth Plan (auto-generated)**: `GET http://localhost:5000/api/crop-cycles/{cycleId}/plan` — milestones with windows, task checklist, and progress %.
-6. **Re-generate Plan**: `POST http://localhost:5000/api/crop-cycles/{cycleId}/plan` — wipes and rebuilds tasks for that cycle.
-7. **Mark Task Done / Reopen**: `PATCH http://localhost:5000/api/crop-cycles/{cycleId}/tasks/{taskId}` with `{ "isDone": true }`.
-
-> Plan data is stored in the **database** (`crop_milestone_template` +
-> `crop_task_template`, seeded from `Sever/src/data/crop-plans.json` via
-> `bunx tsx prisma/seed.ts`). Rice, wheat, potato, tomato, maize, mustard &
-> jute ship with plans (EN + BN, 5-6 milestones each). Crops without a plan
-> (e.g. any newly added crop) still create cycles, just with an empty plan.
+2. **Create Crop Cycle**: `POST http://localhost:5000/api/crop-cycles` using `fieldId` and `cropId`.
+3. **Get Crop Cycles**: `GET http://localhost:5000/api/crop-cycles`
 
 ### 5. Harvests & Expenses (`Harvests & Expenses`)
 1. **Record Harvest**: `POST http://localhost:5000/api/harvests` using `cropCycleId`.
@@ -98,7 +88,7 @@ For permission checks, an unauthenticated request to a protected endpoint should
 - **Current Weather**: `GET http://localhost:5000/api/weather/current?location=Dhaka` (or `?lat=23.81&lon=90.41`)
 - **Forecast**: `GET http://localhost:5000/api/weather/forecast?location=Dhaka&days=7`
 - **Past Weather (30 days)**: `GET http://localhost:5000/api/weather/history?location=Dhaka&days=30`
-- **Market Prices**: `GET http://localhost:5000/api/market-prices`
+- **Market Prices**: `GET http://localhost:5000/api/prices?category=CROP` (also FERTILIZER, PESTICIDE; `&district=Bogra` for farmer reports there)
 
 > Weather note: responses carry `source: "live"` (real WeatherAPI data) or
 > `source: "sample"` (test data when no valid `WEATHER_API_KEY` is configured,

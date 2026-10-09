@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { resolveLocale } from "@/i18n/params";
 import DashCard from "@/components/dashboard/DashCard";
+import { Link } from "@/i18n/navigation";
 import AccountsBook from "@/components/dashboard/ledger/AccountsBook";
 
 export async function generateMetadata({
@@ -22,6 +23,12 @@ export default async function AccountsPage({ params }: PageProps<"/[locale]/dash
       <DashCard>
         <h1 className="text-2xl font-semibold">{t("title")}</h1>
         <p className="mt-1 max-w-2xl text-sm text-white/70">{t("intro")}</p>
+        <Link
+          href="/dashboard/reports"
+          className="mt-4 inline-flex rounded-full border border-white/20 px-4 py-2 text-sm text-white/90 transition hover:bg-white/10"
+        >
+          {t("reportLink")}
+        </Link>
       </DashCard>
 
       <AccountsBook />

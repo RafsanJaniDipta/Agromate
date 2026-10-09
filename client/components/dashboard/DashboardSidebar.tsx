@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { dashboardNav } from "@/components/dashboard/dashboardNav";
+import UnreadBadge from "@/components/chat/UnreadBadge";
+import { useChatUnread } from "@/components/chat/ChatUnread";
 import type { Role } from "@/lib/session";
 
 type RailLinkProps = {
@@ -12,20 +14,25 @@ type RailLinkProps = {
   Icon: React.ComponentType<{ className?: string }>;
   isActive: boolean;
   isOpen: boolean;
+  // Unread count shown on the icon (chat only)
+  badge?: number;
 };
 
-function RailLink({ href, label, Icon, isActive, isOpen }: RailLinkProps) {
+function RailLink({ href, label, Icon, isActive, isOpen, badge = 0 }: RailLinkProps) {
   return (
     <Link
       href={href}
       aria-current={isActive ? "page" : undefined}
-      className={`relative flex h-12 items-center gap-4 rounded-2xl px-3 transition ${
+      className={`relative flex h-10 items-center gap-4 rounded-2xl px-3 transition ${
         isActive
           ? "bg-white text-zinc-900"
           : "text-white/80 hover:bg-white/10 hover:text-white"
       }`}
     >
-      <Icon className="size-6 shrink-0" />
+      <span className="relative shrink-0">
+        <Icon className="size-6" />
+        <UnreadBadge count={badge} className="absolute -right-2 -top-1.5" />
+      </span>
       <span
         className={`whitespace-nowrap text-sm font-medium transition-opacity duration-200 ${
           isOpen ? "opacity-100" : "opacity-0"
@@ -46,10 +53,12 @@ export default function DashboardSidebar({ role }: { role: Role }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { links, footerLinks } = dashboardNav[role];
+  const { count: unreadMessages } = useChatUnread();
 
   return (
     // min-h keeps every rail icon visible on short pages, since the rail itself is absolutely positioned
-    <div className="relative hidden min-h-172 w-20 shrink-0 md:block">
+    // (the farmer rail: 16 links of 40px with 4px gaps, plus padding, fit in 46rem)
+    <div className="relative hidden min-h-184 w-20 shrink-0 md:block print:hidden">
       <nav
         aria-label={t("label")}
         onMouseEnter={() => setIsOpen(true)}
@@ -58,7 +67,7 @@ export default function DashboardSidebar({ role }: { role: Role }) {
           isOpen ? "w-60 bg-black/60" : "w-20 bg-black/40"
         }`}
       >
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-1">
           {links.map(({ href, key, Icon }) => (
             <li key={key}>
               <RailLink
@@ -67,12 +76,13 @@ export default function DashboardSidebar({ role }: { role: Role }) {
                 Icon={Icon}
                 isActive={href === pathname}
                 isOpen={isOpen}
+                badge={key === "messages" ? unreadMessages : 0}
               />
             </li>
           ))}
         </ul>
 
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-1">
           {footerLinks.map(({ href, key, Icon }) => (
             <li key={key}>
               <RailLink
@@ -81,6 +91,7 @@ export default function DashboardSidebar({ role }: { role: Role }) {
                 Icon={Icon}
                 isActive={href === pathname}
                 isOpen={isOpen}
+                badge={key === "messages" ? unreadMessages : 0}
               />
             </li>
           ))}

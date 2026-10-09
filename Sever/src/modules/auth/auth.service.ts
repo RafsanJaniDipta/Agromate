@@ -6,7 +6,7 @@ import { normalizePhoneNumber } from "../../utils/phone.js";
 import { AppError } from "../../utils/AppError.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
 
-// What an expert fills in when applying; an admin reviews it before they can answer
+// What an expert fills in when applying; an admin reviews it before farmers can reach them
 export interface ExpertApplication {
   specialization: string;
   organization?: string;

@@ -8,7 +8,7 @@
     "registerTitle": "Create account | Agromate",
     "dashboardTitle": "Dashboard | Agromate",
     "diagnoseTitle": "Crop disease check | Agromate",
-    "cropsTitle": "Crop planning | Agromate",
+    "cropsTitle": "Crop guide | Agromate",
     "adminLoginTitle": "Admin & expert log in | Agromate",
     "adminTitle": "Admin dashboard | Agromate",
     "expertTitle": "Expert dashboard | Agromate",
@@ -18,13 +18,18 @@
     "adminStoriesTitle": "Success stories | Agromate admin",
     "profileTitle": "My profile | Agromate",
     "storiesTitle": "My success story | Agromate",
-    "cropsTitle": "Crop guide | Agromate",
     "adminCropsTitle": "Crops | Agromate admin",
     "fieldsTitle": "My fields | Agromate",
     "myCropsTitle": "Crop records | Agromate",
     "analyticsTitle": "Analytics | Agromate",
     "weatherTitle": "Weather | Agromate",
-    "accountsTitle": "Account book | Agromate"
+    "accountsTitle": "Account book | Agromate",
+    "messagesTitle": "Messages | Agromate",
+    "expertsTitle": "Experts | Agromate",
+    "marketTitle": "Market prices | Agromate",
+    "assistantTitle": "AI assistant | Agromate",
+    "adviceTitle": "Crop & fertilizer advice | Agromate",
+    "reportsTitle": "Farm report | Agromate"
   },
   "languageSwitcher": {
     "label": "Language"
@@ -58,20 +63,17 @@
   },
   "market": {
     "title": "Market prices",
-    "today": "Today",
     "groups": {
       "crops": "Crops",
       "fertilizer": "Fertilizer"
     },
-    "items": {
-      "rice": "Rice (Coarse)",
-      "wheat": "Wheat",
-      "potato": "Potato",
-      "urea": "Urea",
-      "tsp": "TSP",
-      "mop": "MoP"
-    },
-    "pricePerKg": "৳{price, number}/kg"
+    "live": "Live",
+    "updated": "Prices of {date}",
+    "priceRange": "৳{min, number}–{max, number}",
+    "price": "৳{price, number}",
+    "per": "/{unit}",
+    "unavailable": "Prices will appear here soon.",
+    "source": "Source: TCB & Government of Bangladesh"
   },
   "weather": {
     "title": "Weather forecast",
@@ -352,10 +354,8 @@
     "fields": {
       "name": "Full name",
       "phone": "Phone number",
-      "phoneHint": "Your 11-digit mobile number, e.g. 017XXXXXXXX",
-      "email": "Email address",
-      "phone": "Phone number",
       "phoneHint": "Use the number you registered with",
+      "email": "Email address",
       "password": "Password",
       "passwordHint": "At least {min, number} characters",
       "confirmPassword": "Confirm password",
@@ -375,7 +375,15 @@
       "submitting": "Logging in…",
       "error": "Could not log in. Check your phone number and password, then try again.",
       "noAccount": "New to Agromate?",
-      "registerLink": "Create an account"
+      "registerLink": "Create an account",
+      "demo": {
+        "demoTitle": "Or try a demo account",
+        "farmer": "Farmer demo",
+        "expert": "Expert demo",
+        "signingIn": "Signing in…",
+        "error": "Couldn't sign in to the demo account. Try again.",
+        "admin": "Admin demo"
+      }
     },
     "register": {
       "title": "Create your account",
@@ -392,7 +400,7 @@
         "FARMER": "Farmer",
         "EXPERT": "Agriculture expert"
       },
-      "expertReviewNote": "An admin checks every expert application. You can log in right away, and you can answer farmers' questions once you are verified.",
+      "expertReviewNote": "An admin checks every expert application. You can log in right away, and farmers can find and message you once you are verified.",
       "phoneTaken": "This phone number already has an account. Try logging in instead."
     }
   },
@@ -410,18 +418,21 @@
       "weather": "Weather",
       "crops": "Crops",
       "diagnose": "Disease check",
-      "stories": "Success story",
+      "stories": "Success stories",
       "analytics": "Analytics",
       "help": "Help",
-      "questions": "Questions",
       "profile": "My profile",
-      "stories": "Success stories",
       "overview": "Overview",
       "users": "Users",
       "marketPrices": "Market prices",
       "successStories": "Success stories",
       "menu": "Open menu",
-      "closeMenu": "Close menu"
+      "closeMenu": "Close menu",
+      "messages": "Messages",
+      "experts": "Experts",
+      "market": "Market prices",
+      "assistant": "AI assistant",
+      "advice": "Crop & fertilizer advice"
     },
     "weather": {
       "title": "Weather",
@@ -472,7 +483,12 @@
       "high": "High",
       "low": "Low",
       "maxUv": "Highest UV",
-      "locationUnavailable": "Couldn't find your location right now. Try again, or pick a district."
+      "locationUnavailable": "Couldn't find your location right now. Try again, or pick a district.",
+      "table": {
+        "day": "Day",
+        "sky": "Sky",
+        "tip": "Farming tip"
+      }
     },
     "farmPhoto": {
       "title": "Farm photo",
@@ -1005,7 +1021,8 @@
       "noHarvests": "No harvest income in this period.",
       "loading": "Loading…",
       "loadError": "Could not load the account book. Please refresh the page.",
-      "deleteError": "Could not delete. Please try again."
+      "deleteError": "Could not delete. Please try again.",
+      "reportLink": "Farm report (print / PDF)"
     },
     "finance": {
       "eyebrow": "Money in {year}",
@@ -1037,7 +1054,8 @@
       "loading": "Loading…",
       "loadError": "Could not load notifications.",
       "empty": "No notifications yet.",
-      "unread": "Unread"
+      "unread": "Unread",
+      "delete": "Delete"
     },
     "analyticsPage": {
       "title": "Analytics",
@@ -1056,6 +1074,32 @@
       "cropMix": "Crops in the field now",
       "noCrops": "No crops in the field right now.",
       "cropMixValue": "{fields, plural, one {# field} other {# fields}} · {acres, number} acres"
+    },
+    "expertsPage": {
+      "title": "Experts",
+      "intro": "Agriculture experts verified by Agromate. See their profile and message them directly for advice.",
+      "search": "Search by name or subject",
+      "allCategories": "All",
+      "loading": "Loading experts…",
+      "loadError": "Couldn't load the experts.",
+      "retry": "Try again",
+      "empty": "No verified experts yet.",
+      "noMatch": "No expert matches your search.",
+      "count": "{count, plural, one {# expert} other {# experts}}",
+      "experience": "{years, plural, =0 {New expert} one {# year of experience} other {# years of experience}}",
+      "verified": "Verified",
+      "viewProfile": "View profile",
+      "message": "Message",
+      "opening": "Opening…",
+      "messageError": "Couldn't open the chat. Try again.",
+      "profile": {
+        "about": "About",
+        "qualifications": "Qualifications",
+        "organization": "Organization",
+        "location": "Area",
+        "subjects": "Subjects",
+        "close": "Close"
+      }
     }
   },
   "admin": {
@@ -1076,7 +1120,6 @@
         "totalUsers": "Users",
         "totalFarms": "Farms",
         "totalCropCycles": "Crop cycles",
-        "totalQuestions": "Questions",
         "totalDiseaseDetections": "Disease checks"
       }
     },
@@ -1103,28 +1146,6 @@
       },
       "ban": "Block",
       "unban": "Unblock"
-    },
-    "marketPrices": {
-      "addTitle": "Add today's price",
-      "listTitle": "Latest prices",
-      "fields": {
-        "crop": "Crop",
-        "district": "District",
-        "price": "Price (৳)",
-        "unit": "Per"
-      },
-      "districtPlaceholder": "e.g. Dhaka",
-      "units": {
-        "KG": "kg",
-        "MAUND": "maund",
-        "TON": "ton"
-      },
-      "add": "Add price",
-      "adding": "Adding…",
-      "addError": "Could not add the price. Check the fields and try again.",
-      "loadError": "Could not load prices. Please refresh the page.",
-      "empty": "No prices yet.",
-      "delete": "Delete"
     },
     "stories": {
       "title": "Success stories",
@@ -1245,6 +1266,45 @@
       "loadError": "Could not load crops. Please refresh the page.",
       "empty": "No crops found.",
       "daysShort": "{days} days"
+    },
+    "prices": {
+      "title": "Market prices",
+      "intro": "Crop prices come from TCB every day by themselves. Set the fertilizer rates and pesticide MRPs here.",
+      "import": "Fetch from TCB now",
+      "importing": "Fetching…",
+      "importDone": "Added {days, plural, one {# new day} other {# new days}} (latest {date}).",
+      "importNone": "Already up to date (latest {date}).",
+      "importError": "Couldn't reach TCB. It will try again within the hour.",
+      "addTitle": "Add an item",
+      "fields": {
+        "category": "Type",
+        "nameBn": "Name (Bangla)",
+        "nameEn": "Name (English)",
+        "unitBn": "Unit (Bangla)",
+        "unitEn": "Unit (English)",
+        "unitHint": "e.g. 100 ml bottle, kg",
+        "details": "Details",
+        "detailsHint": "Active ingredient, company…"
+      },
+      "add": "Add item",
+      "adding": "Adding…",
+      "addError": "Couldn't add the item. Fill in every field.",
+      "table": {
+        "item": "Item",
+        "latest": "Latest price",
+        "none": "No price",
+        "setPrice": "Set price",
+        "min": "Lowest",
+        "max": "Highest",
+        "date": "Date",
+        "save": "Save",
+        "saving": "Saving…",
+        "cancel": "Cancel",
+        "hidden": "Hidden",
+        "hide": "Hide",
+        "show": "Show",
+        "saveError": "Couldn't save. Check the prices."
+      }
     }
   },
   "roles": {
@@ -1273,8 +1333,8 @@
     "loadError": "Some information could not be loaded. Please refresh the page.",
     "stats": {
       "status": "Verification",
-      "open": "Waiting for an answer",
-      "answered": "Answered questions"
+      "unread": "Unread messages",
+      "chats": "Conversations"
     },
     "status": {
       "VERIFIED": "Verified",
@@ -1283,20 +1343,9 @@
       "NONE": "No profile yet"
     },
     "statusNote": {
-      "PENDING": "An admin is reviewing your application. You can answer questions once you are verified.",
+      "PENDING": "An admin is reviewing your application. Once you are verified, farmers can find you and message you.",
       "REJECTED": "Your application was not approved. Update your profile to apply again.",
-      "NONE": "Fill in your profile so an admin can verify you. Then you can answer questions."
-    },
-    "queue": {
-      "title": "Questions waiting for an answer",
-      "empty": "No open questions right now.",
-      "answer": "Answer",
-      "answerLabel": "Your answer",
-      "answerPlaceholder": "Write clear, practical advice for the farmer…",
-      "send": "Send answer",
-      "sending": "Sending…",
-      "cancel": "Cancel",
-      "sendError": "Could not send your answer. Please try again."
+      "NONE": "Fill in your profile so an admin can verify you. Then farmers can find you and message you."
     },
     "profile": {
       "title": "My expert profile",
@@ -1307,12 +1356,19 @@
         "organization": "Organisation",
         "qualifications": "Qualifications",
         "bio": "About you",
-        "experienceYears": "Years of experience"
+        "experienceYears": "Years of experience",
+        "categories": "Topics you advise on"
       },
+      "categoriesHint": "Farmers find you by these topics. You can pick more than one.",
       "save": "Save profile",
       "saving": "Saving…",
       "saved": "Saved.",
       "error": "Could not save. Please try again."
+    },
+    "recent": {
+      "title": "Recent messages",
+      "empty": "No messages yet. When farmers message you, they'll show up here.",
+      "viewAll": "See all messages"
     }
   },
   "accountProfile": {
@@ -1343,5 +1399,273 @@
       "invalid": "Check the name and enter an 11-digit mobile number, e.g. 017XXXXXXXX.",
       "error": "Could not save. Please try again."
     }
+  },
+  "chat": {
+    "title": "Messages",
+    "newChat": "New message",
+    "loading": "Loading…",
+    "loadError": "Couldn't load your messages.",
+    "retry": "Try again",
+    "youPrefix": "You:",
+    "emptyList": {
+      "FARMER": "No messages yet. Ask an expert about your crops.",
+      "EXPERT": "No messages yet. Farmers' questions will show up here.",
+      "ADMIN": "No messages yet. Experts' messages will show up here."
+    },
+    "pickConversation": "Choose a conversation to read it here.",
+    "contacts": {
+      "title": {
+        "FARMER": "Ask an expert",
+        "EXPERT": "Message an admin",
+        "ADMIN": "Message an expert"
+      },
+      "search": "Search by name",
+      "empty": {
+        "FARMER": "No verified experts yet.",
+        "EXPERT": "No admins found.",
+        "ADMIN": "No experts have signed up yet."
+      },
+      "noMatch": "No one matches “{query}”.",
+      "loadError": "Couldn't load the list.",
+      "startError": "Couldn't open the chat. Try again.",
+      "back": "Back to messages"
+    },
+    "thread": {
+      "back": "Back to messages",
+      "loadOlder": "Show earlier messages",
+      "loadOlderError": "Couldn't load earlier messages.",
+      "empty": "No messages yet. Write the first one.",
+      "typing": "typing…",
+      "placeholder": "Write a message…",
+      "send": "Send",
+      "sendError": "Message not sent. Try again.",
+      "tooLong": "A message can be at most {max} characters.",
+      "sending": "Sending",
+      "sent": "Sent",
+      "read": "Read",
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "toast": {
+      "newMessage": "Message from {name}",
+      "close": "Close"
+    }
+  },
+  "prices": {
+    "title": "Market prices",
+    "intro": "Today's prices of crops, fertilizer and pesticides, and what farmers near you are paying.",
+    "tabs": {
+      "CROP": "Crops & produce",
+      "FERTILIZER": "Fertilizer",
+      "PESTICIDE": "Pesticides"
+    },
+    "search": "Search an item",
+    "loading": "Loading prices…",
+    "loadError": "Couldn't load the prices.",
+    "retry": "Try again",
+    "empty": {
+      "CROP": "No prices yet.",
+      "FERTILIZER": "No prices yet.",
+      "PESTICIDE": "An admin hasn't added pesticide prices yet."
+    },
+    "noMatch": "Nothing matches your search.",
+    "yourCrop": "Your crop",
+    "per": "/ {unit}",
+    "source": {
+      "TCB": "TCB, Dhaka retail market",
+      "GOVERNMENT": "Government-fixed price",
+      "ADMIN": "Price set by Agromate (MRP)"
+    },
+    "noOfficial": "No official price yet",
+    "reports": {
+      "none": "No farmer has reported a price yet"
+    },
+    "trendButton": "30-day trend",
+    "report": {
+      "button": "Report a price",
+      "titleSell": "What price did you sell {item} for today?",
+      "titleBuy": "What price did you pay for {item} today?",
+      "price": "Price (Tk)",
+      "perUnit": "per {unit}",
+      "perBag": "per 50 kg bag",
+      "submit": "Send",
+      "sending": "Sending…",
+      "cancel": "Cancel",
+      "thanks": "Thanks! Your price has been added.",
+      "error": "Couldn't send the price. Try again.",
+      "invalid": "That's far from the market price. Check the amount and the unit.",
+      "districtNote": "It counts towards {district}, the district in your profile.",
+      "noDistrict": "Add your district in your profile to see your district's prices.",
+      "close": "Close"
+    },
+    "trend": {
+      "title": "Last 30 days: {item}",
+      "empty": "Not enough data yet.",
+      "low": "Lowest",
+      "high": "Highest",
+      "close": "Close"
+    },
+    "district": {
+      "label": "District",
+      "mine": "My district ({district})",
+      "choose": "All districts (choose one)"
+    },
+    "table": {
+      "item": "Item",
+      "price": "Price",
+      "change": "This week",
+      "source": "Source & date",
+      "farmers": "Farmers report",
+      "actions": "Actions",
+      "reporters": "{count, plural, one {# farmer} other {# farmers}}",
+      "nationwide": "whole country",
+      "noneIn": "none yet in {district}"
+    }
+  },
+  "assistant": {
+    "title": "AI assistant",
+    "intro": "Ask anything about your crops, fertilizer, pests, weather or prices. It knows your fields, crops and local weather.",
+    "newChat": "New question",
+    "history": "Earlier questions",
+    "noHistory": "Nothing asked yet.",
+    "delete": "Delete",
+    "placeholder": "Ask in Bangla or English…",
+    "send": "Ask",
+    "thinking": "Thinking…",
+    "error": "Couldn't get an answer. Try again.",
+    "tooMany": "You've asked a lot this hour. Try again a little later.",
+    "tooLong": "A question can be at most {max} characters.",
+    "loadError": "Couldn't load the conversation.",
+    "startersTitle": "Try asking",
+    "starters": [
+      "What should I do on my field this week?",
+      "How much urea does my crop need now?",
+      "The leaves of my crop are turning yellow. What could it be?",
+      "Is this a good time to sell my harvest?"
+    ],
+    "note": "AI can make mistakes. For serious problems, message an expert."
+  },
+  "advice": {
+    "title": "Crop & fertilizer advice",
+    "intro": "Which crops suit your land this month, and how much fertilizer a crop needs, with the cost at today's prices.",
+    "tabs": {
+      "crop": "Which crop to grow",
+      "fertilizer": "How much fertilizer"
+    },
+    "field": "Field",
+    "noField": "No field (choose soil and area)",
+    "soil": "Soil type",
+    "soilUnknown": "Don't know",
+    "month": "Month",
+    "submit": "Show advice",
+    "working": "Working it out…",
+    "error": "Couldn't get the advice. Try again.",
+    "crop": {
+      "summary": "{month} · soil: {soil} · this week's average {temp}",
+      "summaryNoTemp": "{month} · soil: {soil}",
+      "timing": {
+        "NOW": "Plant now",
+        "SOON": "From next month",
+        "LATER": "Later"
+      },
+      "groups": {
+        "NOW": "Good to plant now",
+        "SOON": "Get ready: next month",
+        "LATER": "Not this season"
+      },
+      "soilFit": {
+        "GOOD": "Soil suits it well",
+        "FAIR": "Soil is okay",
+        "POOR": "Soil isn't ideal",
+        "UNKNOWN": "Soil not known"
+      },
+      "tempFit": {
+        "GOOD": "Weather suits it",
+        "FAIR": "Weather is okay",
+        "POOR": "Too hot or cold now",
+        "UNKNOWN": ""
+      },
+      "window": "Planting: {from}–{to}",
+      "harvest": "Harvest around {date}",
+      "price": "Market: ৳{min, number}–{max, number}/{unit}",
+      "empty": "No crops in the crop list yet."
+    },
+    "fertilizer": {
+      "crop": "Crop",
+      "area": "Land (acres)",
+      "areaHint": "1 bigha ≈ 0.33 acre",
+      "fertility": "Soil fertility",
+      "fertilityLevels": {
+        "LOW": "Poor",
+        "MEDIUM": "Medium",
+        "HIGH": "Good"
+      },
+      "noGuide": "There's no recommendation for this crop yet.",
+      "needArea": "Choose a field or enter the land in acres.",
+      "resultTitle": "{crop} · {area, number} acres",
+      "table": {
+        "fertilizer": "Fertilizer",
+        "total": "For your land",
+        "bags": "50 kg bags",
+        "perBigha": "Per bigha",
+        "cost": "Cost"
+      },
+      "names": {
+        "urea": "Urea",
+        "tsp": "TSP",
+        "mop": "MoP (potash)",
+        "gypsum": "Gypsum",
+        "zinc": "Zinc sulphate",
+        "boric": "Boric acid"
+      },
+      "kg": "{value} kg",
+      "noPrice": "—",
+      "totalCost": "Total cost (priced fertilizers)",
+      "organic": "Also add compost / cow dung: about {total, number} tonnes for this land",
+      "timing": "When to apply",
+      "source": "Source",
+      "note": "A general recommendation without a soil test. A soil test (Upazila Agriculture Office / SRDI) gives the exact dose."
+    }
+  },
+  "reports": {
+    "title": "Farm report",
+    "intro": "Costs, harvests, sales and profit for a year or for one crop. Print it or save it as PDF.",
+    "year": "Year",
+    "crop": "Crop",
+    "allCrops": "Whole year",
+    "print": "Print / save PDF",
+    "loading": "Preparing the report…",
+    "error": "Couldn't load the report.",
+    "empty": "No crops in {year} yet.",
+    "generated": "Prepared on {date}",
+    "totals": {
+      "cost": "Total cost",
+      "revenue": "Total sales",
+      "profit": "Profit",
+      "loss": "Loss"
+    },
+    "costsByCategory": "Costs by type",
+    "crops": "Crops",
+    "otherCosts": "Farm costs not tied to a crop",
+    "columns": {
+      "crop": "Crop",
+      "field": "Field",
+      "planted": "Planted",
+      "status": "Status",
+      "cost": "Cost",
+      "revenue": "Sales",
+      "profit": "Profit",
+      "perAcre": "Profit per acre",
+      "date": "Date",
+      "type": "Type",
+      "amount": "Amount",
+      "note": "Note",
+      "quantity": "Quantity",
+      "price": "Price"
+    },
+    "expenses": "Expenses",
+    "harvests": "Harvests & sales",
+    "noLines": "Nothing recorded.",
+    "harvestedQuantity": "Harvested"
   }
 }

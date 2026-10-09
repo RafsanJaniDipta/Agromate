@@ -1,14 +1,14 @@
 import express, { type Application } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 
-import { env, isProduction } from "./config/env.js";
+import { env } from "./config/env.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { routes } from "./routes/index.js";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js";
 import { requireTrustedOrigin } from "./middlewares/origin.middleware.js";
+import { onRateLimitReached, requestLogger } from "./middlewares/requestLogger.middleware.js";
 
 /**
  * Express application assembly (Masud — Day 1).
@@ -32,6 +32,9 @@ export function createApp(): Application {
   // Trust the first proxy hop so rate limiting sees real client IPs in production.
   app.set("trust proxy", 1);
 
+  // First, so every request is logged: auth calls and blocked ones too
+  app.use(requestLogger);
+
   app.use(helmet());
   app.use(
     cors({
@@ -48,9 +51,13 @@ export function createApp(): Application {
     "/api/auth",
     rateLimit({
       windowMs: 15 * 60 * 1000,
-      limit: 20,
+      limit: 3,
       standardHeaders: "draft-7",
       legacyHeaders: false,
+      handler: onRateLimitReached,
+      // Guards against password guessing, so only sign-in style requests count. Reads (the
+      // session check, the login page's list of demo accounts) mustn't hide the page's buttons.
+      skip: (req) => req.method === "GET",
       message: {
         success: false,
         message: "Too many authentication attempts, please try again later.",
@@ -71,10 +78,6 @@ export function createApp(): Application {
     next();
   });
 
-  if (!isProduction) {
-    app.use(morgan("dev"));
-  }
-
   // Non-auth API routes use this broad limit; auth is limited before its handler above.
   app.use(
     "/api",
@@ -83,6 +86,7 @@ export function createApp(): Application {
       limit: 300,
       standardHeaders: "draft-7",
       legacyHeaders: false,
+      handler: onRateLimitReached,
       message: {
         success: false,
         message: "Too many requests, please try again later.",

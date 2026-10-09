@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { BarnIcon, ChatIcon, LeafIcon, SproutIcon, UserIcon } from "@/components/icons";
+import { BarnIcon, LeafIcon, SproutIcon, UserIcon } from "@/components/icons";
 import StatCard from "@/components/dashboard/StatCard";
 import { useCurrentUser } from "@/components/dashboard/RoleGate";
 import ExpertApplications from "@/components/admin/ExpertApplications";
@@ -12,7 +12,6 @@ const statCards: { key: keyof AdminStats; Icon: typeof UserIcon }[] = [
   { key: "totalUsers", Icon: UserIcon },
   { key: "totalFarms", Icon: BarnIcon },
   { key: "totalCropCycles", Icon: SproutIcon },
-  { key: "totalQuestions", Icon: ChatIcon },
   { key: "totalDiseaseDetections", Icon: LeafIcon },
 ];
 
@@ -34,7 +33,7 @@ export default function AdminOverview() {
       <h1 className="text-2xl font-semibold md:text-3xl">{t("greeting", { name: user.name })}</h1>
       {failed && <p className="text-sm text-red-300">{t("error")}</p>}
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         {statCards.map(({ key, Icon }) => (
           <StatCard key={key} icon={<Icon />} title={t(`stats.${key}`)}>
             <p className="text-3xl font-semibold">{stats?.[key] ?? "…"}</p>

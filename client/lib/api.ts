@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
 // Carries the HTTP status so callers can tell "not logged in" (401) from "not allowed" (403)
 export class ApiError extends Error {

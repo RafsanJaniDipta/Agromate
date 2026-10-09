@@ -1,9 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
 import { Prisma } from "../generated/prisma/client.js";
 
-import { env, isProduction } from "../config/env.js";
+import { env } from "../config/env.js";
 import { AppError } from "../utils/AppError.js";
 import { sendError } from "../utils/apiResponse.js";
+import { logger } from "../utils/logger.js";
 
 /**
  * Central error middleware (Masud — Day 1).
@@ -42,6 +43,9 @@ function fromPrisma(error: Prisma.PrismaClientKnownRequestError): AppError {
     }
     case "P2003":
       return AppError.badRequest("Referenced record does not exist");
+    case "P2007":
+      // Malformed value, e.g. "abc" where a UUID is expected
+      return AppError.badRequest("Invalid ID or input value");
     case "P2025":
       return AppError.notFound("Resource not found");
     default:
@@ -91,14 +95,13 @@ export function errorHandler(
     status: appError.statusCode,
     method: _req.method,
     path: _req.originalUrl,
-    name: err?.name,
-    stack: isProduction ? undefined : err?.stack,
   };
 
   if (appError.statusCode >= 500) {
-    console.error("[error]", JSON.stringify(logPayload, null, 2));
+    // The stack stays in server logs only; the client never sees it
+    logger.error(appError.message, { ...logPayload, error: err });
   } else {
-    console.warn(`[warn] ${appError.statusCode} ${logPayload.method} ${logPayload.path} — ${appError.message}`);
+    logger.warn(`${appError.statusCode} ${logPayload.method} ${logPayload.path} — ${appError.message}`);
   }
 
   sendError(res, appError.statusCode, appError.message, appError.errors);

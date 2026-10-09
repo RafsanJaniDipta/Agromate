@@ -21,7 +21,12 @@ export const serviceHandler = <T extends (...args: any[]) => Promise<any>>(fn: T
         const fields = error.meta?.target ? String(error.meta.target) : "field";
         throw AppError.conflict(`A record with this ${fields} already exists`);
       }
-      throw AppError.internal(error.message || "Database operation failed");
+      // Prisma P2007: Malformed value, e.g. "abc" where a UUID is expected
+      if (error.code === "P2007") {
+        throw AppError.badRequest("Invalid ID or input value");
+      }
+      // Let the error middleware log the original and hide its message in production
+      throw error;
     }
   }) as T;
 };

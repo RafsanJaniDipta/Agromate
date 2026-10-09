@@ -2,7 +2,10 @@ import { createServer } from "node:http";
 
 import { createApp } from "./app.js";
 import { env } from "./config/env.js";
-import { connectDatabase, disconnectDatabase } from "./config/database.js";
+import { connectDatabase, describeDatabase, disconnectDatabase } from "./config/database.js";
+import { setupSocketIO } from "./socket/socket.server.js";
+import { startPriceUpdates } from "./modules/price/price.scheduler.js";
+import { logger } from "./utils/logger.js";
 
 /**
  * Process entrypoint (Masud — Day 1).
@@ -14,22 +17,25 @@ import { connectDatabase, disconnectDatabase } from "./config/database.js";
 async function bootstrap(): Promise<void> {
   try {
     await connectDatabase();
-    console.log("[db] connected");
+    logger.info(`✅ Database connected successfully → ${describeDatabase()}`);
   } catch (error) {
-    console.error("[db] connection failed — check DATABASE_URL in your .env");
-    console.error(error instanceof Error ? error.message : error);
+    logger.error(`❌ Database connection failed → ${describeDatabase()} (check DATABASE_URL in .env)`, error);
     process.exit(1);
   }
 
   const app = createApp();
   const server = createServer(app);
+  // Live chat and notifications share the API's port
+  setupSocketIO(server);
 
   server.listen(env.PORT, () => {
-    console.log(`[api] AgroMate server listening on http://localhost:${env.PORT} (${env.NODE_ENV})`);
+    // Daily TCB prices and the built-in price list
+    startPriceUpdates();
+    logger.info(`[api] AgroMate server listening on http://localhost:${env.PORT} (${env.NODE_ENV})`);
   });
 
   const shutdown = (signal: string) => {
-    console.log(`[api] ${signal} received, shutting down`);
+    logger.info(`[api] ${signal} received, shutting down`);
     server.close(() => {
       void disconnectDatabase().finally(() => process.exit(0));
     });
@@ -41,7 +47,12 @@ async function bootstrap(): Promise<void> {
   process.on("SIGTERM", () => shutdown("SIGTERM"));
 
   process.on("unhandledRejection", (reason) => {
-    console.error("[api] unhandled rejection:", reason);
+    logger.error("[api] unhandled rejection", reason);
+  });
+
+  process.on("uncaughtException", (error) => {
+    logger.error("[api] uncaught exception", error);
+    process.exit(1);
   });
 }
 
