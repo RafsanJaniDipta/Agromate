@@ -4,7 +4,6 @@ import { fromNodeHeaders } from "better-auth/node";
 import { auth } from "../config/auth.js";
 import { AppError } from "../utils/AppError.js";
 import type { AuthUser } from "../types/index.js";
-import "../types/express.d.js";
 
 
 /**
