@@ -46,6 +46,31 @@ body {
   --animate-marquee: marquee 30s linear infinite;
   /* Success stories timer bar; its animationend moves to the next story */
   --animate-story-progress: grow-x 7s linear both;
+  /* Notification bell with something new: a short shake, then a pause, until it's opened */
+  --animate-bell-ring: bell-ring 1.8s ease-in-out infinite;
+
+  @keyframes bell-ring {
+    0%,
+    45%,
+    100% {
+      rotate: 0deg;
+    }
+    7% {
+      rotate: 16deg;
+    }
+    15% {
+      rotate: -14deg;
+    }
+    23% {
+      rotate: 10deg;
+    }
+    31% {
+      rotate: -6deg;
+    }
+    38% {
+      rotate: 3deg;
+    }
+  }
 
   @keyframes blur-in {
     from {
@@ -100,7 +125,8 @@ body {
   .animate-blur-in,
   .animate-hero-zoom,
   .animate-marquee,
-  .animate-story-progress {
+  .animate-story-progress,
+  .animate-bell-ring {
     animation: none;
   }
 }
@@ -111,4 +137,21 @@ body {
 .tracking-tight:lang(bn),
 .tracking-wider:lang(bn) {
   letter-spacing: normal;
+}
+
+/* Printed reports (the farm report's .print-report): black on white, no dashboard glass */
+@media print {
+  .print-report,
+  .print-report * {
+    color: #000 !important;
+    background: transparent !important;
+    border-color: #d4d4d8 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .print-report {
+    border: 0 !important;
+    padding: 0 !important;
+  }
 }

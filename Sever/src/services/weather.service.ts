@@ -1,5 +1,5 @@
 import { AppError } from "../utils/AppError.js";
-import { DISTRICT_ALIASES, DISTRICT_NAMES } from "../utils/bdDistricts.js";
+import { districtIn } from "../utils/bdDistricts.js";
 
 // Weather from Open-Meteo: free, no API key. https://open-meteo.com/en/docs
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
@@ -84,19 +84,6 @@ async function getJson<T>(url: URL): Promise<T> {
     throw AppError.badGateway("Weather service is unavailable");
   }
   return (await res.json()) as T;
-}
-
-// The district a piece of text names, in the geocoder's spelling, or null.
-// Finds it inside longer text too: "বগুড়া সদর", "Bogura Sadar", "Chattogram district".
-function districtIn(text: string): string | null {
-  const banglaDistrict = Object.keys(DISTRICT_NAMES).find((district) => text.includes(district));
-  if (banglaDistrict) return DISTRICT_NAMES[banglaDistrict] ?? null;
-
-  const squashed = text.toLowerCase().replace(/s+/g, "");
-  const alias = Object.keys(DISTRICT_ALIASES).find((name) => squashed.includes(name));
-  if (alias) return DISTRICT_ALIASES[alias] ?? null;
-
-  return Object.values(DISTRICT_NAMES).find((name) => squashed.includes(name.toLowerCase().replace(/s+/g, ""))) ?? null;
 }
 
 type GeocodeResponse = { results?: { name: string; latitude: number; longitude: number; country_code: string }[] };

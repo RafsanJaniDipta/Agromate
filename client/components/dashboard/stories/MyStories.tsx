@@ -63,7 +63,8 @@ export default function MyStories() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    // Form and list side by side on wide screens, one above the other on phones
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
       <div ref={formTop} className="flex scroll-mt-28 flex-col gap-3">
         {notice && (
           <p
@@ -86,7 +87,7 @@ export default function MyStories() {
         />
       </div>
 
-      {/* The farmer's stories: a quiet list under the form */}
+      {/* The farmer's stories: a quiet list beside (or under) the form */}
       <section className="flex flex-col gap-3">
         <h2 className="px-1 text-lg font-semibold">{t("listTitle")}</h2>
 

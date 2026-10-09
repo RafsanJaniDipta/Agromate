@@ -6,10 +6,12 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api";
 import { dashboardFor } from "@/lib/session";
 import { PasswordField, TextField } from "@/components/auth/AuthFields";
+import DemoLogins from "@/components/auth/DemoLogins";
 
 type Status = "idle" | "sending" | "error";
 
 // Phone + password login: posts to the backend's /api/auth/login, then opens the dashboard for the user's role.
+// Demo-account buttons below it sign in with one click.
 export default function LoginForm() {
   const t = useTranslations("auth");
   const router = useRouter();
@@ -76,6 +78,8 @@ export default function LoginForm() {
       <p aria-live="polite" className="mt-4 text-sm text-red-600">
         {status === "error" && t("login.error")}
       </p>
+
+      <DemoLogins offer={["farmer", "expert"]} />
 
       <p className="mt-6 text-center text-sm text-zinc-600">
         {t("login.noAccount")}{" "}

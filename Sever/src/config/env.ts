@@ -12,6 +12,8 @@ import { z } from "zod";
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().positive().default(5000),
+  // Optional: error | warn | info | http | debug (see src/utils/logger.ts)
+  LOG_LEVEL: z.enum(["error", "warn", "info", "http", "debug"]).optional(),
 
   // Database (Sondip)
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
@@ -56,6 +58,15 @@ const envSchema = z.object({
   SEED_EXPERT_PASSWORD: z.string().min(8).default("Expert@12345"),
   SEED_FARMER_EMAIL: z.string().email().default("farmer@agromate.dev"),
   SEED_FARMER_PASSWORD: z.string().min(8).default("Farmer@12345"),
+
+  // One-click demo logins on the login pages. Credentials stay on the server; a role whose
+  // phone or password is empty gets no button. Expert and admin fall back to the seeded accounts.
+  DEMO_FARMER_PHONE: z.string().default(""),
+  DEMO_FARMER_PASSWORD: z.string().default(""),
+  DEMO_EXPERT_PHONE: z.string().default(""),
+  DEMO_EXPERT_PASSWORD: z.string().default(""),
+  DEMO_ADMIN_PHONE: z.string().default(""),
+  DEMO_ADMIN_PASSWORD: z.string().default(""),
 });
 
 type Env = z.infer<typeof envSchema>;

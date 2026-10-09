@@ -8,7 +8,7 @@ import DashCard from "@/components/dashboard/DashCard";
 import { primaryButton, secondaryButton } from "@/components/dashboard/formStyles";
 import { getPendingExperts, reviewExpert, type ExpertApplication } from "@/lib/admin";
 
-// Expert sign-ups waiting for an admin; approving lets them answer farmers' questions.
+// Expert sign-ups waiting for an admin; approving lists them for farmers to message.
 export default function ExpertApplications() {
   const t = useTranslations("admin.experts");
   const [applications, setApplications] = useState<ExpertApplication[] | null>(null);

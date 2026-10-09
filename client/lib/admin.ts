@@ -1,5 +1,4 @@
 import { api } from "@/lib/api";
-import type { Crop } from "@/lib/crops";
 import { signOut, toRole, type Role } from "@/lib/session";
 
 type SignInResponse = { user: { role?: string | null } };
@@ -10,7 +9,6 @@ export type AdminStats = {
   totalUsers: number;
   totalFarms: number;
   totalCropCycles: number;
-  totalQuestions: number;
   totalDiseaseDetections: number;
 };
 
@@ -32,17 +30,6 @@ export type ExpertApplication = {
   createdAt: string;
   user: { name: string; phone: string | null };
 };
-
-export type MarketPrice = {
-  id: string;
-  district: string;
-  pricePerUnit: number;
-  unit: string;
-  date: string;
-  crop: Pick<Crop, "id" | "name" | "nameBn">;
-};
-
-export type MarketPriceInput = { cropId: string; district: string; pricePerUnit: number; unit: string };
 
 export class FarmerAccountError extends Error {}
 
@@ -92,16 +79,4 @@ export async function updateUser(id: string, change: { role?: Role; status?: "AC
     method: "PATCH",
     body: JSON.stringify(change),
   });
-}
-
-export async function getMarketPrices(page: number, limit = 10) {
-  return api<Paginated<MarketPrice>>(`/api/market-prices?page=${page}&limit=${limit}`);
-}
-
-export async function createMarketPrice(input: MarketPriceInput) {
-  await api("/api/market-prices", { method: "POST", body: JSON.stringify(input) });
-}
-
-export async function deleteMarketPrice(id: string) {
-  await api(`/api/market-prices/${id}`, { method: "DELETE" });
 }

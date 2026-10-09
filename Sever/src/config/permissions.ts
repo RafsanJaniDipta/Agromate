@@ -18,22 +18,18 @@ import { defaultStatements, adminAc } from "better-auth/plugins/admin/access";
 export const statement = {
   ...defaultStatements,
   ai: ["use"],
-  question: ["create", "answer"],
 } as const;
 
 export const ac = createAccessControl(statement);
 
 export const farmer = ac.newRole({
   ai: ["use"],
-  question: ["create"],
 });
 
-export const expert = ac.newRole({
-  question: ["answer"],
-});
+// Experts help farmers through the chat, which checks roles itself
+export const expert = ac.newRole({});
 
 export const admin = ac.newRole({
   ...adminAc.statements,
   ai: ["use"],
-  question: ["create", "answer"],
 });

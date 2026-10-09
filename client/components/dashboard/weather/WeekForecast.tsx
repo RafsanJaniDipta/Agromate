@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import DashCard from "@/components/dashboard/DashCard";
 import { conditionStyles } from "@/components/dashboard/weather/conditionStyles";
-import { DropIcon, SunIcon } from "@/components/icons";
 import { getWeatherForecast, type DayForecast, type WeatherQuery } from "@/lib/weather";
 
 // From this chance of rain, spraying or fertilising that day is likely wasted
@@ -19,7 +18,8 @@ function farmingTip(day: DayForecast): "rain" | "heat" | null {
   return null;
 }
 
-// The next 7 days, one card each: sky, low / high, chance of rain, rainfall, UV and a farming tip.
+// The next 7 days as a table, one row per day: sky, high / low, chance of rain, rainfall,
+// UV and a farming tip. Scrolls sideways on phones, like the market price table.
 export default function WeekForecast({ query }: { query: WeatherQuery }) {
   const t = useTranslations("dashboard.weatherPage");
   const tWeather = useTranslations("dashboard.weather");
@@ -54,94 +54,98 @@ export default function WeekForecast({ query }: { query: WeatherQuery }) {
         ? tWeather("tomorrow")
         : format.dateTime(new Date(date), { weekday: "long" });
 
+  const headCell = "px-4 py-3 text-left text-xs font-medium text-white/55";
+  const cell = "px-4 py-3 align-middle";
+
   return (
-    <ul className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
-      {days.map((day, index) => {
-        const { Icon } = conditionStyles[day.condition];
-        const tip = farmingTip(day);
+    <DashCard className="overflow-hidden p-0">
+      <div data-lenis-prevent className="overflow-x-auto">
+        <table className="w-full min-w-4xl border-collapse text-sm">
+          <thead className="border-b border-white/10">
+            <tr>
+              <th scope="col" className={headCell}>{t("table.day")}</th>
+              <th scope="col" className={headCell}>{t("table.sky")}</th>
+              <th scope="col" className={headCell}>
+                {t("high")} / {t("low")}
+              </th>
+              <th scope="col" className={headCell}>{tWeather("rainChance")}</th>
+              <th scope="col" className={headCell}>{t("rainfall")}</th>
+              <th scope="col" className={headCell}>{t("maxUv")}</th>
+              <th scope="col" className={headCell}>{t("table.tip")}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {days.map((day, index) => {
+              const { Icon } = conditionStyles[day.condition];
+              const tip = farmingTip(day);
 
-        return (
-          <li key={day.date}>
-            <DashCard className="flex h-full flex-col gap-4">
-              <header className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="font-semibold">{dayName(day.date, index)}</h2>
-                  <p className="text-xs text-white/60">
-                    {format.dateTime(new Date(day.date), { day: "numeric", month: "long" })}
-                  </p>
-                </div>
-                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-white/10">
-                  <Icon className="size-6" />
-                </span>
-              </header>
+              return (
+                <tr key={day.date} className="transition hover:bg-white/5">
+                  <th scope="row" className={`${cell} whitespace-nowrap text-left font-normal`}>
+                    <span className="block font-medium">{dayName(day.date, index)}</span>
+                    <span className="block text-xs text-white/50">
+                      {format.dateTime(new Date(day.date), { day: "numeric", month: "long" })}
+                    </span>
+                  </th>
 
-              <div className="flex items-end justify-between gap-3">
-                {/* The day's range, labelled so the high isn't read as the temperature right now */}
-                <dl className="flex items-end gap-4">
-                  <div>
-                    <dt className="text-xs text-white/50">{t("high")}</dt>
-                    <dd className="text-3xl font-light tracking-tight">
-                      {tWeather("temperature", { value: day.maxTempC })}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-white/50">{t("low")}</dt>
-                    <dd className="text-lg text-white/60">{tWeather("temperature", { value: day.minTempC })}</dd>
-                  </div>
-                </dl>
-                <p className="text-sm text-white/80">{tWeather(`conditions.${day.condition}`)}</p>
-              </div>
+                  <td className={cell}>
+                    <span className="flex items-center gap-2 whitespace-nowrap">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/10">
+                        <Icon className="size-5" />
+                      </span>
+                      {tWeather(`conditions.${day.condition}`)}
+                    </span>
+                  </td>
 
-              {/* Chance of rain as a bar, since it's what decides most farm work */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex justify-between text-xs text-white/70">
-                  <span className="inline-flex items-center gap-1">
-                    <DropIcon className="size-3.5" />
-                    {tWeather("rainChance")}
-                  </span>
-                  <span>{tWeather("rainChanceValue", { value: day.rainChancePercent })}</span>
-                </div>
-                <div
-                  role="progressbar"
-                  aria-label={tWeather("rainChance")}
-                  aria-valuenow={day.rainChancePercent}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  className="h-2 overflow-hidden rounded-full bg-white/10"
-                >
-                  <div className="h-full rounded-full bg-sky-400" style={{ width: `${day.rainChancePercent}%` }} />
-                </div>
-              </div>
+                  {/* The day's range, so the high isn't read as the temperature right now */}
+                  <td className={`${cell} whitespace-nowrap`}>
+                    <span className="text-lg font-medium">{tWeather("temperature", { value: day.maxTempC })}</span>
+                    <span className="text-white/50"> / {tWeather("temperature", { value: day.minTempC })}</span>
+                  </td>
 
-              <dl className="grid grid-cols-2 gap-2 text-sm">
-                <div className="rounded-2xl bg-white/5 px-3 py-2">
-                  <dt className="text-xs text-white/50">{t("rainfall")}</dt>
-                  <dd>{t("rainfallValue", { value: day.rainfallMm })}</dd>
-                </div>
-                <div className="rounded-2xl bg-white/5 px-3 py-2">
-                  <dt className="flex items-center gap-1 text-xs text-white/50">
-                    <SunIcon className="size-3" />
-                    {t("maxUv")}
-                  </dt>
-                  <dd>{tWeather("uvValue", { value: day.uvIndex })}</dd>
-                </div>
-              </dl>
+                  {/* As a bar too, since it's what decides most farm work */}
+                  <td className={cell}>
+                    <span className="flex items-center gap-2">
+                      <span
+                        role="progressbar"
+                        aria-label={tWeather("rainChance")}
+                        aria-valuenow={day.rainChancePercent}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        className="h-2 w-20 overflow-hidden rounded-full bg-white/10"
+                      >
+                        <span className="block h-full rounded-full bg-sky-400" style={{ width: `${day.rainChancePercent}%` }} />
+                      </span>
+                      <span className="whitespace-nowrap text-xs text-white/80">
+                        {tWeather("rainChanceValue", { value: day.rainChancePercent })}
+                      </span>
+                    </span>
+                  </td>
 
-              {tip && (
-                <p
-                  className={`mt-auto rounded-2xl border px-3 py-2 text-xs ${
-                    tip === "rain"
-                      ? "border-sky-300/30 bg-sky-300/10 text-sky-100"
-                      : "border-amber-300/30 bg-amber-300/10 text-amber-100"
-                  }`}
-                >
-                  {t(`tips.${tip}`)}
-                </p>
-              )}
-            </DashCard>
-          </li>
-        );
-      })}
-    </ul>
+                  <td className={`${cell} whitespace-nowrap`}>{t("rainfallValue", { value: day.rainfallMm })}</td>
+                  <td className={`${cell} whitespace-nowrap`}>{tWeather("uvValue", { value: day.uvIndex })}</td>
+
+                  <td className={`${cell} text-xs`}>
+                    {tip ? (
+                      <span
+                        className={`block rounded-xl border px-3 py-1.5 ${
+                          tip === "rain"
+                            ? "border-sky-300/30 bg-sky-300/10 text-sky-100"
+                            : "border-amber-300/30 bg-amber-300/10 text-amber-100"
+                        }`}
+                      >
+                        {t(`tips.${tip}`)}
+                      </span>
+                    ) : (
+                      <span className="text-white/40">—</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </DashCard>
   );
 }

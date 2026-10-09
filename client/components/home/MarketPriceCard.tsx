@@ -1,66 +1,89 @@
-import { useFormatter, useTranslations } from "next-intl";
+import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import CardTitle from "@/components/home/CardTitle";
 import GlassCard from "@/components/home/GlassCard";
+import { getPriceHighlights, itemName, itemUnit, type PriceItem } from "@/lib/prices";
 
-// Sample prices (taka per kg) until a live market feed is connected
-const priceGroups = [
-  {
-    id: "crops",
-    items: [
-      { id: "rice", price: 52, change: 1.8 },
-      { id: "wheat", price: 48, change: -0.6 },
-      { id: "potato", price: 30, change: 2.4 },
-    ],
-  },
-  {
-    id: "fertilizer",
-    items: [
-      { id: "urea", price: 27, change: 0 },
-      { id: "tsp", price: 27, change: 1.2 },
-      { id: "mop", price: 20, change: -1.1 },
-    ],
-  },
-] as const;
+async function Trend({ change }: { change: number | null }) {
+  const format = await getFormatter();
+  if (change === null) return <span className="text-white/40">—</span>;
 
-function Trend({ change }: { change: number }) {
-  const format = useFormatter();
-  const percent = format.number(Math.abs(change) / 100, {
-    style: "percent",
-    maximumFractionDigits: 1,
-  });
-
+  const percent = format.number(Math.abs(change) / 100, { style: "percent", maximumFractionDigits: 1 });
   if (change > 0) return <span className="text-lime-400">▲ {percent}</span>;
   if (change < 0) return <span className="text-red-400">▼ {percent}</span>;
   return <span className="text-white/50">— {percent}</span>;
 }
 
-// Current market prices for crops and fertilizer.
-export default function MarketPriceCard() {
-  const t = useTranslations("market");
+// Today's crop prices (TCB, Dhaka) and the government fertilizer rates, with the weekly change.
+// Prices change once a day, so the data is cached for a few minutes (see getPriceHighlights).
+export default async function MarketPriceCard() {
+  const [t, format, locale, highlights] = await Promise.all([
+    getTranslations("market"),
+    getFormatter(),
+    getLocale(),
+    getPriceHighlights(),
+  ]);
+
+  const groups = [
+    { id: "crops", items: highlights?.crops ?? [] },
+    { id: "fertilizer", items: highlights?.fertilizers ?? [] },
+  ] as const;
+  const hasPrices = groups.some(({ items }) => items.some((item) => item.official));
+  // Dates are calendar days stored at UTC midnight
+  const latestCropDate = highlights?.crops.find((item) => item.official)?.official?.date;
+
+  const price = (item: PriceItem) => {
+    const official = item.official!;
+    const amount =
+      official.minPrice === official.maxPrice
+        ? t("price", { price: official.minPrice })
+        : t("priceRange", { min: official.minPrice, max: official.maxPrice });
+    return `${amount}${t("per", { unit: itemUnit(item, locale) })}`;
+  };
 
   return (
     <GlassCard className="p-5">
       <div className="flex items-center justify-between">
         <CardTitle icon="↗">{t("title")}</CardTitle>
-        <span className="text-[11px] text-white/50">{t("today")}</span>
+        <span className="flex items-center gap-1.5 text-[11px] text-white/60">
+          <span aria-hidden className="relative flex size-2">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-lime-400 opacity-60" />
+            <span className="relative inline-flex size-2 rounded-full bg-lime-400" />
+          </span>
+          {t("live")}
+        </span>
       </div>
 
-      {priceGroups.map(({ id, items }) => (
-        <div key={id} className="mt-4">
-          <p className="text-[10px] uppercase tracking-wider text-white/50">{t(`groups.${id}`)}</p>
-          <ul className="mt-2 space-y-1.5 text-sm">
-            {items.map(({ id, price, change }) => (
-              <li key={id} className="grid grid-cols-[1fr_auto_4.5rem] items-center gap-3">
-                <span className="text-white/80">{t(`items.${id}`)}</span>
-                <span className="font-semibold">{t("pricePerKg", { price })}</span>
-                <span className="text-right text-xs">
-                  <Trend change={change} />
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      {!hasPrices && <p className="mt-4 text-sm text-white/60">{t("unavailable")}</p>}
+
+      {hasPrices &&
+        groups.map(({ id, items }) => (
+          <div key={id} className="mt-4">
+            <p className="text-[10px] uppercase tracking-wider text-white/50">{t(`groups.${id}`)}</p>
+            <ul className="mt-2 space-y-1.5 text-sm">
+              {items
+                .filter((item) => item.official)
+                .map((item) => (
+                  <li key={item.id} className="grid grid-cols-[1fr_auto_4.5rem] items-center gap-3">
+                    <span className="truncate text-white/80">{itemName(item, locale)}</span>
+                    <span className="font-semibold">{price(item)}</span>
+                    <span className="text-right text-xs">
+                      <Trend change={item.weekChangePercent} />
+                    </span>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ))}
+
+      {hasPrices && (
+        <p className="mt-4 text-[10px] leading-relaxed text-white/45">
+          {latestCropDate &&
+            `${t("updated", {
+              date: format.dateTime(new Date(latestCropDate), { day: "numeric", month: "long", timeZone: "UTC" }),
+            })} · `}
+          {t("source")}
+        </p>
+      )}
     </GlassCard>
   );
 }

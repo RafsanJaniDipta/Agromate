@@ -3,6 +3,14 @@ import { isMonthInRange } from "@/lib/months";
 import type { Crop, CropFilter, CropInput, PlantingFit } from "@/types";
 
 export type { Crop, CropFilter, CropInput, PlantingFit };
+// Shows the Bangla text on the Bangla site, falling back to English when it's missing
+export function cropName(crop: Pick<Crop, "name" | "nameBn">, locale: string) {
+  return locale === "bn" ? (crop.nameBn ?? crop.name) : crop.name;
+}
+
+export function cropDescription(crop: Crop, locale: string) {
+  return locale === "bn" ? (crop.descriptionBn ?? crop.description) : crop.description;
+}
 
 
 export function plantingFit(crop: Crop, month: number): PlantingFit {

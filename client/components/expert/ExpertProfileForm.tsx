@@ -1,12 +1,19 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { UserIcon } from "@/components/icons";
 import CardHeader from "@/components/dashboard/CardHeader";
 import DashCard from "@/components/dashboard/DashCard";
 import { darkInput, darkLabel, primaryButton } from "@/components/dashboard/formStyles";
-import { getOwnProfile, saveOwnProfile, type ExpertProfile } from "@/lib/expert";
+import {
+  categoryName,
+  getExpertCategories,
+  getOwnProfile,
+  saveOwnProfile,
+  type ExpertCategory,
+  type ExpertProfile,
+} from "@/lib/expert";
 
 type Status = "loading" | "idle" | "saving" | "saved" | "error";
 
@@ -21,17 +28,23 @@ const textFields = [
 // Lets an expert fill in or edit their profile. Saving a rejected profile sends it back for review.
 export default function ExpertProfileForm() {
   const t = useTranslations("expertDashboard.profile");
+  const locale = useLocale();
   const [profile, setProfile] = useState<ExpertProfile | null>(null);
+  const [categories, setCategories] = useState<ExpertCategory[]>([]);
   const [status, setStatus] = useState<Status>("loading");
 
   useEffect(() => {
-    getOwnProfile()
-      .then((loaded) => {
+    // Without the category list the rest of the form still works
+    Promise.all([getOwnProfile(), getExpertCategories().catch(() => [])])
+      .then(([loaded, allCategories]) => {
         setProfile(loaded);
+        setCategories(allCategories);
         setStatus("idle");
       })
       .catch(() => setStatus("error"));
   }, []);
+
+  const chosenIds = new Set(profile?.categories.map((category) => category.id));
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,6 +59,8 @@ export default function ExpertProfileForm() {
         qualifications: text("qualifications"),
         bio: text("bio"),
         experienceYears: Number(data.get("experienceYears") || 0),
+        // Left out when the list didn't load, so the saved categories aren't wiped
+        categoryIds: categories.length > 0 ? data.getAll("categoryIds").map(String) : undefined,
       });
       setProfile(saved);
       setStatus("saved");
@@ -103,6 +118,30 @@ export default function ExpertProfileForm() {
             className={`${darkInput} max-w-40`}
           />
         </div>
+
+        {categories.length > 0 && (
+          <fieldset className="flex flex-col gap-2">
+            <legend className={`${darkLabel} mb-2`}>{t("fields.categories")}</legend>
+            <p className="-mt-1 text-xs text-white/55">{t("categoriesHint")}</p>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <label
+                  key={category.id}
+                  className="cursor-pointer rounded-full border border-white/15 px-3.5 py-1.5 text-sm text-white/75 transition hover:bg-white/10 has-checked:border-white has-checked:bg-white has-checked:text-zinc-900 has-focus-visible:ring-2 has-focus-visible:ring-white/60"
+                >
+                  <input
+                    type="checkbox"
+                    name="categoryIds"
+                    value={category.id}
+                    defaultChecked={chosenIds.has(category.id)}
+                    className="sr-only"
+                  />
+                  {categoryName(category, locale)}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
 
         <div className="flex items-center gap-4">
           <button type="submit" disabled={status === "saving"} className={primaryButton}>

@@ -1,7 +1,7 @@
 import { prisma } from "../../config/database.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
 import type { NotificationType } from "../../generated/prisma/client.js";
-import { getIO } from "../../socket/socket.server.js";
+import { emitToUser } from "../../socket/socket.server.js";
 
 export interface CreateNotificationInput {
   userId: string;
@@ -9,32 +9,49 @@ export interface CreateNotificationInput {
   message: string;
   type?: NotificationType;
   referenceId?: string;
+  // Page to open on click, without the locale
+  link?: string;
 }
 
+// Saves a notification and pushes it to the user's open dashboards, so the bell updates live
 export const createNotification = serviceHandler(async (data: CreateNotificationInput) => {
-  return prisma.notification.create({ data });
+  const notification = await prisma.notification.create({
+    data: { ...data, type: data.type ?? "INFO" },
+  });
+  emitToUser(data.userId, "notification:new", notification);
+  return notification;
 });
 
-/**
- * Creates notification record in DB and dispatches a live Socket.io event to `user_${userId}` room.
- */
-export const createAndDispatchNotification = serviceHandler(async (data: CreateNotificationInput) => {
-  const notification = await prisma.notification.create({
-    data: {
-      userId: data.userId,
-      title: data.title,
-      message: data.message,
-      type: data.type ?? "INFO",
-      referenceId: data.referenceId,
-    },
+// Older name, kept for the modules that already call it
+export const createAndDispatchNotification = createNotification;
+
+// One unread notification per subject (e.g. a chat): while it's unread, a newer event
+// refreshes it and moves it to the top instead of adding another, so the bell isn't flooded
+export const notifyLatest = serviceHandler(
+  async (data: CreateNotificationInput & { referenceId: string }) => {
+    const unread = await prisma.notification.findFirst({
+      where: { userId: data.userId, referenceId: data.referenceId, isRead: false },
+      select: { id: true },
+    });
+    if (!unread) return createNotification(data);
+
+    const notification = await prisma.notification.update({
+      where: { id: unread.id },
+      data: { title: data.title, message: data.message, link: data.link, createdAt: new Date() },
+    });
+    emitToUser(data.userId, "notification:new", notification);
+    return notification;
+  },
+);
+
+// Marks a subject's notifications read (e.g. once the chat is opened) and tells the open bells
+export const markReadByReference = serviceHandler(async (userId: string, referenceId: string) => {
+  const { count } = await prisma.notification.updateMany({
+    where: { userId, referenceId, isRead: false },
+    data: { isRead: true },
   });
-
-  const io = getIO();
-  if (io) {
-    io.to(`user_${data.userId}`).emit("new_notification", notification);
-  }
-
-  return notification;
+  if (count > 0) emitToUser(userId, "notification:read", { referenceId });
+  return count;
 });
 
 export const getNotificationsByUserId = serviceHandler(async (userId: string) => {

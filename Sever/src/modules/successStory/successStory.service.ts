@@ -2,6 +2,8 @@ import { prisma } from "../../config/database.js";
 import { cloudinary } from "../../config/cloudinary.js";
 import { env } from "../../config/env.js";
 import { AppError } from "../../utils/AppError.js";
+import { logger } from "../../utils/logger.js";
+import { createNotification } from "../notification/notification.service.js";
 import type {
   AdminReviewSuccessStoryInput,
   CreateSuccessStoryInput,
@@ -92,8 +94,7 @@ export async function updateFarmerStory(
     try {
       await cloudinary.uploader.destroy(existing.imageKey);
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.warn("Failed to delete previous image from Cloudinary:", err);
+      logger.warn("Failed to delete previous image from Cloudinary", err);
     }
   }
 
@@ -124,8 +125,7 @@ export async function deleteFarmerStory(storyId: string, userId: string) {
   try {
     await cloudinary.uploader.destroy(existing.imageKey);
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.warn("Failed to delete image from Cloudinary:", err);
+    logger.warn("Failed to delete image from Cloudinary", err);
   }
 
   await prisma.successStory.delete({
@@ -153,6 +153,21 @@ export async function getAdminStories(status?: StoryStatus) {
     },
     orderBy: { createdAt: "desc" },
   });
+}
+
+// Notification text is stored in Bangla, like the other notifications
+function notifyStoryDecision(userId: string, storyId: string, status: StoryStatus, reason: string | null) {
+  const approved = status === "APPROVED";
+  return createNotification({
+    userId,
+    title: approved ? "আপনার সাফল্যের গল্প অনুমোদিত" : "আপনার সাফল্যের গল্প ফেরত এসেছে",
+    message: approved
+      ? "অভিনন্দন! আপনার গল্পটি এখন সবাই দেখতে পাবেন।"
+      : `গল্পটি ঠিক করে আবার পাঠান।${reason ? ` কারণ: ${reason}` : ""}`,
+    type: approved ? "SUCCESS" : "WARNING",
+    referenceId: storyId,
+    link: "/dashboard/stories",
+  }).catch(() => {}); // a missed notification mustn't fail the review
 }
 
 /**
@@ -212,6 +227,11 @@ export async function reviewSuccessStory(
     },
   });
 
+  // Tell the farmer when the decision changes (saving translations alone stays quiet)
+  if (targetStatus !== existing.status && targetStatus !== "PENDING") {
+    void notifyStoryDecision(updated.userId, storyId, targetStatus, updated.rejectionReason);
+  }
+
   return updated;
 }
 
@@ -230,8 +250,7 @@ export async function deleteAdminStory(storyId: string) {
   try {
     await cloudinary.uploader.destroy(existing.imageKey);
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.warn("Failed to delete image from Cloudinary:", err);
+    logger.warn("Failed to delete image from Cloudinary", err);
   }
 
   await prisma.successStory.delete({

@@ -10,30 +10,27 @@ export type ExpertProfile = {
   qualifications: string | null;
   status: ExpertStatus;
   rejectionReason: string | null;
+  categories: ExpertCategory[];
 };
 
 export type ProfileInput = Pick<
   ExpertProfile,
   "specialization" | "organization" | "experienceYears" | "bio" | "qualifications"
->;
+> & { categoryIds?: string[] };
 
-export type OpenQuestion = {
-  id: string;
-  title: string;
-  description: string | null;
-  createdAt: string;
-  user: { name: string };
-  crop: { name: string; nameBn: string | null } | null;
-  _count: { answers: number };
-};
+// The API nests each category in a join row
+type ExpertProfileRow = Omit<ExpertProfile, "categories"> & { categories: { category: ExpertCategory }[] };
 
-type Paginated<T> = { data: T[]; meta: { total: number } };
+const toProfile = ({ categories, ...profile }: ExpertProfileRow): ExpertProfile => ({
+  ...profile,
+  categories: categories.map(({ category }) => category),
+});
 
 // The expert's own profile, or null before they have filled one in
 export async function getOwnProfile(): Promise<ExpertProfile | null> {
   try {
-    const { data } = await api<{ data: ExpertProfile }>("/api/experts/me");
-    return data;
+    const { data } = await api<{ data: ExpertProfileRow }>("/api/experts/me");
+    return toProfile(data);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;
@@ -41,28 +38,40 @@ export async function getOwnProfile(): Promise<ExpertProfile | null> {
 }
 
 export async function saveOwnProfile(profile: ProfileInput): Promise<ExpertProfile> {
-  const { data } = await api<{ data: ExpertProfile }>("/api/experts/me", {
+  const { data } = await api<{ data: ExpertProfileRow }>("/api/experts/me", {
     method: "PUT",
     body: JSON.stringify(profile),
   });
+  return toProfile(data);
+}
+
+// ---- Expert directory (farmer dashboard) ----
+
+export type ExpertCategory = { id: string; slug: string; nameBn: string; nameEn: string };
+
+// A verified expert as farmers see them. Contact goes through the chat, so phone and email aren't kept.
+export type VerifiedExpert = Omit<ExpertProfile, "status" | "rejectionReason"> & {
+  id: string;
+  user: { id: string; name: string; image: string | null; location: string | null };
+};
+
+type VerifiedExpertRow = Omit<VerifiedExpert, "categories"> & { categories: { category: ExpertCategory }[] };
+
+// Every expert the admin has verified, most experienced first
+export async function getVerifiedExperts(): Promise<VerifiedExpert[]> {
+  const { data } = await api<{ data: VerifiedExpertRow[] }>("/api/experts");
+  return data.map(({ user, categories, ...profile }) => ({
+    ...profile,
+    user: { id: user.id, name: user.name, image: user.image, location: user.location },
+    categories: categories.map(({ category }) => category),
+  }));
+}
+
+export async function getExpertCategories(): Promise<ExpertCategory[]> {
+  const { data } = await api<{ data: ExpertCategory[] }>("/api/experts/categories");
   return data;
 }
 
-// Newest farmer questions still waiting for an answer, plus how many there are
-export async function getOpenQuestions(limit = 10) {
-  const { data, meta } = await api<Paginated<OpenQuestion>>(`/api/questions?status=OPEN&limit=${limit}`);
-  return { questions: data, total: meta.total };
-}
-
-// Platform-wide number of questions that already have an answer
-export async function countAnsweredQuestions() {
-  const { meta } = await api<Paginated<OpenQuestion>>("/api/questions?status=ANSWERED&limit=1");
-  return meta.total;
-}
-
-export async function answerQuestion(questionId: string, content: string) {
-  await api(`/api/questions/${questionId}/answers`, {
-    method: "POST",
-    body: JSON.stringify({ content }),
-  });
-}
+// A category's name in the page's language
+export const categoryName = (category: ExpertCategory, locale: string) =>
+  locale === "bn" ? category.nameBn : category.nameEn;

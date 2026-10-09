@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { CloseIcon, MenuIcon } from "@/components/icons";
 import { Link, usePathname } from "@/i18n/navigation";
 import { dashboardNav } from "@/components/dashboard/dashboardNav";
+import UnreadBadge from "@/components/chat/UnreadBadge";
+import { useChatUnread } from "@/components/chat/ChatUnread";
 import type { Role } from "@/lib/session";
 
 type MobileNavProps = {
@@ -19,6 +21,7 @@ export default function MobileNav({ role, buttonClassName }: MobileNavProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { links, footerLinks } = dashboardNav[role];
+  const { count: unreadMessages } = useChatUnread();
 
   // Escape closes the drawer; the page behind doesn't scroll while it's open
   useEffect(() => {
@@ -48,6 +51,7 @@ export default function MobileNav({ role, buttonClassName }: MobileNavProps) {
             >
               <Icon className="size-6 shrink-0" />
               {t(key)}
+              {key === "messages" && <UnreadBadge count={unreadMessages} className="ml-auto" />}
             </Link>
           </li>
         );
@@ -62,9 +66,12 @@ export default function MobileNav({ role, buttonClassName }: MobileNavProps) {
         aria-label={t("menu")}
         aria-expanded={isOpen}
         onClick={() => setIsOpen(true)}
-        className={buttonClassName}
+        className={`relative ${buttonClassName}`}
       >
         <MenuIcon className="size-5" />
+        {unreadMessages > 0 && (
+          <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-red-500 ring-2 ring-black/60" />
+        )}
       </button>
 
       {isOpen && (

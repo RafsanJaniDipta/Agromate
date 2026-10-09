@@ -72,5 +72,4 @@ export const locatePlace = serviceHandler(async (query: WeatherQuery) => {
 export const WeatherService = {
   getCurrentWeather,
   getWeatherForecast,
-  getWeatherHistory,
 };
