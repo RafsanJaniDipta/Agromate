@@ -51,7 +51,7 @@ export function createApp(): Application {
     "/api/auth",
     rateLimit({
       windowMs: 15 * 60 * 1000,
-      limit: 3,
+      limit: process.env.NODE_ENV === "production" ? 5 : 100,
       standardHeaders: "draft-7",
       legacyHeaders: false,
       handler: onRateLimitReached,

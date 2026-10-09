@@ -174,6 +174,12 @@ enum StoryStatus {
   REJECTED
 }
 
+enum SupportTicketStatus {
+  OPEN
+  RESOLVED
+}
+
+
 // -------------------------------------------------------------
 // AgroMate Core Domain Models
 // -------------------------------------------------------------
@@ -260,16 +266,17 @@ model Guide {
 }
 
 model SupportTicket {
-  id        String   @id @default(uuid(7)) @db.Uuid
+  id        String              @id @default(uuid(7)) @db.Uuid
   name      String
   phone     String
-  topic     String   // key e.g. 'crop', 'market', 'weather', 'account', 'other'
+  topic     String              // key e.g. 'crop', 'market', 'weather', 'account', 'other'
   message   String
-  locale    String   @default("bn")
-  userId    String?  @db.Uuid
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  locale    String              @default("bn")
+  status    SupportTicketStatus @default(OPEN)
+  userId    String?             @db.Uuid
+  user      User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime            @default(now()) @map("created_at")
+  updatedAt DateTime            @updatedAt @map("updated_at")
 
   @@map("support_ticket")
 }

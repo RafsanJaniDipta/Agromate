@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "tsx src/server.ts",
-    "dev": "tsx watch src/server.ts",
+    "dev": "bun --watch src/server.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
