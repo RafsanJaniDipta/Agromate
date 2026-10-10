@@ -29,7 +29,8 @@
     "marketTitle": "Market prices | Agromate",
     "assistantTitle": "AI assistant | Agromate",
     "adviceTitle": "Crop & fertilizer advice | Agromate",
-    "reportsTitle": "Farm report | Agromate"
+    "reportsTitle": "Farm report | Agromate",
+    "adminSupportTicketsTitle": "Support tickets | Agromate admin"
   },
   "languageSwitcher": {
     "label": "Language"
@@ -432,7 +433,8 @@
       "experts": "Experts",
       "market": "Market prices",
       "assistant": "AI assistant",
-      "advice": "Crop & fertilizer advice"
+      "advice": "Crop & fertilizer advice",
+      "supportTickets": "Support tickets"
     },
     "weather": {
       "title": "Weather",
@@ -1120,7 +1122,10 @@
         "totalUsers": "Users",
         "totalFarms": "Farms",
         "totalCropCycles": "Crop cycles",
-        "totalDiseaseDetections": "Disease checks"
+        "totalDiseaseDetections": "Disease checks",
+        "pendingExperts": "Pending experts",
+        "pendingStories": "Pending stories",
+        "openSupportTickets": "Open support tickets"
       }
     },
     "experts": {
@@ -1145,7 +1150,43 @@
         "access": "Access"
       },
       "ban": "Block",
-      "unban": "Unblock"
+      "unban": "Unblock",
+      "searchPlaceholder": "Search name, phone or email...",
+      "allRoles": "All roles"
+    },
+    "supportTickets": {
+      "title": "Support tickets",
+      "loading": "Loading support tickets…",
+      "error": "Could not load support tickets.",
+      "empty": "No support tickets found.",
+      "filters": {
+        "OPEN": "Open",
+        "RESOLVED": "Resolved",
+        "ALL": "All"
+      },
+      "columns": {
+        "sender": "Sender",
+        "topic": "Topic & Message",
+        "status": "Status",
+        "date": "Submitted",
+        "action": "Action"
+      },
+      "resolve": "Mark as Resolved",
+      "reopen": "Reopen Ticket",
+      "linkedUser": "User: {name}"
+    },
+    "broadcast": {
+      "title": "Broadcast Notification",
+      "subtitle": "Send real-time alerts or updates to platform users.",
+      "targetRole": "Target Role",
+      "allRoles": "All Users",
+      "type": "Notification Type",
+      "notificationTitle": "Title",
+      "message": "Message",
+      "send": "Send Broadcast",
+      "sending": "Broadcasting...",
+      "success": "Notification sent successfully to {count} user(s).",
+      "error": "Could not send broadcast notification."
     },
     "stories": {
       "title": "Success stories",

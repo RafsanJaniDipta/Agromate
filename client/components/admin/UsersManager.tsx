@@ -22,13 +22,15 @@ export default function UsersManager() {
   const format = useFormatter();
   const me = useCurrentUser();
   const [users, setUsers] = useState<AdminUser[] | null>(null);
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
 
-  const load = useCallback((pageToLoad: number) => {
-    getUsers(pageToLoad, PAGE_SIZE)
+  const load = useCallback((pageToLoad: number, searchVal?: string, roleVal?: string) => {
+    getUsers(pageToLoad, PAGE_SIZE, searchVal, roleVal)
       .then(({ data, meta }) => {
         setUsers(data);
         setTotal(meta.total);
@@ -37,14 +39,19 @@ export default function UsersManager() {
       .catch(() => setFailed(true));
   }, []);
 
-  useEffect(() => load(1), [load]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      load(1, search, roleFilter);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [load, search, roleFilter]);
 
   async function change(user: AdminUser, update: Parameters<typeof updateUser>[1]) {
     setBusyId(user.id);
     setFailed(false);
     try {
       await updateUser(user.id, update);
-      load(page);
+      load(page, search, roleFilter);
     } catch {
       setFailed(true);
     } finally {
@@ -54,9 +61,33 @@ export default function UsersManager() {
 
   return (
     <DashCard>
-      <CardHeader icon={<UserIcon />} title={t("title")} />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <CardHeader icon={<UserIcon />} title={t("title")} />
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t("searchPlaceholder")}
+            className="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          />
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          >
+            <option value="">{t("allRoles")}</option>
+            {ROLES.map((r) => (
+              <option key={r} value={r}>
+                {tRoles(r)}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
       {failed && <p className="mt-4 text-sm text-red-300">{t("error")}</p>}
       {!users && !failed && <p className="mt-4 text-sm text-white/60">{t("loading")}</p>}
+
 
       {users && (
         <div className="mt-4 overflow-x-auto">
@@ -120,7 +151,7 @@ export default function UsersManager() {
         </div>
       )}
 
-      {users && <Pager page={page} limit={PAGE_SIZE} total={total} onChange={load} />}
+      {users && <Pager page={page} limit={PAGE_SIZE} total={total} onChange={(p) => load(p, search, roleFilter)} />}
     </DashCard>
   );
 }

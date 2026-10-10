@@ -29,7 +29,8 @@
     "marketTitle": "বাজারদর | Agromate",
     "assistantTitle": "AI সহকারী | Agromate",
     "adviceTitle": "ফসল ও সার পরামর্শ | Agromate",
-    "reportsTitle": "খামারের রিপোর্ট | Agromate"
+    "reportsTitle": "খামারের রিপোর্ট | Agromate",
+    "adminSupportTicketsTitle": "সাপোর্ট টিকিট | Agromate অ্যাডমিন"
   },
   "languageSwitcher": {
     "label": "ভাষা"
@@ -432,7 +433,8 @@
       "experts": "বিশেষজ্ঞ",
       "market": "বাজারদর",
       "assistant": "AI সহকারী",
-      "advice": "ফসল ও সার পরামর্শ"
+      "advice": "ফসল ও সার পরামর্শ",
+      "supportTickets": "সাপোর্ট টিকিট"
     },
     "weather": {
       "title": "আবহাওয়া",
@@ -1120,7 +1122,10 @@
         "totalUsers": "ব্যবহারকারী",
         "totalFarms": "খামার",
         "totalCropCycles": "ফসল চক্র",
-        "totalDiseaseDetections": "রোগ নির্ণয়"
+        "totalDiseaseDetections": "রোগ নির্ণয়",
+        "pendingExperts": "অপেক্ষমাণ বিশেষজ্ঞ",
+        "pendingStories": "অপেক্ষমাণ গল্প",
+        "openSupportTickets": "খোলা সাপোর্ট টিকিট"
       }
     },
     "experts": {
@@ -1145,7 +1150,43 @@
         "access": "অ্যাক্সেস"
       },
       "ban": "ব্লক",
-      "unban": "আনব্লক"
+      "unban": "আনব্লক",
+      "searchPlaceholder": "নাম, ফোন বা ইমেইল দিয়ে খুঁজুন...",
+      "allRoles": "সকল ভূমিকা"
+    },
+    "supportTickets": {
+      "title": "সাপোর্ট টিকিট",
+      "loading": "টিকিট লোড হচ্ছে…",
+      "error": "সাপোর্ট টিকিট লোড করা যায়নি।",
+      "empty": "কোনো সাপোর্ট টিকিট পাওয়া যায়নি।",
+      "filters": {
+        "OPEN": "খোলা",
+        "RESOLVED": "সমাধান করা",
+        "ALL": "সব"
+      },
+      "columns": {
+        "sender": "প্রেরক",
+        "topic": "বিষয় ও বার্তা",
+        "status": "স্ট্যাটাস",
+        "date": "জমা দেওয়ার সময়",
+        "action": "অ্যাকশন"
+      },
+      "resolve": "সমাধান চিহ্নিত করুন",
+      "reopen": "পুনরায় খুলুন",
+      "linkedUser": "ব্যবহারকারী: {name}"
+    },
+    "broadcast": {
+      "title": "ব্রডকাস্ট নোটিফিকেশন",
+      "subtitle": "ব্যবহারকারীদের কাছে লাইভ নোটিফিকেশন বা আপডেট পাঠান।",
+      "targetRole": "প্রাপকের ভূমিকা",
+      "allRoles": "সকল ব্যবহারকারী",
+      "type": "নোটিফিকেশনের ধরন",
+      "notificationTitle": "শিরোনাম",
+      "message": "বার্তা",
+      "send": "নোটিফিকেশন পাঠান",
+      "sending": "পাঠানো হচ্ছে...",
+      "success": "{count} জন ব্যবহারকারীর কাছে নোটিফিকেশন পাঠানো হয়েছে।",
+      "error": "ব্রডকাস্ট নোটিফিকেশন পাঠানো সম্ভব হয়নি।"
     },
     "stories": {
       "title": "সাফল্যের গল্প",
