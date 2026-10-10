@@ -57,6 +57,10 @@ export const auth = betterAuth({
   },
 
   advanced: {
+    // Not the default "better-auth": browsers still hold cookies from before the session
+    // cookie became Partitioned. A browser sends both under one name, oldest first, and the
+    // stale one would be read, so a fresh login looked signed out. A new name can't collide.
+    cookiePrefix: "agromate",
     // Lets the client read cross-origin cookies in local dev.
     useSecureCookies: process.env.NODE_ENV === "production",
     // In production the site and this API are on different domains, so the session cookie is
