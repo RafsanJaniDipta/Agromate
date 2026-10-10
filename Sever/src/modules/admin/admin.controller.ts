@@ -5,7 +5,9 @@ import {
   getAllUsersFromDB,
   updateUserRoleStatusInDB,
   getPlatformStatistics,
-  getDeliveryAgentsFromDB,
+  getSupportTicketsFromDB,
+  updateSupportTicketStatusInDB,
+  broadcastNotificationToUsers,
   getExpertApplications as getExpertApplicationsService,
   reviewExpertApplication as reviewExpertApplicationService,
 } from "./admin.service.js";
@@ -13,8 +15,10 @@ import {
 export const getAllUsers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const page = req.query.page ? Number(req.query.page) : undefined;
   const limit = req.query.limit ? Number(req.query.limit) : undefined;
+  const search = typeof req.query.search === "string" ? req.query.search : undefined;
+  const role = typeof req.query.role === "string" ? req.query.role : undefined;
 
-  const result = await getAllUsersFromDB({ page, limit });
+  const result = await getAllUsersFromDB({ page, limit, search, role });
   sendPaginatedSuccess(
     res,
     200,
@@ -50,18 +54,34 @@ export const getStatistics = asyncHandler(async (_req: Request, res: Response): 
   );
 });
 
-export const getDeliveryAgents = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+export const getSupportTickets = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const page = req.query.page ? Number(req.query.page) : undefined;
   const limit = req.query.limit ? Number(req.query.limit) : undefined;
+  const status = typeof req.query.status === "string" ? req.query.status : undefined;
 
-  const result = await getDeliveryAgentsFromDB({ page, limit });
+  const result = await getSupportTicketsFromDB({ page, limit, status });
   sendPaginatedSuccess(
     res,
     200,
-    "Delivery agents retrieved successfully",
+    "Support tickets retrieved successfully",
     result.data,
     result.meta
   );
+});
+
+export const updateSupportTicketStatus = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const result = await updateSupportTicketStatusInDB(id as string, status as string);
+  sendSuccess(res, 200, "Support ticket status updated successfully", result);
+});
+
+export const broadcastNotification = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { role, title, message, type } = req.body;
+
+  const result = await broadcastNotificationToUsers({ role, title, message, type });
+  sendSuccess(res, 201, "Notification broadcasted successfully", result);
 });
 
 export const getExpertApplications = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -82,5 +102,7 @@ export const AdminController = {
   getAllUsers,
   updateUserStatus,
   getStatistics,
-  getDeliveryAgents,
+  getSupportTickets,
+  updateSupportTicketStatus,
+  broadcastNotification,
 };

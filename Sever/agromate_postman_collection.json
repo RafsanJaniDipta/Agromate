@@ -458,6 +458,91 @@
           }
         }
       ]
+    },
+    {
+      "name": "Admin Dashboard",
+      "item": [
+        {
+          "name": "B1: Get Support Tickets",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/support-tickets?status=OPEN&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "support-tickets"],
+              "query": [
+                { "key": "status", "value": "OPEN" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "B2: Update Support Ticket Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESOLVED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/support-tickets/TICKET_ID_HERE",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "support-tickets", "TICKET_ID_HERE"]
+            }
+          }
+        },
+        {
+          "name": "B3: Search & Filter Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/users?search=rahim&role=FARMER&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users"],
+              "query": [
+                { "key": "search", "value": "rahim" },
+                { "key": "role", "value": "FARMER" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "B4: Get Admin Statistics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "statistics"]
+            }
+          }
+        },
+        {
+          "name": "B5: Broadcast Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"FARMER\",\n  \"title\": \"নতুন আবহাওয়ার বার্তা\",\n  \"message\": \"আগামী ৩ দিন ভারী বৃষ্টির সম্ভাবনা রয়েছে।\",\n  \"type\": \"INFO\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/notifications/broadcast",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "notifications", "broadcast"]
+            }
+          }
+        }
+      ]
     }
   ]
 }
