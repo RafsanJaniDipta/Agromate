@@ -51,12 +51,14 @@ export function createApp(): Application {
     "/api/auth",
     rateLimit({
       windowMs: 15 * 60 * 1000,
-      limit: process.env.NODE_ENV === "production" ? 5 : 100,
+      limit: process.env.NODE_ENV === "production" ? 10 : 100,
       standardHeaders: "draft-7",
       legacyHeaders: false,
       handler: onRateLimitReached,
-      // Guards against password guessing, so only sign-in style requests count. Reads (the
+      // Guards against password guessing, so only failed sign-in style requests count.
+      // A successful login, logout or demo login must never lock anyone out, and reads (the
       // session check, the login page's list of demo accounts) mustn't hide the page's buttons.
+      skipSuccessfulRequests: true,
       skip: (req) => req.method === "GET",
       message: {
         success: false,
@@ -83,6 +85,7 @@ export function createApp(): Application {
     "/api",
     rateLimit({
       windowMs: 15 * 60 * 1000,
+      // Far above normal use: one dashboard page makes a dozen requests and keeps polling
       limit: 300,
       standardHeaders: "draft-7",
       legacyHeaders: false,

@@ -23,20 +23,6 @@ type Story = {
   income: string;
 };
 
-// How many stories the section shows; sample stories fill the places real ones don't
-const STORY_SLOTS = 4;
-
-// Sample stories, shown until enough real ones are approved by an admin.
-// Photos are free Pexels stock shot in Bangladesh, e.g. pexels.com/photo/36062685.
-// `focus` is the face's position, so round avatar crops keep the face in view.
-// Text for each id lives in messages under stories.items
-const storyImages = [
-  { id: "shafiqul", image: "/images/farmers/farmer-spreading-fertilizer.jpg", focus: "52% 25%" },
-  { id: "karim", image: "/images/farmers/farmer-carrying-paddy.jpg", focus: "48% 30%" },
-  { id: "nurul", image: "/images/farmers/farmer-jute-harvest.jpg", focus: "60% 28%" },
-  { id: "jamal", image: "/images/farmers/farmer-rice-field-portrait.jpg", focus: "57% 28%" },
-] as const;
-
 // Big photo; stories crossfade into each other, with the yield result pinned at the bottom.
 function StoryPhoto({ stories, active }: { stories: Story[]; active: Story }) {
   const t = useTranslations("stories");
@@ -139,7 +125,7 @@ function StoryPicker({ stories, activeIndex, onSelect, onTimerEnd }: StoryPicker
   const t = useTranslations("stories");
 
   return (
-    <ul aria-label={t("pickerLabel")} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <ul aria-label={t("pickerLabel")} className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
       {stories.map((story, index) => {
         const isActive = index === activeIndex;
 
@@ -184,14 +170,14 @@ function StoryPicker({ stories, activeIndex, onSelect, onTimerEnd }: StoryPicker
 }
 
 // Farmer testimonials: photo and quote side by side, switched by the picker or arrows.
-// Approved stories from farmers (`realStories`) come first.
-export default function SuccessStoriesSection({ realStories = [] }: { realStories?: PublicStory[] }) {
+// Shows the stories an admin has approved; the section is left out while there are none.
+export default function SuccessStoriesSection({ stories: initialStories }: { stories: PublicStory[] }) {
   const t = useTranslations("stories");
   const format = useFormatter();
   const locale = useLocale() as Locale;
   const [activeIndex, setActiveIndex] = useState(0);
   // Starts with the server's list, then keeps itself fresh while the page is open
-  const [liveStories, setLiveStories] = useState(realStories);
+  const [liveStories, setLiveStories] = useState(initialStories);
 
   // Re-checks every 30 seconds while the tab is visible, and right away when the visitor comes back.
   // A failed check keeps the stories already shown.
@@ -212,7 +198,7 @@ export default function SuccessStoriesSection({ realStories = [] }: { realStorie
   const percent = (value: number) =>
     format.number(value / 100, { style: "percent", signDisplay: "exceptZero" });
 
-  const approvedStories: Story[] = liveStories.map((story) => ({
+  const stories: Story[] = liveStories.map((story) => ({
     id: story.id,
     image: story.imageUrl,
     focus: story.imageFocus,
@@ -225,24 +211,12 @@ export default function SuccessStoriesSection({ realStories = [] }: { realStorie
     income: percent(story.incomeChangePercent),
   }));
 
-  const sampleStories: Story[] = storyImages.map(({ id, image, focus }) => ({
-    id,
-    image,
-    focus,
-    name: t(`items.${id}.name`),
-    role: t(`items.${id}.role`),
-    location: t(`items.${id}.location`),
-    quote: t(`items.${id}.quote`),
-    yield: t(`items.${id}.yield`),
-    cost: t(`items.${id}.cost`),
-    income: t(`items.${id}.income`),
-  }));
-
-  const stories = [...approvedStories, ...sampleStories].slice(0, STORY_SLOTS);
   const count = stories.length;
+  if (count === 0) return null;
+
   // The list can shrink when a story is removed, so keep the picked one in range
   const currentIndex = activeIndex % count;
-  const activeStory = stories[currentIndex];
+  const activeStory = stories[currentIndex]!;
 
   const showPrevious = () => setActiveIndex((currentIndex - 1 + count) % count);
   const showNext = () => setActiveIndex((currentIndex + 1) % count);

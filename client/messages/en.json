@@ -39,6 +39,7 @@
     "home": "Home",
     "services": "Services",
     "stories": "Success Stories",
+    "experts": "Experts",
     "about": "About Us",
     "support": "Support",
     "expertAdvice": "Get Expert Advice",
@@ -79,7 +80,43 @@
     "title": "Weather forecast",
     "today": "Today",
     "tomorrow": "Tomorrow",
-    "temperature": "{value, number}°C"
+    "temperature": "{value, number}°C",
+    "unavailable": "Weather isn't available right now.",
+    "yourLocation": "Your location",
+    "defaultLocation": "Dhaka",
+    "humidity": "Humidity",
+    "wind": "Wind",
+    "rainChance": "Chance of rain",
+    "percent": "{value, number}%",
+    "windValue": "{value, number} km/h",
+    "high": "High {value, number}°",
+    "low": "Low {value, number}°",
+    "conditions": {
+      "sunny": "Sunny",
+      "clearNight": "Clear sky",
+      "partlyCloudy": "Partly cloudy",
+      "cloudy": "Cloudy",
+      "rainy": "Rainy",
+      "stormy": "Stormy"
+    }
+  },
+  "experts": {
+    "badge": "Expert advice",
+    "title": "Our experts",
+    "intro": "Verified agricultural experts answer your questions about crops, soil, livestock and fish farming. Message them directly for advice.",
+    "viewAll": "See all experts",
+    "verified": "Verified",
+    "experience": "{years, plural, =0 {New expert} one {# year of experience} other {# years of experience}}",
+    "ask": "Ask for advice",
+    "page": {
+      "heroTitle": "Our experts",
+      "heroSubtitle": "Meet Agromate's verified agricultural experts. Pick a subject and message them directly for advice.",
+      "search": "Search by name or subject",
+      "allCategories": "All",
+      "count": "{count, plural, one {# expert} other {# experts}}",
+      "empty": "There are no verified experts yet.",
+      "noMatch": "No expert matches your search."
+    }
   },
   "about": {
     "trustedBy": "Trusted by over",
@@ -169,45 +206,7 @@
     "pickerLabel": "Choose a story",
     "yieldLabel": "Higher yield this season",
     "costLabel": "Lower farming cost",
-    "incomeLabel": "More income",
-    "items": {
-      "shafiqul": {
-        "name": "Shafiqul Islam",
-        "role": "Vegetable farmer",
-        "location": "Rangpur",
-        "quote": "Fertilizer advice from Agromate showed me exactly what my soil needed. I used less urea and still got my best harvest in ten years.",
-        "yield": "+42%",
-        "cost": "−30%",
-        "income": "+55%"
-      },
-      "karim": {
-        "name": "Abdul Karim",
-        "role": "Aman rice farmer",
-        "location": "Dinajpur",
-        "quote": "The weather alert reached me two days before the storm. I cut my paddy early and saved the whole crop.",
-        "yield": "+35%",
-        "cost": "−20%",
-        "income": "+40%"
-      },
-      "nurul": {
-        "name": "Nurul Haque",
-        "role": "Jute farmer",
-        "location": "Faridpur",
-        "quote": "I photograph a sick plant and get an answer in minutes. Live market prices showed me the best time to sell my jute.",
-        "yield": "+28%",
-        "cost": "−25%",
-        "income": "+60%"
-      },
-      "jamal": {
-        "name": "Jamal Uddin",
-        "role": "Boro rice farmer",
-        "location": "Mymensingh",
-        "quote": "One phone call with an expert changed how I water my paddy. I use less water now, and my income has doubled.",
-        "yield": "+50%",
-        "cost": "−18%",
-        "income": "+100%"
-      }
-    }
+    "incomeLabel": "More income"
   },
   "footer": {
     "blurb": "Smart and practical solutions to help farmers grow better, work easier and build a stronger future for agriculture.",
