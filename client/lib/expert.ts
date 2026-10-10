@@ -1,4 +1,4 @@
-import { api, ApiError } from "@/lib/api";
+import { api, API_URL, ApiError } from "@/lib/api";
 
 export type ExpertStatus = "PENDING" | "VERIFIED" | "REJECTED";
 
@@ -57,14 +57,28 @@ export type VerifiedExpert = Omit<ExpertProfile, "status" | "rejectionReason"> &
 
 type VerifiedExpertRow = Omit<VerifiedExpert, "categories"> & { categories: { category: ExpertCategory }[] };
 
+const toVerifiedExpert = ({ user, categories, ...profile }: VerifiedExpertRow): VerifiedExpert => ({
+  ...profile,
+  user: { id: user.id, name: user.name, image: user.image, location: user.location },
+  categories: categories.map(({ category }) => category),
+});
+
 // Every expert the admin has verified, most experienced first
 export async function getVerifiedExperts(): Promise<VerifiedExpert[]> {
   const { data } = await api<{ data: VerifiedExpertRow[] }>("/api/experts");
-  return data.map(({ user, categories, ...profile }) => ({
-    ...profile,
-    user: { id: user.id, name: user.name, image: user.image, location: user.location },
-    categories: categories.map(({ category }) => category),
-  }));
+  return data.map(toVerifiedExpert);
+}
+
+// The same list for the public pages, called on the server and cached for a few minutes.
+// Empty when the API is down, so the page still renders.
+export async function getPublicExperts(): Promise<VerifiedExpert[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/experts`, { next: { revalidate: 300 } });
+    if (!res.ok) return [];
+    return ((await res.json()) as { data: VerifiedExpertRow[] }).data.map(toVerifiedExpert);
+  } catch {
+    return [];
+  }
 }
 
 export async function getExpertCategories(): Promise<ExpertCategory[]> {

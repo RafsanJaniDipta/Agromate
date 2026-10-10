@@ -13,11 +13,12 @@ export default function FarmerHero() {
     <section className="p-2 md:p-3">
       {/* Fills the screen height, minus the section padding */}
       <div className="relative isolate flex min-h-[calc(100svh-1rem)] flex-col overflow-hidden rounded-3xl text-white md:min-h-[calc(100svh-1.5rem)]">
-        {/* Muted + playsInline are required for autoplay on mobile; poster shows while loading.
+        {/* Muted + playsInline are required for autoplay on mobile. The poster shows while the video
+            loads; it is the video's first frame, so nothing visibly swaps when playback starts.
             It settles from a slight zoom on load while the text below blurs in one by one. */}
         <video
           src="/video/hero-farm.mp4"
-          poster="/images/banners/hero-poster.jpg"
+          poster="/video/hero-farm-poster.jpg"
           autoPlay
           muted
           loop

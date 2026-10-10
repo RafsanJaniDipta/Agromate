@@ -184,7 +184,8 @@ export type PublicStory = StoryResults & {
   imageFocus: string;
 };
 
-const HOME_STORY_LIMIT = 4;
+// How many approved stories the home page shows
+const HOME_STORY_LIMIT = 6;
 
 // Cache tag of the home page story list; admin changes clear it (see lib/homeStoriesCache.ts)
 export const HOME_STORIES_TAG = "home-stories";

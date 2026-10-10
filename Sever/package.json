@@ -20,7 +20,8 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:categories": "tsx prisma/seed-expert-categories.ts",
-    "db:seed:experts": "tsx prisma/seed-demo-experts.ts"
+    "db:seed:experts": "tsx prisma/seed-demo-experts.ts",
+    "db:seed:stories": "tsx prisma/seed-demo-stories.ts"
   },
   "peerDependencies": {
     "typescript": "^5"

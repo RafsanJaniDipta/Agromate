@@ -1,7 +1,10 @@
 import { prisma } from "../../config/database.js";
 import { AppError } from "../../utils/AppError.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
-import { getWeatherReport, resolvePlace, type Place } from "../../services/weather.service.js";
+import { DHAKA, getWeatherReport, resolvePlace, type Place } from "../../services/weather.service.js";
+
+// Days the public home page shows, today first
+const HOME_FORECAST_DAYS = 4;
 
 export interface WeatherQuery {
   userId: string;
@@ -67,6 +70,21 @@ export const getWeatherForecast = serviceHandler(async (query: WeatherQuery, day
 export const locatePlace = serviceHandler(async (query: WeatherQuery) => {
   const place = await placeFor(query);
   return { latitude: place.latitude, longitude: place.longitude, found: place.name !== null };
+});
+
+// Weather for the public home page: at the visitor's coordinates when the browser shared them,
+// otherwise Dhaka. Coordinates only, so visitors without an account can't make the server
+// look up arbitrary place names.
+export const getPublicWeather = serviceHandler(async (lat?: number, lon?: number) => {
+  const hasCoordinates =
+    lat !== undefined && lon !== undefined && Math.abs(lat) <= 90 && Math.abs(lon) <= 180;
+  const place = hasCoordinates ? { name: null, latitude: lat, longitude: lon } : DHAKA;
+
+  const { current, days } = await getWeatherReport(place);
+  if (days.length === 0) {
+    throw AppError.badGateway("Weather service sent no forecast");
+  }
+  return { current, days: days.slice(0, HOME_FORECAST_DAYS) };
 });
 
 export const WeatherService = {
