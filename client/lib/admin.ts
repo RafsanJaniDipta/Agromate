@@ -10,6 +10,9 @@ export type AdminStats = {
   totalFarms: number;
   totalCropCycles: number;
   totalDiseaseDetections: number;
+  pendingExperts?: number;
+  pendingStories?: number;
+  openSupportTickets?: number;
 };
 
 export type AdminUser = {
@@ -29,6 +32,25 @@ export type ExpertApplication = {
   experienceYears: number;
   createdAt: string;
   user: { name: string; phone: string | null };
+};
+
+export type SupportTicket = {
+  id: string;
+  name: string;
+  phone: string;
+  topic: string;
+  message: string;
+  locale: string;
+  status: "OPEN" | "RESOLVED";
+  createdAt: string;
+  user?: { id: string; name: string } | null;
+};
+
+export type BroadcastPayload = {
+  role?: string;
+  title: string;
+  message: string;
+  type?: "INFO" | "SUCCESS" | "ALERT";
 };
 
 export class FarmerAccountError extends Error {}
@@ -69,8 +91,11 @@ export async function reviewExpert(userId: string, status: "VERIFIED" | "REJECTE
   });
 }
 
-export async function getUsers(page: number, limit = 10) {
-  return api<Paginated<AdminUser>>(`/api/admin/users?page=${page}&limit=${limit}`);
+export async function getUsers(page = 1, limit = 10, search?: string, role?: string) {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (search) params.set("search", search);
+  if (role) params.set("role", role);
+  return api<Paginated<AdminUser>>(`/api/admin/users?${params.toString()}`);
 }
 
 // Changes a user's role and/or blocks them ("BANNED") or lets them back in ("ACTIVE")
@@ -80,3 +105,26 @@ export async function updateUser(id: string, change: { role?: Role; status?: "AC
     body: JSON.stringify(change),
   });
 }
+
+export async function getSupportTickets(page = 1, limit = 10, status?: string) {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (status) params.set("status", status);
+  return api<Paginated<SupportTicket>>(`/api/admin/support-tickets?${params.toString()}`);
+}
+
+export async function updateSupportTicketStatus(id: string, status: "OPEN" | "RESOLVED") {
+  const { data } = await api<{ data: SupportTicket }>(`/api/admin/support-tickets/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+  return data;
+}
+
+export async function broadcastNotification(payload: BroadcastPayload) {
+  const { data } = await api<{ data: { count: number; message: string } }>("/api/admin/notifications/broadcast", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  return data;
+}
+

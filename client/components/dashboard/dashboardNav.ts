@@ -69,6 +69,7 @@ export const dashboardNav: Record<Role, DashboardNav> = {
   ADMIN: {
     links: [
       { href: "/admin", key: "overview", Icon: ShieldIcon },
+      { href: "/admin/support-tickets", key: "supportTickets", Icon: HelpIcon },
       { href: "/admin/messages", key: "messages", Icon: MessagesIcon },
       { href: "/admin/users", key: "users", Icon: UserIcon },
       { href: "/admin/crops", key: "crops", Icon: WheatIcon },
