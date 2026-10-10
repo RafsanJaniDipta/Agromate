@@ -23,12 +23,14 @@ export default function SupportTicketsManager() {
   const [failed, setFailed] = useState(false);
 
   const load = useCallback((pageToLoad: number, filterStatus: string) => {
-    setFailed(false);
     getSupportTickets(pageToLoad, PAGE_SIZE, filterStatus === "ALL" ? "" : filterStatus)
       .then(({ data, meta }) => {
         setTickets(data);
         setTotal(meta.total);
         setPage(pageToLoad);
+        // Cleared here rather than before the request: an effect calls load, and
+        // effects mustn't set state synchronously
+        setFailed(false);
       })
       .catch(() => setFailed(true));
   }, []);
