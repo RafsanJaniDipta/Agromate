@@ -1407,6 +1407,7 @@
     "loadError": "Couldn't load your messages.",
     "retry": "Try again",
     "youPrefix": "You:",
+    "photo": "Photo",
     "emptyList": {
       "FARMER": "No messages yet. Ask an expert about your crops.",
       "EXPERT": "No messages yet. Farmers' questions will show up here.",
@@ -1444,7 +1445,14 @@
       "sent": "Sent",
       "read": "Read",
       "today": "Today",
-      "yesterday": "Yesterday"
+      "yesterday": "Yesterday",
+      "attachPhoto": "Send a photo",
+      "removePhoto": "Remove photo",
+      "photoPreview": "Photo to send",
+      "captionPlaceholder": "Add a caption (optional)…",
+      "photoError": "This photo couldn't be opened. Please pick another one.",
+      "photo": "Sent photo",
+      "openPhoto": "Open the full-size photo"
     },
     "toast": {
       "newMessage": "Message from {name}",

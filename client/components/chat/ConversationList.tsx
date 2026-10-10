@@ -6,7 +6,7 @@ import UserAvatar from "@/components/shared/UserAvatar";
 import UnreadBadge from "@/components/chat/UnreadBadge";
 import { useCurrentUser } from "@/components/dashboard/RoleGate";
 import { isSameDay } from "@/components/chat/chatDates";
-import type { Conversation } from "@/lib/chat";
+import { messagePreview, type Conversation } from "@/lib/chat";
 
 type ConversationListProps = {
   // null while loading
@@ -73,6 +73,7 @@ export default function ConversationList({
             const { otherUser, lastMessage, unreadCount } = conversation;
             const isSelected = conversation.id === selectedId;
             const fromMe = lastMessage?.senderId === me.id;
+            const lastText = lastMessage && messagePreview(lastMessage, t("photo"));
             return (
               <li key={conversation.id}>
                 <button
@@ -98,7 +99,7 @@ export default function ConversationList({
                     </span>
                     <span className="mt-1 flex items-center gap-2">
                       <span className={`min-w-0 flex-1 truncate text-sm ${unreadCount ? "text-white" : "text-white/60"}`}>
-                        {lastMessage && (fromMe ? `${t("youPrefix")} ${lastMessage.content}` : lastMessage.content)}
+                        {lastText && (fromMe ? `${t("youPrefix")} ${lastText}` : lastText)}
                       </span>
                       <UnreadBadge count={unreadCount} />
                     </span>

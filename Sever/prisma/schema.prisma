@@ -633,7 +633,10 @@ model ChatMessage {
   conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   senderId       String           @db.Uuid
   sender         User             @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  // Empty when the message is only a photo
   content        String
+  // Cloudinary URL of an attached photo
+  imageUrl       String?
   isRead         Boolean          @default(false)
   createdAt      DateTime         @default(now())
 
