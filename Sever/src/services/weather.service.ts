@@ -1,9 +1,17 @@
 import { AppError } from "../utils/AppError.js";
 import { districtIn } from "../utils/bdDistricts.js";
+import { logger } from "../utils/logger.js";
 
 // Weather from Open-Meteo: free, no API key. https://open-meteo.com/en/docs
+// Its free limits are counted per IP address, and hosts like Render share one address between
+// many customers, so it can refuse a server that has done nothing wrong. MET Norway (also
+// free and keyless) is then asked instead; see getWeatherReport.
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 const GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search";
+// https://api.met.no/weatherapi/locationforecast/2.0/documentation
+const MET_NORWAY_URL = "https://api.met.no/weatherapi/locationforecast/2.0/complete";
+// MET Norway turns away requests that don't say who is calling
+const MET_NORWAY_USER_AGENT = "Agromate/1.0 github.com/RafsanJaniDipta/Agromate";
 const TIMEZONE = "Asia/Dhaka";
 const REQUEST_TIMEOUT_MS = 8000;
 // Weather barely changes within this time, so repeat visits reuse the last answer
@@ -78,9 +86,15 @@ function dayCondition(hourlyCodes: number[], daytimeCloud: number[], rainMm: num
   return skyFromCloud(daytimeCloud.reduce((sum, cloud) => sum + cloud, 0) / daytimeCloud.length);
 }
 
-async function getJson<T>(url: URL): Promise<T> {
-  const res = await fetch(url, { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) }).catch(() => null);
-  if (!res?.ok) {
+async function getJson<T>(url: URL, headers?: Record<string, string>): Promise<T> {
+  const res = await fetch(url, { headers, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) }).catch(
+    (error: Error) => error,
+  );
+  if (res instanceof Error || !res.ok) {
+    // The reason goes to the log, not to the visitor: "HTTP 429" (over the limit) reads very
+    // differently from a timeout when working out why weather is missing
+    const reason = res instanceof Error ? res.message : `HTTP ${res.status}`;
+    logger.warn(`[weather] ${url.hostname} failed: ${reason}`);
     throw AppError.badGateway("Weather service is unavailable");
   }
   return (await res.json()) as T;
@@ -152,16 +166,10 @@ type ForecastResponse = {
   };
 };
 
-// Keyed by rounded coordinates; holds only the weather, since two names can share a spot
+// Holds only the weather, since two names can share a spot
 type Weather = Omit<WeatherReport, "place">;
-const weatherCache = new Map<string, { weather: Weather; fetchedAt: number }>();
 
-// Current weather and the next 7 days for one place (today first)
-export async function getWeatherReport(place: Place): Promise<WeatherReport> {
-  const cacheKey = `${place.latitude.toFixed(2)},${place.longitude.toFixed(2)}`;
-  const cached = weatherCache.get(cacheKey);
-  if (cached && Date.now() - cached.fetchedAt < WEATHER_CACHE_MS) return { place, ...cached.weather };
-
+async function fetchOpenMeteo(place: Place): Promise<Weather> {
   const url = new URL(FORECAST_URL);
   url.search = new URLSearchParams({
     latitude: String(place.latitude),
@@ -189,7 +197,7 @@ export async function getWeatherReport(place: Place): Promise<WeatherReport> {
     return dayCondition(codes, daytimeCloud, rainMm);
   };
 
-  const weather: Weather = {
+  return {
     current: {
       temperatureC: Math.round(current.temperature_2m),
       condition: currentCondition(current.weather_code, current.cloud_cover, current.is_day === 1),
@@ -209,7 +217,165 @@ export async function getWeatherReport(place: Place): Promise<WeatherReport> {
       uvIndex: Math.round(daily.uv_index_max[index] ?? 0),
     })),
   };
+}
 
-  weatherCache.set(cacheKey, { weather, fetchedAt: Date.now() });
-  return { place, ...weather };
+// ---- MET Norway (backup) ----
+
+type MetNorwayPeriod = { summary?: { symbol_code?: string }; details?: { precipitation_amount?: number } };
+type MetNorwayResponse = {
+  properties: {
+    // Hour by hour for about two days, then every six hours; times are UTC
+    timeseries: {
+      time: string;
+      data: {
+        instant: {
+          details: {
+            air_temperature?: number;
+            relative_humidity?: number;
+            wind_speed?: number; // m/s
+            cloud_area_fraction?: number;
+            ultraviolet_index_clear_sky?: number;
+          };
+        };
+        next_1_hours?: MetNorwayPeriod;
+        next_6_hours?: MetNorwayPeriod & { details?: { air_temperature_max?: number; air_temperature_min?: number } };
+      };
+    }[];
+  };
+};
+
+const BANGLADESH_UTC_OFFSET_MS = 6 * 60 * 60 * 1000;
+// Hours (Bangladesh time) counted as daytime when describing a day's sky
+const DAY_STARTS_AT = 6;
+const DAY_ENDS_AT = 18;
+// Hours around noon, when the day's UV peaks
+const MIDDAY_STARTS_AT = 10;
+const MIDDAY_ENDS_AT = 14;
+// Less than this in an hour is a trace, not rain
+const WET_HOUR_MM = 0.1;
+const M_PER_S_TO_KMH = 3.6;
+
+// MET Norway's symbol ("heavyrainandthunder", "partlycloudy_day") as the WMO code the rest of
+// this file reads: only storm, rain and fog matter, the sky itself comes from the cloud cover
+function wmoCodeOf(symbol = ""): number {
+  if (symbol.includes("thunder")) return 95;
+  if (/rain|sleet|snow/.test(symbol)) return 61;
+  if (symbol.includes("fog")) return 45;
+  return 0;
+}
+
+const sumOf = <T>(items: T[], value: (item: T) => number) => items.reduce((sum, item) => sum + value(item), 0);
+
+async function fetchMetNorway(place: Place): Promise<Weather> {
+  const url = new URL(MET_NORWAY_URL);
+  // More than four decimals is refused
+  url.search = new URLSearchParams({ lat: place.latitude.toFixed(4), lon: place.longitude.toFixed(4) }).toString();
+  const { properties } = await getJson<MetNorwayResponse>(url, { "User-Agent": MET_NORWAY_USER_AGENT });
+
+  // One row per forecast step, in Bangladesh time. A step's rain covers the hours until the
+  // next step (1 hour early on, 6 hours later). There is no past data, so "today" only
+  // covers what is left of the day: in the evening its high is the evening's, not the afternoon's.
+  const steps = properties.timeseries.flatMap(({ time, data }) => {
+    const period = data.next_1_hours ?? data.next_6_hours;
+    if (!period) return [];
+
+    const local = new Date(new Date(time).getTime() + BANGLADESH_UTC_OFFSET_MS);
+    const hours = data.next_1_hours ? 1 : 6;
+    const rainMm = period.details?.precipitation_amount ?? 0;
+    const { details } = data.instant;
+    const sixHours = data.next_6_hours?.details;
+    return [
+      {
+        date: local.toISOString().slice(0, 10),
+        isDaytime: local.getUTCHours() >= DAY_STARTS_AT && local.getUTCHours() < DAY_ENDS_AT,
+        hours,
+        rainMm,
+        // A six-hour step with rain counts as wet throughout; there is nothing finer to go on
+        wetHours: rainMm >= WET_HOUR_MM * hours ? hours : 0,
+        code: wmoCodeOf(period.summary?.symbol_code),
+        cloud: details.cloud_area_fraction ?? 0,
+        temperatures: [details.air_temperature, sixHours?.air_temperature_max, sixHours?.air_temperature_min].filter(
+          (value): value is number => value !== undefined,
+        ),
+        humidity: details.relative_humidity ?? 0,
+        windKmh: (details.wind_speed ?? 0) * M_PER_S_TO_KMH,
+        // Only given for the first two or three days
+        uv: details.ultraviolet_index_clear_sky,
+        isMidday: local.getUTCHours() >= MIDDAY_STARTS_AT && local.getUTCHours() <= MIDDAY_ENDS_AT,
+      },
+    ];
+  });
+
+  const now = steps[0];
+  if (!now) {
+    throw AppError.badGateway("Weather service sent no forecast");
+  }
+
+  // MET Norway has no rain probability outside the Nordic countries, so it is estimated:
+  // the share of the hours in which rain is forecast
+  type Step = (typeof steps)[number];
+  const rainChance = (period: Step[]) => {
+    const hours = sumOf(period, (step) => step.hours);
+    return hours === 0 ? 0 : Math.round((sumOf(period, (step) => step.wetHours) / hours) * 100);
+  };
+
+  // A day's UV is its midday peak. Days without a midday reading (later days, or today when
+  // it is already evening) get the week's known peak: clear-sky UV barely moves in a week.
+  const weekPeakUv = Math.max(0, ...steps.map((step) => step.uv ?? 0));
+  const peakUv = (ofDay: Step[]) => {
+    const midday = ofDay.flatMap((step) => (step.isMidday && step.uv !== undefined ? [step.uv] : []));
+    return midday.length > 0 ? Math.max(...midday) : weekPeakUv;
+  };
+
+  const dates = [...new Set(steps.map((step) => step.date))].slice(0, FORECAST_DAYS);
+  return {
+    current: {
+      temperatureC: Math.round(now.temperatures[0] ?? 0),
+      condition: currentCondition(now.code, now.cloud, now.isDaytime),
+      humidityPercent: Math.round(now.humidity),
+      windKmh: Math.round(now.windKmh),
+      uvIndex: Math.round(now.uv ?? 0),
+      // Right now looks a few hours ahead, like a forecast would
+      rainChancePercent: rainChance(steps.slice(0, 6)),
+    },
+    days: dates.map((date) => {
+      const ofDay = steps.filter((step) => step.date === date);
+      const temperatures = ofDay.flatMap((step) => step.temperatures);
+      const rainMm = sumOf(ofDay, (step) => step.rainMm);
+      return {
+        date,
+        condition: dayCondition(
+          ofDay.map((step) => step.code),
+          ofDay.filter((step) => step.isDaytime).map((step) => step.cloud),
+          rainMm,
+        ),
+        maxTempC: Math.round(Math.max(...temperatures)),
+        minTempC: Math.round(Math.min(...temperatures)),
+        rainfallMm: Math.round(rainMm * 10) / 10,
+        rainChancePercent: rainChance(ofDay),
+        uvIndex: Math.round(peakUv(ofDay)),
+      };
+    }),
+  };
+}
+
+// Keyed by rounded coordinates
+const weatherCache = new Map<string, { weather: Weather; fetchedAt: number }>();
+
+// Current weather and the next 7 days for one place (today first).
+// Open-Meteo first, MET Norway if it fails; if both fail, the last weather fetched for this
+// spot is better than none.
+export async function getWeatherReport(place: Place): Promise<WeatherReport> {
+  const cacheKey = `${place.latitude.toFixed(2)},${place.longitude.toFixed(2)}`;
+  const cached = weatherCache.get(cacheKey);
+  if (cached && Date.now() - cached.fetchedAt < WEATHER_CACHE_MS) return { place, ...cached.weather };
+
+  try {
+    const weather = await fetchOpenMeteo(place).catch(() => fetchMetNorway(place));
+    weatherCache.set(cacheKey, { weather, fetchedAt: Date.now() });
+    return { place, ...weather };
+  } catch (error) {
+    if (cached) return { place, ...cached.weather };
+    throw error;
+  }
 }
