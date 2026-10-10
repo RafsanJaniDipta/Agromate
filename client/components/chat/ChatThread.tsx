@@ -10,6 +10,7 @@ import { useChatUnread } from "@/components/chat/ChatUnread";
 import { useCurrentUser } from "@/components/dashboard/RoleGate";
 import { useSocketEmit, useSocketEvent } from "@/components/realtime/RealtimeProvider";
 import {
+  chatPhotoUrl,
   getMessages,
   markConversationRead,
   sendMessage,
@@ -129,12 +130,9 @@ export default function ChatThread({ conversation, onBack, onSent, onRead }: Cha
     const fromMe = message.senderId === me.id;
     if (fromMe || isNearBottom()) scrollIntent.current = "bottom";
     // My own message may arrive here before the send request returns: it replaces the pending copy
-    setMessages((current) =>
-      mergeMessages(
-        (current ?? []).filter((shown) => !(shown.pending && fromMe && shown.content === message.content)),
-        [message],
-      ),
-    );
+    const isPendingCopy = (shown: ShownMessage) =>
+      shown.pending && fromMe && shown.content === message.content && !shown.imageUrl === !message.imageUrl;
+    setMessages((current) => mergeMessages((current ?? []).filter((shown) => !isPendingCopy(shown)), [message]));
     if (!fromMe) {
       setIsOtherTyping(false);
       markRead();
@@ -179,14 +177,17 @@ export default function ChatThread({ conversation, onBack, onSent, onRead }: Cha
   }
 
   // Shows the message at once, then swaps in the saved copy (or removes it if sending failed)
-  async function send(text: string) {
+  async function send(text: string, photo?: Blob) {
     pendingCount.current += 1;
     const pendingId = `pending-${pendingCount.current}`;
+    // The photo shows from memory while it uploads
+    const localPhotoUrl = photo ? URL.createObjectURL(photo) : null;
     const pending: ShownMessage = {
       id: pendingId,
       conversationId,
       senderId: me.id,
       content: text,
+      imageUrl: localPhotoUrl,
       isRead: false,
       createdAt: new Date().toISOString(),
       pending: true,
@@ -195,13 +196,15 @@ export default function ChatThread({ conversation, onBack, onSent, onRead }: Cha
     setMessages((current) => [...(current ?? []), pending]);
 
     try {
-      const saved = await sendMessage(conversationId, text);
+      const saved = await sendMessage(conversationId, text, photo);
       setMessages((current) => mergeMessages((current ?? []).filter((message) => message.id !== pendingId), [saved]));
       onSent(saved);
       return true;
     } catch {
       setMessages((current) => current?.filter((message) => message.id !== pendingId) ?? null);
       return false;
+    } finally {
+      if (localPhotoUrl) URL.revokeObjectURL(localPhotoUrl);
     }
   }
 
@@ -277,12 +280,28 @@ export default function ChatThread({ conversation, onBack, onSent, onRead }: Cha
                 )}
                 <li className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                   <div
-                    className={`max-w-[80%] rounded-2xl px-3.5 py-2 ${
-                      mine ? "rounded-br-md bg-brand text-white" : "rounded-bl-md bg-white/10"
-                    } ${message.pending ? "opacity-70" : ""}`}
+                    className={`max-w-[80%] rounded-2xl ${
+                      // A photo sits close to the bubble's edge; its caption and time keep the text padding
+                      message.imageUrl ? "w-72 p-1.5 pb-2" : "px-3.5 py-2"
+                    } ${mine ? "rounded-br-md bg-brand text-white" : "rounded-bl-md bg-white/10"} ${
+                      message.pending ? "opacity-70" : ""
+                    }`}
                   >
-                    <p className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed">{message.content}</p>
-                    <p className="mt-0.5 flex items-center justify-end gap-1 text-[10px] text-white/60">
+                    {message.imageUrl && <MessagePhoto message={message} />}
+                    {message.content && (
+                      <p
+                        className={`whitespace-pre-wrap wrap-break-word text-sm leading-relaxed ${
+                          message.imageUrl ? "mt-1.5 px-2" : ""
+                        }`}
+                      >
+                        {message.content}
+                      </p>
+                    )}
+                    <p
+                      className={`mt-0.5 flex items-center justify-end gap-1 text-[10px] text-white/60 ${
+                        message.imageUrl ? "px-2" : ""
+                      }`}
+                    >
                       {format.dateTime(date, { timeStyle: "short" })}
                       {mine && <MessageStatus message={message} />}
                     </p>
@@ -308,6 +327,29 @@ export default function ChatThread({ conversation, onBack, onSent, onRead }: Cha
 
       <MessageComposer onSend={send} onTyping={() => emit("chat:typing", conversationId)} />
     </div>
+  );
+}
+
+// A sent photo; tapping it opens the full size in a new tab
+function MessagePhoto({ message }: { message: ShownMessage }) {
+  const t = useTranslations("chat.thread");
+  // A pending photo is still a local preview, not on Cloudinary yet
+  const shownUrl = message.pending ? message.imageUrl! : chatPhotoUrl(message.imageUrl!);
+  const photo = (
+    // eslint-disable-next-line @next/next/no-img-element -- Cloudinary already sizes it (see chatPhotoUrl)
+    <img
+      src={shownUrl}
+      alt={message.content || t("photo")}
+      loading="lazy"
+      className="max-h-80 w-full rounded-xl object-cover"
+    />
+  );
+
+  if (message.pending) return photo;
+  return (
+    <a href={message.imageUrl!} target="_blank" rel="noopener noreferrer" aria-label={t("openPhoto")}>
+      {photo}
+    </a>
   );
 }
 

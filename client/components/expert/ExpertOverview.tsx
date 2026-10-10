@@ -12,7 +12,7 @@ import { useChatUnread } from "@/components/chat/ChatUnread";
 import { useCurrentUser } from "@/components/dashboard/RoleGate";
 import { useSocketEvent } from "@/components/realtime/RealtimeProvider";
 import { Link } from "@/i18n/navigation";
-import { getConversations, messagesPageFor, type Conversation } from "@/lib/chat";
+import { getConversations, messagePreview, messagesPageFor, type Conversation } from "@/lib/chat";
 import { getOwnProfile, type ExpertStatus } from "@/lib/expert";
 
 const RECENT_COUNT = 5;
@@ -110,8 +110,8 @@ export default function ExpertOverview() {
                   <span className={`block truncate text-sm ${unreadCount ? "text-white" : "text-white/60"}`}>
                     {lastMessage &&
                       (lastMessage.senderId === user.id
-                        ? `${tChat("youPrefix")} ${lastMessage.content}`
-                        : lastMessage.content)}
+                        ? `${tChat("youPrefix")} ${messagePreview(lastMessage, tChat("photo"))}`
+                        : messagePreview(lastMessage, tChat("photo")))}
                   </span>
                 </span>
                 {lastMessage && (

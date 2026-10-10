@@ -16,7 +16,9 @@ export type ChatMessage = {
   id: string;
   conversationId: string;
   senderId: string;
+  // Empty when the message is only a photo
   content: string;
+  imageUrl: string | null;
   isRead: boolean;
   createdAt: string;
 };
@@ -65,13 +67,30 @@ export async function getMessages(conversationId: string, beforeId?: string) {
   return (await api<Envelope<MessagePage>>(`/api/chat/conversations/${conversationId}/messages${query}`)).data;
 }
 
-export async function sendMessage(conversationId: string, content: string) {
+// Text, a photo, or a photo with `content` as its caption
+export async function sendMessage(conversationId: string, content: string, photo?: Blob) {
+  let body: string | FormData = JSON.stringify({ content });
+  if (photo) {
+    body = new FormData();
+    body.append("photo", photo, "photo.jpg");
+    body.append("content", content);
+  }
+
   const { data } = await api<Envelope<ChatMessage>>(`/api/chat/conversations/${conversationId}/messages`, {
     method: "POST",
-    body: JSON.stringify({ content }),
+    body,
   });
   return data;
 }
+
+// One line for a message in the chat list, the dashboard and toasts
+export function messagePreview(message: Pick<ChatMessage, "content" | "imageUrl">, photoLabel: string) {
+  if (!message.imageUrl) return message.content;
+  return `📷 ${message.content || photoLabel}`;
+}
+
+// A Cloudinary photo resized for the chat bubble; other URLs are used as they are
+export const chatPhotoUrl = (url: string) => url.replace("/upload/", "/upload/c_limit,w_640,q_auto,f_auto/");
 
 export async function markConversationRead(conversationId: string) {
   await api(`/api/chat/conversations/${conversationId}/read`, { method: "PATCH" });

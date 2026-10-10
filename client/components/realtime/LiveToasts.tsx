@@ -6,7 +6,7 @@ import { BellIcon, ChatIcon, CloseIcon } from "@/components/icons";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useCurrentUser } from "@/components/dashboard/RoleGate";
 import { useSocketEvent } from "@/components/realtime/RealtimeProvider";
-import { messagesPageFor, type ChatMessageEvent } from "@/lib/chat";
+import { messagePreview, messagesPageFor, type ChatMessageEvent } from "@/lib/chat";
 import type { Notification } from "@/lib/notifications";
 
 type Toast = {
@@ -28,6 +28,7 @@ const preview = (text: string) => (text.length > PREVIEW_LENGTH ? `${text.slice(
 // while the user is on another page. They fade out on their own after a few seconds.
 export default function LiveToasts() {
   const t = useTranslations("chat.toast");
+  const tChat = useTranslations("chat");
   const me = useCurrentUser();
   const pathname = usePathname();
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -59,7 +60,7 @@ export default function LiveToasts() {
       id: message.id,
       kind: "message",
       title: t("newMessage", { name: senderName }),
-      body: preview(message.content),
+      body: preview(messagePreview(message, tChat("photo"))),
       href: `${messagesPage}?c=${conversationId}`,
     });
   });

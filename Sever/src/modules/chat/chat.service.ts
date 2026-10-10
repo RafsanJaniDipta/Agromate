@@ -1,4 +1,6 @@
+import { randomUUID } from "node:crypto";
 import { prisma } from "../../config/database.js";
+import { cloudinary } from "../../config/cloudinary.js";
 import { serviceHandler } from "../../utils/serviceHandler.js";
 import { AppError } from "../../utils/AppError.js";
 import { emitToUser } from "../../socket/socket.server.js";
@@ -6,11 +8,12 @@ import { markReadByReference, notifyLatest } from "../notification/notification.
 
 // One-to-one chat between a farmer and an expert, or an expert and an admin.
 // Farmers start chats with verified experts, experts with admins, admins with experts;
-// once a chat exists either side can write. Every new message and read receipt is also
-// pushed live to both people (see socket.server.ts).
+// once a chat exists either side can write. A message is text, a photo, or a photo with a
+// caption. Every new message and read receipt is also pushed live to both people (see socket.server.ts).
 
 const MESSAGE_MAX_LENGTH = 2000;
 const PAGE_SIZE = 30;
+const CHAT_PHOTO_FOLDER = "agromate/chat";
 
 type Role = "FARMER" | "EXPERT" | "ADMIN";
 // Older accounts store the role in lower case
@@ -54,6 +57,7 @@ const messageFields = {
   conversationId: true,
   senderId: true,
   content: true,
+  imageUrl: true,
   isRead: true,
   createdAt: true,
 } as const;
@@ -200,31 +204,60 @@ async function notifyRecipient(recipientId: string, conversationId: string, send
   });
 }
 
-export const sendMessage = serviceHandler(async (conversationId: string, senderId: string, text: unknown) => {
-  const content = typeof text === "string" ? text.trim() : "";
-  if (!content || content.length > MESSAGE_MAX_LENGTH) {
-    throw AppError.unprocessable(`A message must be 1 to ${MESSAGE_MAX_LENGTH} characters`);
-  }
+// Stores the photo on Cloudinary and returns its public id and URL
+function uploadChatPhoto(photo: Buffer) {
+  return new Promise<{ publicId: string; url: string }>((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      // Stored as sent: the browser already shrank it (see the client's MessageComposer)
+      { folder: CHAT_PHOTO_FOLDER, public_id: randomUUID(), resource_type: "image" },
+      (error, result) => {
+        if (error || !result) reject(new Error(error?.message ?? "Cloudinary upload failed"));
+        else resolve({ publicId: result.public_id, url: result.secure_url });
+      },
+    );
+    uploadStream.end(photo);
+  });
+}
 
-  const recipientId = await otherParticipantId(conversationId, senderId);
-  const [{ sender, ...message }] = await prisma.$transaction([
-    prisma.chatMessage.create({
-      data: { conversationId, senderId, content },
-      select: { ...messageFields, sender: { select: { name: true } } },
-    }),
-    prisma.chatConversation.update({ where: { id: conversationId }, data: { lastMessageAt: new Date() } }),
-  ]);
+export const sendMessage = serviceHandler(
+  async (conversationId: string, senderId: string, text: unknown, photo?: Buffer) => {
+    const content = typeof text === "string" ? text.trim() : "";
+    if ((!content && !photo) || content.length > MESSAGE_MAX_LENGTH) {
+      throw AppError.unprocessable(`A message needs a photo or 1 to ${MESSAGE_MAX_LENGTH} characters`);
+    }
 
-  // Saved before the live message goes out: a recipient reading the chat right away
-  // then also clears this notification (see markConversationRead)
-  await notifyRecipient(recipientId, conversationId, sender.name, content).catch(() => {});
+    // Checked before uploading, so outsiders can't store photos
+    const recipientId = await otherParticipantId(conversationId, senderId);
+    const uploaded = photo ? await uploadChatPhoto(photo) : null;
 
-  // The sender's other tabs need it too; the name lets the recipient's dashboard show who wrote
-  for (const userId of [recipientId, senderId]) {
-    emitToUser(userId, "chat:message", { conversationId, message, senderName: sender.name });
-  }
-  return message;
-});
+    let saved;
+    try {
+      saved = await prisma.$transaction([
+        prisma.chatMessage.create({
+          data: { conversationId, senderId, content, imageUrl: uploaded?.url },
+          select: { ...messageFields, sender: { select: { name: true } } },
+        }),
+        prisma.chatConversation.update({ where: { id: conversationId }, data: { lastMessageAt: new Date() } }),
+      ]);
+    } catch (error) {
+      // Don't leave an orphan photo behind when the message couldn't be saved
+      if (uploaded) await cloudinary.uploader.destroy(uploaded.publicId).catch(() => {});
+      throw error;
+    }
+    const [{ sender, ...message }] = saved;
+
+    // Saved before the live message goes out: a recipient reading the chat right away
+    // then also clears this notification (see markConversationRead)
+    const preview = photo ? `📷 ${content || "ছবি"}` : content;
+    await notifyRecipient(recipientId, conversationId, sender.name, preview).catch(() => {});
+
+    // The sender's other tabs need it too; the name lets the recipient's dashboard show who wrote
+    for (const userId of [recipientId, senderId]) {
+      emitToUser(userId, "chat:message", { conversationId, message, senderName: sender.name });
+    }
+    return message;
+  },
+);
 
 // Marks the other person's messages as read and tells them, so their ticks update
 export const markConversationRead = serviceHandler(async (conversationId: string, userId: string) => {

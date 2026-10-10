@@ -9,6 +9,7 @@ import {
   getUnreadCount,
 } from "./chat.controller.js";
 import { authenticate } from "../../middlewares/auth.middleware.js";
+import { upload } from "../../middlewares/upload.middleware.js";
 
 export const chatRouter = Router();
 
@@ -20,5 +21,6 @@ chatRouter.get("/unread-count", getUnreadCount);
 chatRouter.get("/conversations", getConversations);
 chatRouter.post("/conversations", startConversation);
 chatRouter.get("/conversations/:id/messages", getMessages);
-chatRouter.post("/conversations/:id/messages", sendMessage);
+// A photo comes as multipart; plain JSON text passes through upload untouched
+chatRouter.post("/conversations/:id/messages", upload.single("photo"), sendMessage);
 chatRouter.patch("/conversations/:id/read", markConversationRead);

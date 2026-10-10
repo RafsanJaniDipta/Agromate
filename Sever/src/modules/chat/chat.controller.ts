@@ -41,8 +41,14 @@ export const getMessages = asyncHandler(async (req: Request, res: Response): Pro
   sendSuccess(res, 200, "Messages fetched successfully", page);
 });
 
+// JSON { content } for text, or multipart with a "photo" file and an optional "content" caption
 export const sendMessage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const message = await sendMessageService(conversationIdOf(req), currentUser(req).id, req.body?.content);
+  const message = await sendMessageService(
+    conversationIdOf(req),
+    currentUser(req).id,
+    req.body?.content,
+    req.file?.buffer,
+  );
   sendSuccess(res, 201, "Message sent", message);
 });
 
