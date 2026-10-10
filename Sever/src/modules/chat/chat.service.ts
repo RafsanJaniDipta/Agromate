@@ -8,12 +8,14 @@ import { markReadByReference, notifyLatest } from "../notification/notification.
 
 // One-to-one chat between a farmer and an expert, or an expert and an admin.
 // Farmers start chats with verified experts, experts with admins, admins with experts;
-// once a chat exists either side can write. A message is text, a photo, or a photo with a
-// caption. Every new message and read receipt is also pushed live to both people (see socket.server.ts).
+// once a chat exists either side can write. A message is text, up to CHAT_PHOTOS_MAX photos,
+// or photos with one shared caption. Every new message and read receipt is also pushed live
+// to both people (see socket.server.ts).
 
 const MESSAGE_MAX_LENGTH = 2000;
 const PAGE_SIZE = 30;
 const CHAT_PHOTO_FOLDER = "agromate/chat";
+export const CHAT_PHOTOS_MAX = 10;
 
 type Role = "FARMER" | "EXPERT" | "ADMIN";
 // Older accounts store the role in lower case
@@ -57,7 +59,7 @@ const messageFields = {
   conversationId: true,
   senderId: true,
   content: true,
-  imageUrl: true,
+  imageUrls: true,
   isRead: true,
   createdAt: true,
 } as const;
@@ -219,36 +221,61 @@ function uploadChatPhoto(photo: Buffer) {
   });
 }
 
+const removeChatPhotos = (publicIds: string[]) =>
+  Promise.all(publicIds.map((publicId) => cloudinary.uploader.destroy(publicId).catch(() => {})));
+
+// Uploads every photo, or none: if one fails, the ones already stored are removed
+async function uploadChatPhotos(photos: Buffer[]) {
+  const results = await Promise.allSettled(photos.map(uploadChatPhoto));
+  const uploaded = results.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
+  const failure = results.find((result) => result.status === "rejected");
+  if (failure) {
+    await removeChatPhotos(uploaded.map((photo) => photo.publicId));
+    throw failure.reason;
+  }
+  return uploaded;
+}
+
+// The bell's one-line summary, in Bangla like the other notifications
+function notificationPreview(content: string, photoCount: number) {
+  if (photoCount === 0) return content;
+  const photos = photoCount === 1 ? "ছবি" : `${photoCount.toLocaleString("bn-BD")}টি ছবি`;
+  return `📷 ${content || photos}`;
+}
+
 export const sendMessage = serviceHandler(
-  async (conversationId: string, senderId: string, text: unknown, photo?: Buffer) => {
+  async (conversationId: string, senderId: string, text: unknown, photos: Buffer[] = []) => {
     const content = typeof text === "string" ? text.trim() : "";
-    if ((!content && !photo) || content.length > MESSAGE_MAX_LENGTH) {
+    if ((!content && photos.length === 0) || content.length > MESSAGE_MAX_LENGTH) {
       throw AppError.unprocessable(`A message needs a photo or 1 to ${MESSAGE_MAX_LENGTH} characters`);
+    }
+    if (photos.length > CHAT_PHOTOS_MAX) {
+      throw AppError.unprocessable(`A message can carry at most ${CHAT_PHOTOS_MAX} photos`);
     }
 
     // Checked before uploading, so outsiders can't store photos
     const recipientId = await otherParticipantId(conversationId, senderId);
-    const uploaded = photo ? await uploadChatPhoto(photo) : null;
+    const uploaded = await uploadChatPhotos(photos);
 
     let saved;
     try {
       saved = await prisma.$transaction([
         prisma.chatMessage.create({
-          data: { conversationId, senderId, content, imageUrl: uploaded?.url },
+          data: { conversationId, senderId, content, imageUrls: uploaded.map((photo) => photo.url) },
           select: { ...messageFields, sender: { select: { name: true } } },
         }),
         prisma.chatConversation.update({ where: { id: conversationId }, data: { lastMessageAt: new Date() } }),
       ]);
     } catch (error) {
-      // Don't leave an orphan photo behind when the message couldn't be saved
-      if (uploaded) await cloudinary.uploader.destroy(uploaded.publicId).catch(() => {});
+      // Don't leave orphan photos behind when the message couldn't be saved
+      await removeChatPhotos(uploaded.map((photo) => photo.publicId));
       throw error;
     }
     const [{ sender, ...message }] = saved;
 
     // Saved before the live message goes out: a recipient reading the chat right away
     // then also clears this notification (see markConversationRead)
-    const preview = photo ? `📷 ${content || "ছবি"}` : content;
+    const preview = notificationPreview(content, photos.length);
     await notifyRecipient(recipientId, conversationId, sender.name, preview).catch(() => {});
 
     // The sender's other tabs need it too; the name lets the recipient's dashboard show who wrote

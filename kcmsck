@@ -1,0 +1,201 @@
+[1mdiff --git a/Sever/prisma/schema.prisma b/Sever/prisma/schema.prisma[m
+[1mindex 1c99a91..acccdbd 100644[m
+[1m--- a/Sever/prisma/schema.prisma[m
+[1m+++ b/Sever/prisma/schema.prisma[m
+[36m@@ -1,87 +1,71 @@[m
+[31m-// AgroMate — Production Database Prisma Schema[m
+[31m-//[m
+[31m-// Better Auth generates the User / Session / Account / Verification models.[m
+[31m-// Agromate Domain models extend the schema for full agricultural management.[m
+[31m-[m
+ generator client {[m
+   provider = "prisma-client"[m
+   output   = "../src/generated/prisma"[m
+ }[m
+ [m
+[31m-// Prisma 7 reads connection string from database.ts[m
+ datasource db {[m
+   provider = "postgresql"[m
+ }[m
+ [m
+[31m-// -------------------------------------------------------------[m
+[31m-// Better Auth Core User Models[m
+[31m-// -------------------------------------------------------------[m
+[31m-[m
+ model User {[m
+[31m-  id            String    @id @default(uuid(7)) @db.Uuid[m
+[31m-  name          String[m
+[31m-  email         String[m
+[31m-  emailVerified Boolean   @default(false)[m
+[31m-  image         String?[m
+[31m-  createdAt     DateTime  @default(now())[m
+[31m-  updatedAt     DateTime  @updatedAt[m
+[31m-  role          String    @default("FARMER") // "FARMER" | "EXPERT" | "ADMIN"[m
+[31m-  banned        Boolean?  @default(false)[m
+[31m-  banReason     String?[m
+[31m-  banExpires    DateTime?[m
+[31m-  location      String?[m
+[31m-  phone         String?[m
+[31m-  phoneNumber   String?   @unique @map("phone_number")[m
+[31m-  phoneNumberVerified Boolean? @default(false) @map("phone_number_verified")[m
+[31m-  language      String?   @default("en")[m
+[31m-  locale        String?   @default("bn")[m
+[31m-[m
+[31m-  sessions                  Session[][m
+[32m+[m[32m  name                      String[m
+[32m+[m[32m  email                     String                     @unique[m
+[32m+[m[32m  emailVerified             Boolean                    @default(false)[m
+[32m+[m[32m  image                     String?[m
+[32m+[m[32m  createdAt                 DateTime                   @default(now())[m
+[32m+[m[32m  updatedAt                 DateTime                   @updatedAt[m
+[32m+[m[32m  role                      String                     @default("FARMER")[m
+[32m+[m[32m  banned                    Boolean?                   @default(false)[m
+[32m+[m[32m  banReason                 String?[m
+[32m+[m[32m  banExpires                DateTime?[m
+[32m+[m[32m  location                  String?[m
+[32m+[m[32m  phone                     String?[m
+[32m+[m[32m  language                  String?                    @default("en")[m
+[32m+[m[32m  id                        String                     @id @default(uuid(7)) @db.Uuid[m
+[32m+[m[32m  locale                    String?                    @default("bn")[m
+[32m+[m[32m  phoneNumber               String?                    @unique @map("phone_number")[m
+[32m+[m[32m  phoneNumberVerified       Boolean?                   @default(false) @map("phone_number_verified")[m
+   accounts                  Account[][m
+[31m-  farms                     Farm[][m
+[31m-  diseaseDetections         DiseaseDetection[][m
+[31m-  fertilizerRecommendations FertilizerRecommendation[][m
+[31m-  cropRecommendations       CropRecommendation[][m
+[31m-  questions                 Question[][m
+[31m-  answers                   Answer[][m
+[31m-  notifications             Notification[][m
+[31m-  expertProfile             ExpertProfile?[m
+[31m-  reminders                 Reminder[][m
+   aiConversations           AIConversation[][m
+[31m-  supportTickets            SupportTicket[][m
+[31m-  successStories            SuccessStory[][m
+[32m+[m[32m  answers                   Answer[][m
+   chatsAsParticipantOne     ChatConversation[]         @relation("ChatParticipantOne")[m
+   chatsAsParticipantTwo     ChatConversation[]         @relation("ChatParticipantTwo")[m
+   chatMessages              ChatMessage[][m
+[32m+[m[32m  cropRecommendations       CropRecommendation[][m
+[32m+[m[32m  diseaseDetections         DiseaseDetection[][m
+[32m+[m[32m  expertProfile             ExpertProfile?[m
+[32m+[m[32m  farms                     Farm[][m
+[32m+[m[32m  fertilizerRecommendations FertilizerRecommendation[][m
+[32m+[m[32m  notifications             Notification[][m
+   priceReports              PriceReport[][m
+[32m+[m[32m  questions                 Question[][m
+[32m+[m[32m  reminders                 Reminder[][m
+[32m+[m[32m  sessions                  Session[][m
+[32m+[m[32m  successStories            SuccessStory[][m
+[32m+[m[32m  supportTickets            SupportTicket[][m
+ [m
+[31m-  @@unique([email])[m
+   @@map("user")[m
+ }[m
+ [m
+ model Session {[m
+[31m-  id             String   @id @default(uuid(7)) @db.Uuid[m
+   expiresAt      DateTime[m
+[31m-  token          String[m
+[32m+[m[32m  token          String   @unique[m
+   createdAt      DateTime @default(now())[m
+   updatedAt      DateTime @updatedAt[m
+   ipAddress      String?[m
+   userAgent      String?[m
+[32m+[m[32m  id             String   @id @default(uuid(7)) @db.Uuid[m
+   userId         String   @db.Uuid[m
+[31m-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)[m
+   impersonatedBy String?  @db.Uuid[m
+[32m+[m[32m  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)[m
+ [m
+[31m-  @@unique([token])[m
+   @@index([userId])[m
+   @@map("session")[m
+ }[m
+ [m
+ model Account {[m
+[31m-  id                    String    @id @default(uuid(7)) @db.Uuid[m
+   accountId             String[m
+   providerId            String[m
+[31m-  userId                String    @db.Uuid[m
+[31m-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)[m
+   accessToken           String?[m
+   refreshToken          String?[m
+   idToken               String?[m
+[36m@@ -91,163 +75,81 @@[m [mmodel Account {[m
+   password              String?[m
+   createdAt             DateTime  @default(now())[m
+   updatedAt             DateTime  @updatedAt[m
+[32m+[m[32m  id                    String    @id @default(uuid(7)) @db.Uuid[m
+[32m+[m[32m  userId                String    @db.Uuid[m
+[32m+[m[32m  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)[m
+ [m
+   @@index([userId])[m
+   @@map("account")[m
+ }[m
+ [m
+ model Verification {[m
+[31m-  id         String   @id @default(uuid(7)) @db.Uuid[m
+   identifier String[m
+   value      String[m
+   expiresAt  DateTime[m
+   createdAt  DateTime @default(now())[m
+   updatedAt  DateTime @updatedAt[m
+[32m+[m[32m  id         String   @id @default(uuid(7)) @db.Uuid[m
+ [m
+   @@index([identifier])[m
+   @@map("verification")[m
+ }[m
+ [m
+[31m-// -------------------------------------------------------------[m
+[31m-// Enums[m
+[31m-// -------------------------------------------------------------[m
+[31m-[m
+[31m-enum ExpertStatus {[m
+[31m-  PENDING[m
+[31m-  VERIFIED[m
+[31m-  REJECTED[m
+[31m-}[m
+[31m-[m
+[31m-enum CropCycleStatus {[m
+[31m-  PLANNED[m
+[31m-  PLANTED[m
+[31m-  GROWING[m
+[31m-  HARVESTED[m
+[31m-  FAILED[m
+[31m-}[m
+[31m-[m
+[31m-enum ExpenseCategory {[m
+[31m-  SEEDS[m
+[31m-  FERTILIZER[m
+[31m-  PESTICIDE[m
+[31m-  LABOR[m
+[31m-  EQUIPMENT[m
+[31m-  IRRIGATION[m
+[31m-  TRANSPORT[m
+[31m-  OTHER[m
+[31m-}[m
+[31m-[m
+[31m-enum QuestionStatus {[m
+[31m-  OPEN[m
+[31m-  ANSWERED[m
+[31m-  CLOSED[m
+[31m-}[m
+[31m-[m
+[31m-enum NotificationType {[m
+[31m-  INFO[m
+[31m-  WARNING[m
+[31m-  SUCCESS[m
+[31m-  ALERT[m
+[31m-}[m
+[31m-[m
+[31m-enum PriceCategory {[m
+[31m-  CROP[m
+[31m-  FERTILIZER[m
+[31m-  PESTICIDE[m
+[31m-}[m
+[31m-[m
+[31m-// Where an official price came from[m
+[31m-enum PriceSource {[m
+[31m-  TCB // Trading Corporation of Bangladesh daily Dhaka retail prices, imported automatically[m
+[31m-  GOVERNMENT // prices fixed by the go

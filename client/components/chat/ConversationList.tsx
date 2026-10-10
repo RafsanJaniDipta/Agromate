@@ -73,7 +73,7 @@ export default function ConversationList({
             const { otherUser, lastMessage, unreadCount } = conversation;
             const isSelected = conversation.id === selectedId;
             const fromMe = lastMessage?.senderId === me.id;
-            const lastText = lastMessage && messagePreview(lastMessage, t("photo"));
+            const lastText = lastMessage && messagePreview(lastMessage, (count) => t("photos", { count }));
             return (
               <li key={conversation.id}>
                 <button

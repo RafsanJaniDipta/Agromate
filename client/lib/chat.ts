@@ -16,9 +16,9 @@ export type ChatMessage = {
   id: string;
   conversationId: string;
   senderId: string;
-  // Empty when the message is only a photo
+  // Empty when the message is only photos; otherwise their shared caption
   content: string;
-  imageUrl: string | null;
+  imageUrls: string[];
   isRead: boolean;
   createdAt: string;
 };
@@ -37,8 +37,9 @@ export type ChatMessageEvent = { conversationId: string; message: ChatMessage; s
 export type ChatReadEvent = { conversationId: string; readerId: string };
 export type ChatTypingEvent = { conversationId: string; userId: string };
 
-// The server's limit for one message
+// The server's limits for one message
 export const MESSAGE_MAX_LENGTH = 2000;
+export const CHAT_PHOTOS_MAX = 10;
 
 type Envelope<T> = { data: T };
 
@@ -67,12 +68,12 @@ export async function getMessages(conversationId: string, beforeId?: string) {
   return (await api<Envelope<MessagePage>>(`/api/chat/conversations/${conversationId}/messages${query}`)).data;
 }
 
-// Text, a photo, or a photo with `content` as its caption
-export async function sendMessage(conversationId: string, content: string, photo?: Blob) {
+// Text, photos, or photos with `content` as their shared caption
+export async function sendMessage(conversationId: string, content: string, photos: Blob[] = []) {
   let body: string | FormData = JSON.stringify({ content });
-  if (photo) {
+  if (photos.length > 0) {
     body = new FormData();
-    body.append("photo", photo, "photo.jpg");
+    for (const photo of photos) body.append("photos", photo, "photo.jpg");
     body.append("content", content);
   }
 
@@ -83,14 +84,27 @@ export async function sendMessage(conversationId: string, content: string, photo
   return data;
 }
 
-// One line for a message in the chat list, the dashboard and toasts
-export function messagePreview(message: Pick<ChatMessage, "content" | "imageUrl">, photoLabel: string) {
-  if (!message.imageUrl) return message.content;
-  return `📷 ${message.content || photoLabel}`;
+// One line for a message in the chat list, the dashboard and toasts.
+// `photosLabel` names a caption-less group of photos, e.g. "Photo" or "3 photos".
+export function messagePreview(
+  message: Pick<ChatMessage, "content" | "imageUrls">,
+  photosLabel: (count: number) => string,
+) {
+  const count = message.imageUrls.length;
+  if (count === 0) return message.content;
+  return `📷 ${message.content || photosLabel(count)}`;
 }
 
-// A Cloudinary photo resized for the chat bubble; other URLs are used as they are
-export const chatPhotoUrl = (url: string) => url.replace("/upload/", "/upload/c_limit,w_640,q_auto,f_auto/");
+// Cloudinary sizes: a lone photo in a bubble, a square tile in a group, and the full-screen viewer
+const PHOTO_SIZES = {
+  single: "c_limit,w_640",
+  tile: "c_fill,w_320,h_320",
+  full: "c_limit,w_1600",
+} as const;
+
+// A Cloudinary photo resized for where it's shown; other URLs (local previews) are used as they are
+export const chatPhotoUrl = (url: string, size: keyof typeof PHOTO_SIZES) =>
+  url.replace("/upload/", `/upload/${PHOTO_SIZES[size]},q_auto,f_auto/`);
 
 export async function markConversationRead(conversationId: string) {
   await api(`/api/chat/conversations/${conversationId}/read`, { method: "PATCH" });

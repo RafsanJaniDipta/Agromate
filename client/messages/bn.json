@@ -1407,7 +1407,7 @@
     "loadError": "বার্তাগুলো লোড করা যায়নি।",
     "retry": "আবার চেষ্টা করুন",
     "youPrefix": "আপনি:",
-    "photo": "ছবি",
+    "photos": "{count, plural, one {ছবি} other {#টি ছবি}}",
     "emptyList": {
       "FARMER": "এখনো কোনো বার্তা নেই। ফসলের ব্যাপারে একজন বিশেষজ্ঞকে জিজ্ঞেস করুন।",
       "EXPERT": "এখনো কোনো বার্তা নেই। কৃষকদের প্রশ্ন এখানে আসবে।",
@@ -1447,12 +1447,22 @@
       "today": "আজ",
       "yesterday": "গতকাল",
       "attachPhoto": "ছবি পাঠান",
-      "removePhoto": "ছবি বাদ দিন",
-      "photoPreview": "যে ছবি পাঠাবেন",
+      "removePhoto": "{number} নম্বর ছবি বাদ দিন",
+      "photoPreview": "যে ছবি পাঠাবেন, {number} নম্বর",
       "captionPlaceholder": "ছবির সাথে কিছু লিখুন (ঐচ্ছিক)…",
-      "photoError": "এই ছবিটি খোলা যায়নি। অন্য একটি ছবি বেছে নিন।",
-      "photo": "পাঠানো ছবি",
-      "openPhoto": "ছবিটি বড় করে দেখুন"
+      "photoError": "একটি ছবি খোলা যায়নি। অন্য ছবি বেছে নিন।",
+      "photoCount": "{count}টি ছবি বাছা হয়েছে (সর্বোচ্চ {max}টি)",
+      "tooManyPhotos": "একবারে সর্বোচ্চ {max}টি ছবি পাঠানো যায়।",
+      "photoAlt": "ছবি {number}/{total}",
+      "morePhotos": "আরও {count}টি ছবি দেখুন",
+      "viewer": {
+        "title": "ছবি দেখুন",
+        "counter": "{number} / {total}",
+        "original": "আসল ছবি খুলুন",
+        "close": "বন্ধ করুন",
+        "previous": "আগের ছবি",
+        "next": "পরের ছবি"
+      }
     },
     "toast": {
       "newMessage": "{name}-এর বার্তা",
