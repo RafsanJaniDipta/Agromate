@@ -1,0 +1,108 @@
+// Bangladesh's 64 districts: Bangla name → English name the weather geocoder recognises.
+// Farmers write their location in Bangla ("শিবগঞ্জ, বগুড়া"), which the geocoder can't search,
+// so the district in the text is translated first.
+export const DISTRICT_NAMES: Record<string, string> = {
+  // Dhaka division
+  ঢাকা: "Dhaka",
+  গাজীপুর: "Gazipur",
+  নারায়ণগঞ্জ: "Narayanganj",
+  নরসিংদী: "Narsingdi",
+  মানিকগঞ্জ: "Manikganj",
+  মুন্সীগঞ্জ: "Munshiganj",
+  টাঙ্গাইল: "Tangail",
+  কিশোরগঞ্জ: "Kishoreganj",
+  ফরিদপুর: "Faridpur",
+  গোপালগঞ্জ: "Gopalganj",
+  মাদারীপুর: "Madaripur",
+  শরীয়তপুর: "Shariatpur",
+  রাজবাড়ী: "Rajbari",
+  // Chattogram division
+  চট্টগ্রাম: "Chittagong",
+  কক্সবাজার: "Cox's Bazar",
+  রাঙ্গামাটি: "Rangamati",
+  বান্দরবান: "Bandarban",
+  খাগড়াছড়ি: "Khagrachhari",
+  কুমিল্লা: "Comilla",
+  ব্রাহ্মণবাড়িয়া: "Brahmanbaria",
+  চাঁদপুর: "Chandpur",
+  নোয়াখালী: "Noakhali",
+  ফেনী: "Feni",
+  লক্ষ্মীপুর: "Lakshmipur",
+  // Rajshahi division
+  রাজশাহী: "Rajshahi",
+  বগুড়া: "Bogra",
+  পাবনা: "Pabna",
+  সিরাজগঞ্জ: "Sirajganj",
+  নাটোর: "Natore",
+  নওগাঁ: "Naogaon",
+  চাঁপাইনবাবগঞ্জ: "Chapai Nawabganj",
+  জয়পুরহাট: "Joypurhat",
+  // Khulna division
+  খুলনা: "Khulna",
+  যশোর: "Jessore",
+  সাতক্ষীরা: "Satkhira",
+  বাগেরহাট: "Bagerhat",
+  কুষ্টিয়া: "Kushtia",
+  ঝিনাইদহ: "Jhenaidah",
+  মাগুরা: "Magura",
+  নড়াইল: "Narail",
+  চুয়াডাঙ্গা: "Chuadanga",
+  মেহেরপুর: "Meherpur",
+  // Barishal division
+  বরিশাল: "Barisal",
+  পটুয়াখালী: "Patuakhali",
+  ভোলা: "Bhola",
+  পিরোজপুর: "Pirojpur",
+  // The geocoder only knows a park in the town under this spelling; close enough for weather
+  ঝালকাঠি: "Jhalokathi",
+  বরগুনা: "Barguna",
+  // Sylhet division
+  সিলেট: "Sylhet",
+  মৌলভীবাজার: "Moulvi Bazar",
+  হবিগঞ্জ: "Habiganj",
+  সুনামগঞ্জ: "Sunamganj",
+  // Rangpur division
+  রংপুর: "Rangpur",
+  দিনাজপুর: "Dinajpur",
+  গাইবান্ধা: "Gaibandha",
+  কুড়িগ্রাম: "Kurigram",
+  লালমনিরহাট: "Lalmonirhat",
+  নীলফামারী: "Nilphamari",
+  পঞ্চগড়: "Panchagarh",
+  ঠাকুরগাঁও: "Thakurgaon",
+  // Mymensingh division
+  ময়মনসিংহ: "Mymensingh",
+  জামালপুর: "Jamalpur",
+  নেত্রকোনা: "Netrakona",
+  শেরপুর: "Sherpur",
+};
+
+// Newer official English spellings the geocoder doesn't know, mapped to the ones it does
+export const DISTRICT_ALIASES: Record<string, string> = {
+  bogura: "Bogra",
+  chattogram: "Chittagong",
+  cumilla: "Comilla",
+  jashore: "Jessore",
+  barishal: "Barisal",
+  chapainawabganj: "Chapai Nawabganj",
+  jhalakathi: "Jhalokathi",
+  jhalokati: "Jhalokathi",
+  moulvibazar: "Moulvi Bazar",
+  netrokona: "Netrakona",
+};
+
+// Lower case without spaces, so "Bogura Sadar" and "bogurasadar" compare equal
+const squash = (text: string) => text.toLowerCase().replace(/\s+/g, "");
+
+// The district a piece of text names, in the geocoder's spelling, or null.
+// Finds it inside longer text too: "বগুড়া সদর", "Bogura Sadar", "Chattogram district".
+export function districtIn(text: string): string | null {
+  const banglaDistrict = Object.keys(DISTRICT_NAMES).find((district) => text.includes(district));
+  if (banglaDistrict) return DISTRICT_NAMES[banglaDistrict] ?? null;
+
+  const squashed = squash(text);
+  const alias = Object.keys(DISTRICT_ALIASES).find((name) => squashed.includes(name));
+  if (alias) return DISTRICT_ALIASES[alias] ?? null;
+
+  return Object.values(DISTRICT_NAMES).find((name) => squashed.includes(squash(name))) ?? null;
+}

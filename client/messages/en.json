@@ -1,0 +1,1689 @@
+{
+  "metadata": {
+    "title": "Agromate",
+    "description": "Smart farming solutions, market prices and weather updates for farmers.",
+    "aboutTitle": "About | Agromate",
+    "supportTitle": "Support | Agromate",
+    "loginTitle": "Log in | Agromate",
+    "registerTitle": "Create account | Agromate",
+    "dashboardTitle": "Dashboard | Agromate",
+    "diagnoseTitle": "Crop disease check | Agromate",
+    "cropsTitle": "Crop guide | Agromate",
+    "adminLoginTitle": "Admin & expert log in | Agromate",
+    "adminTitle": "Admin dashboard | Agromate",
+    "expertTitle": "Expert dashboard | Agromate",
+    "expertProfileTitle": "My expert profile | Agromate",
+    "adminUsersTitle": "Users | Agromate admin",
+    "adminMarketPricesTitle": "Market prices | Agromate admin",
+    "adminStoriesTitle": "Success stories | Agromate admin",
+    "profileTitle": "My profile | Agromate",
+    "storiesTitle": "My success story | Agromate",
+    "adminCropsTitle": "Crops | Agromate admin",
+    "fieldsTitle": "My fields | Agromate",
+    "myCropsTitle": "Crop records | Agromate",
+    "analyticsTitle": "Analytics | Agromate",
+    "weatherTitle": "Weather | Agromate",
+    "accountsTitle": "Account book | Agromate",
+    "messagesTitle": "Messages | Agromate",
+    "expertsTitle": "Experts | Agromate",
+    "marketTitle": "Market prices | Agromate",
+    "assistantTitle": "AI assistant | Agromate",
+    "adviceTitle": "Crop & fertilizer advice | Agromate",
+    "reportsTitle": "Farm report | Agromate"
+  },
+  "languageSwitcher": {
+    "label": "Language"
+  },
+  "nav": {
+    "label": "Main",
+    "home": "Home",
+    "services": "Services",
+    "stories": "Success Stories",
+    "about": "About Us",
+    "support": "Support",
+    "expertAdvice": "Get Expert Advice",
+    "login": "Log in",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "register": "Create account",
+    "account": {
+      "menuLabel": "Account menu for {name}",
+      "dashboard": "My dashboard",
+      "profile": "My profile",
+      "signOut": "Log out",
+      "login": "Log in",
+      "website": "Go to website"
+    }
+  },
+  "hero": {
+    "titleLine1": "Smart Farming",
+    "titleLine2": "for a Greener Future",
+    "subtitle": "Traditional values meet modern agriculture technology to help you grow more.",
+    "cta": "Explore Farming Solutions"
+  },
+  "market": {
+    "title": "Market prices",
+    "groups": {
+      "crops": "Crops",
+      "fertilizer": "Fertilizer"
+    },
+    "live": "Live",
+    "updated": "Prices of {date}",
+    "priceRange": "৳{min, number}–{max, number}",
+    "price": "৳{price, number}",
+    "per": "/{unit}",
+    "unavailable": "Prices will appear here soon.",
+    "source": "Source: TCB & Government of Bangladesh"
+  },
+  "weather": {
+    "title": "Weather forecast",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "temperature": "{value, number}°C"
+  },
+  "about": {
+    "trustedBy": "Trusted by over",
+    "farmersCount": "50K+",
+    "farmersLabel": "Farmers worldwide",
+    "harvestAlt": "Farmer harvesting greens by hand",
+    "produceAlt": "Fresh cauliflower harvest",
+    "caption": "Smart, data-driven agricultural solutions helping farmers improve yields while using fewer resources.",
+    "heading": "We are committed to empowering farmers through <image></image> smart sustainable <muted>agricultural solutions that improve productivity and protect the land.</muted>",
+    "intro": "We empower farmers with smart, data-driven agricultural solutions that improve crop performance, reduce resource waste and promote sustainable farming practices for long-term success.",
+    "stats": {
+      "acres": {
+        "title": "Acres Farmed",
+        "value": "10K+",
+        "caption": "Supporting efficient farming at scale"
+      },
+      "yield": {
+        "title": "Yield Improvement",
+        "value": "30%",
+        "caption": "Growing more with smarter farming"
+      },
+      "farmers": {
+        "title": "Farmers Trust Us",
+        "value": "50K+",
+        "caption": "Proven results farmers trust"
+      }
+    }
+  },
+  "solutions": {
+    "titleLine1": "Complete Solutions for",
+    "titleLine2": "Modern Agriculture",
+    "learnMore": "Learn more about {title}",
+    "items": {
+      "precision": {
+        "title": "Precision Farming",
+        "tag": "Smart Input",
+        "stat": "500+ acres support",
+        "description": "GPS-guided equipment and sensors for accurate field management and resource allocation."
+      },
+      "irrigation": {
+        "title": "Smart Irrigation Systems",
+        "tag": "Water Saving",
+        "stat": "40% less water used",
+        "description": "Sensor-driven sprinklers give each zone the right amount of water, right when crops need it."
+      },
+      "monitoring": {
+        "title": "Pest & Disease Monitoring",
+        "tag": "Early Alerts",
+        "stat": "24/7 field watch",
+        "description": "Field sensors and weather stations flag pest and disease risks before they spread."
+      },
+      "machinery": {
+        "title": "Autonomous Machinery",
+        "tag": "Automation",
+        "stat": "2x faster field work",
+        "description": "Self-driving sprayers and tractors handle repetitive work with steady precision."
+      }
+    }
+  },
+  "slider": {
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "whyChoose": {
+    "featureTitle": "Sustainable Practices",
+    "featureText": "Eco-friendly farming solutions that protect soil, water and crops.",
+    "featureAlt": "Aerial view of green terraced rice fields",
+    "tags": {
+      "agriTech": "Agri Tech",
+      "smartFields": "Smart Fields",
+      "ecoFarming": "Eco Farming"
+    },
+    "badge": "Why Choose Us",
+    "title": "Farming Made Easy.",
+    "intro": "We provide comprehensive, innovative solutions tailored to address the unique challenges faced by modern farmers today.",
+    "reasons": {
+      "farmer": "Farmer Approach",
+      "tech": "Smart Technology",
+      "yield": "More Yield",
+      "support": "Expert Support"
+    }
+  },
+  "stories": {
+    "badge": "Success Stories",
+    "title": "Real farmers, <accent>real harvests.</accent>",
+    "intro": "See how farmers across Bangladesh grow more and spend less with Agromate's tools and expert advice.",
+    "pickerLabel": "Choose a story",
+    "yieldLabel": "Higher yield this season",
+    "costLabel": "Lower farming cost",
+    "incomeLabel": "More income",
+    "items": {
+      "shafiqul": {
+        "name": "Shafiqul Islam",
+        "role": "Vegetable farmer",
+        "location": "Rangpur",
+        "quote": "Fertilizer advice from Agromate showed me exactly what my soil needed. I used less urea and still got my best harvest in ten years.",
+        "yield": "+42%",
+        "cost": "−30%",
+        "income": "+55%"
+      },
+      "karim": {
+        "name": "Abdul Karim",
+        "role": "Aman rice farmer",
+        "location": "Dinajpur",
+        "quote": "The weather alert reached me two days before the storm. I cut my paddy early and saved the whole crop.",
+        "yield": "+35%",
+        "cost": "−20%",
+        "income": "+40%"
+      },
+      "nurul": {
+        "name": "Nurul Haque",
+        "role": "Jute farmer",
+        "location": "Faridpur",
+        "quote": "I photograph a sick plant and get an answer in minutes. Live market prices showed me the best time to sell my jute.",
+        "yield": "+28%",
+        "cost": "−25%",
+        "income": "+60%"
+      },
+      "jamal": {
+        "name": "Jamal Uddin",
+        "role": "Boro rice farmer",
+        "location": "Mymensingh",
+        "quote": "One phone call with an expert changed how I water my paddy. I use less water now, and my income has doubled.",
+        "yield": "+50%",
+        "cost": "−18%",
+        "income": "+100%"
+      }
+    }
+  },
+  "footer": {
+    "blurb": "Smart and practical solutions to help farmers grow better, work easier and build a stronger future for agriculture.",
+    "columns": {
+      "navigation": "Navigation",
+      "resources": "Resources",
+      "company": "Company"
+    },
+    "links": {
+      "home": "Home",
+      "services": "Services",
+      "whyUs": "Why Us",
+      "about": "About Us",
+      "support": "Support",
+      "helpCenter": "Help Center",
+      "marketPrices": "Market Prices",
+      "weatherUpdates": "Weather Updates",
+      "farmingGuides": "Farming Guides",
+      "faq": "FAQ",
+      "careers": "Careers",
+      "press": "Press",
+      "sustainability": "Sustainability",
+      "contact": "Contact",
+      "privacy": "Privacy Policy",
+      "terms": "Terms & Conditions"
+    },
+    "copyright": "© {year} Agromate. All rights reserved."
+  },
+  "aboutPage": {
+    "heroTitle": "About Agromate",
+    "heroSubtitle": "We bring modern farming knowledge, live market prices and weather updates to every farmer in Bangladesh.",
+    "storyBadge": "Our Story",
+    "storyTitle": "Built for the farmers who feed the nation",
+    "storyP1": "Agromate started with a simple question: why should a farmer have to guess the price of their crop, or find out about a storm too late? Good information exists, but it rarely reaches the field in time.",
+    "storyP2": "So we built one place where farmers can check daily market prices, plan around the weather and get advice from agriculture experts, in Bangla, on any phone.",
+    "storyImageAlt": "Farmer checking his tablet in the field",
+    "mission": {
+      "title": "Our Mission",
+      "text": "Give every farmer the information and expert support they need to grow more, waste less and earn a fair price."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "text": "A Bangladesh where farming is profitable, sustainable and respected, powered by simple technology that works for everyone."
+    },
+    "valuesBadge": "What We Value",
+    "valuesTitle": "The principles behind our work",
+    "values": {
+      "farmers": {
+        "title": "Farmers First",
+        "text": "Every feature starts with a real problem a farmer faces in the field."
+      },
+      "data": {
+        "title": "Data You Can Trust",
+        "text": "Prices and forecasts come from reliable sources and are updated every day."
+      },
+      "sustainability": {
+        "title": "Sustainable Growth",
+        "text": "We promote methods that protect soil and water for the next generation."
+      },
+      "trust": {
+        "title": "Honest Advice",
+        "text": "Our experts recommend what works for your farm, not what sells."
+      }
+    }
+  },
+  "supportPage": {
+    "heroTitle": "How can we help?",
+    "heroSubtitle": "Talk to our agriculture experts by phone, WhatsApp or email, or send us your question below.",
+    "channels": {
+      "phone": {
+        "title": "Helpline",
+        "note": "Sat–Thu, 9am–6pm"
+      },
+      "whatsapp": {
+        "title": "WhatsApp",
+        "note": "Send photos of your crop for quick advice"
+      },
+      "email": {
+        "title": "Email",
+        "note": "We reply within 24 hours"
+      },
+      "office": {
+        "title": "Office",
+        "value": "Dhaka, Bangladesh",
+        "note": "Visits by appointment"
+      }
+    },
+    "form": {
+      "title": "Send us a message",
+      "subtitle": "Tell us about your problem and an expert will get back to you.",
+      "name": "Your name",
+      "phone": "Phone number",
+      "topic": "Topic",
+      "topics": {
+        "crop": "Crop advice",
+        "market": "Market prices",
+        "weather": "Weather",
+        "account": "Account or app help",
+        "other": "Something else"
+      },
+      "message": "Message",
+      "messagePlaceholder": "For example: my rice leaves are turning yellow…",
+      "submit": "Send message",
+      "sending": "Sending…",
+      "sent": "Thank you! Your message has been sent. We will contact you soon.",
+      "error": "Sorry, the message could not be sent. Please call our helpline instead."
+    },
+    "faqBadge": "FAQ",
+    "faqTitle": "Common questions",
+    "faq": {
+      "cost": {
+        "q": "Is Agromate free to use?",
+        "a": "Market prices and weather updates are free for every farmer. If an expert service has a fee, we will always tell you before you use it."
+      },
+      "advice": {
+        "q": "How do I get advice from an expert?",
+        "a": "Call our helpline, message us on WhatsApp or fill in the form on this page. An agriculture expert will get back to you within 24 hours."
+      },
+      "prices": {
+        "q": "Where do the market prices come from?",
+        "a": "Prices are collected every day from major markets. Prices in your local market may be a little different."
+      },
+      "language": {
+        "q": "Can I use Agromate in Bangla?",
+        "a": "Yes. Use the EN | বাং button at the top of any page to switch between English and Bangla."
+      },
+      "crops": {
+        "q": "Which crops do you cover?",
+        "a": "Rice, wheat, potato, vegetables and the most common fertilizers, with more crops being added."
+      }
+    }
+  },
+  "cta": {
+    "title": "Need help with your farm?",
+    "text": "Our agriculture experts are ready to answer your questions.",
+    "button": "Contact Support"
+  },
+  "auth": {
+    "panelTitle": "Grow smarter with Agromate",
+    "panelText": "Daily market prices, weather updates and expert advice for your fields, all in one place.",
+    "panelStat": "50K+",
+    "panelStatLabel": "farmers already use Agromate",
+    "backHome": "Back to home",
+    "fields": {
+      "name": "Full name",
+      "phone": "Phone number",
+      "phoneHint": "Use the number you registered with",
+      "email": "Email address",
+      "password": "Password",
+      "passwordHint": "At least {min, number} characters",
+      "confirmPassword": "Confirm password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "specialization": "Area of expertise",
+      "specializationHint": "e.g. Soil science, Plant protection, Fisheries",
+      "organization": "Organisation (optional)",
+      "experienceYears": "Years of experience"
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Log in to see today's prices, weather and your saved advice.",
+      "remember": "Keep me logged in",
+      "forgot": "Forgot password?",
+      "submit": "Log in",
+      "submitting": "Logging in…",
+      "error": "Could not log in. Check your phone number and password, then try again.",
+      "noAccount": "New to Agromate?",
+      "registerLink": "Create an account",
+      "demo": {
+        "demoTitle": "Or try a demo account",
+        "farmer": "Farmer demo",
+        "expert": "Expert demo",
+        "signingIn": "Signing in…",
+        "error": "Couldn't sign in to the demo account. Try again.",
+        "admin": "Admin demo"
+      }
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Join thousands of farmers getting smart, free farming advice.",
+      "terms": "I agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "passwordMismatch": "The two passwords do not match.",
+      "error": "Sorry, we could not create your account. Please try again.",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Log in",
+      "accountType": "I am joining as",
+      "types": {
+        "FARMER": "Farmer",
+        "EXPERT": "Agriculture expert"
+      },
+      "expertReviewNote": "An admin checks every expert application. You can log in right away, and farmers can find and message you once you are verified.",
+      "phoneTaken": "This phone number already has an account. Try logging in instead."
+    }
+  },
+  "dashboard": {
+    "openDetails": "Open {title}",
+    "search": "Search",
+    "notifications": "{count, plural, =0 {Notifications} one {Notifications, # unread} other {Notifications, # unread}}",
+    "sidebar": {
+      "label": "Farm tools",
+      "home": "Home",
+      "fields": "My fields",
+      "myCrops": "Crop records",
+      "accounts": "Account book",
+      "cropGuide": "Crop guide",
+      "weather": "Weather",
+      "crops": "Crops",
+      "diagnose": "Disease check",
+      "stories": "Success stories",
+      "analytics": "Analytics",
+      "help": "Help",
+      "profile": "My profile",
+      "overview": "Overview",
+      "users": "Users",
+      "marketPrices": "Market prices",
+      "successStories": "Success stories",
+      "menu": "Open menu",
+      "closeMenu": "Close menu",
+      "messages": "Messages",
+      "experts": "Experts",
+      "market": "Market prices",
+      "assistant": "AI assistant",
+      "advice": "Crop & fertilizer advice"
+    },
+    "weather": {
+      "title": "Weather",
+      "temperature": "{value, number}°C",
+      "conditions": {
+        "sunny": "Sunny",
+        "clearNight": "Clear sky",
+        "partlyCloudy": "Partly cloudy",
+        "cloudy": "Cloudy",
+        "rainy": "Rainy",
+        "stormy": "Stormy"
+      },
+      "wind": "Wind",
+      "windValue": "{value, number} km/h",
+      "uv": "UV index",
+      "uvValue": "UV {value, number}",
+      "loading": "Loading weather…",
+      "loadError": "Weather isn't available right now.",
+      "defaultLocation": "Dhaka",
+      "rainChance": "Chance of rain",
+      "rainChanceValue": "{value, number}%",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "seeWeek": "See the next 7 days",
+      "currentLocation": "Your current location",
+      "now": "Now",
+      "highLow": "High {high} · Low {low}"
+    },
+    "weatherPage": {
+      "title": "Weather",
+      "intro": "Today's weather and the next 7 days for your places, any district or where you are now, with tips for planning field work.",
+      "loading": "Loading the forecast…",
+      "loadError": "The forecast isn't available right now.",
+      "rainfall": "Rainfall",
+      "rainfallValue": "{value, number} mm",
+      "tips": {
+        "rain": "Rain is likely. Hold off on spraying or fertiliser; it may wash away.",
+        "heat": "Very hot. Water crops early or late, and avoid field work at midday."
+      },
+      "placeLabel": "Show weather for",
+      "ownPlace": "My area (automatic)",
+      "myPlaces": "My places",
+      "districts": "Districts",
+      "useMyLocation": "Use my current location",
+      "locating": "Finding you…",
+      "locationDenied": "Location access is blocked. Click the icon at the left of the address bar, set Location to \"Allow\", then try again. Or pick a district.",
+      "currentLocation": "Your current location",
+      "high": "High",
+      "low": "Low",
+      "maxUv": "Highest UV",
+      "locationUnavailable": "Couldn't find your location right now. Try again, or pick a district.",
+      "table": {
+        "day": "Day",
+        "sky": "Sky",
+        "tip": "Farming tip"
+      }
+    },
+    "farmPhoto": {
+      "title": "Farm photo",
+      "photoOf": "Photo of {name}",
+      "loading": "Loading…",
+      "loadError": "Could not load your places.",
+      "noPlaces": "Add your place first, then upload a photo of it here.",
+      "addPlace": "Add a place",
+      "uploadPrompt": "Upload a photo of your whole farm",
+      "uploadHint": "A wide photo that shows all your land works best.",
+      "uploading": "Uploading…",
+      "change": "Change photo",
+      "remove": "Remove",
+      "confirmRemove": "Remove this photo?",
+      "notImage": "Please pick a photo (JPG or PNG).",
+      "uploadError": "Could not upload the photo. Please try again.",
+      "placesLabel": "Your places"
+    },
+    "tasks": {
+      "title": "Daily tasks",
+      "progress": "<highlight>{done, number}</highlight> of {total, number} completed",
+      "empty": "No tasks for today.",
+      "add": "Add new task",
+      "newTaskLabel": "New task",
+      "newTaskPlaceholder": "e.g. Spray Field 1",
+      "save": "Add",
+      "loading": "Loading tasks…",
+      "loadError": "Could not load tasks.",
+      "lateSince": "Due {date}",
+      "addedForLater": "Added for {date}. It will show here on that day.",
+      "dueDateLabel": "Due date",
+      "deleteTask": "Delete “{title}”",
+      "confirmDelete": "Delete this task?",
+      "deleteError": "Could not delete the task. Please try again.",
+      "editTask": "Edit “{title}”",
+      "saveEdit": "Save",
+      "cancelEdit": "Cancel",
+      "editError": "Could not save the change."
+    },
+    "crops": {
+      "title": "Crop planning",
+      "intro": "Pick a crop and a field, choose a planting date, and AgroMate builds a complete growing plan for it — milestones and weekly tasks scaled to your planting and harvest dates.",
+      "startNew": "Start a new crop",
+      "myCrops": "My crops",
+      "noCrops": "No crops yet.",
+      "noCropsHint": "Start a crop and its growing plan will appear here.",
+      "selectHint": "Choose a crop from the list to see its growing plan.",
+      "loadError": "Some data could not be loaded. Showing what we have.",
+      "retry": "Try again",
+      "back": "Back",
+      "chooseCrop": "1 · Choose a crop",
+      "chooseField": "2 · Choose a field",
+      "noFields": "No fields yet. Add a field first.",
+      "plantingDate": "Planting date",
+      "customHarvest": "Set a custom harvest date",
+      "harvestHint": "Harvest expected around <date></date>.",
+      "daysLong": "{days} days",
+      "planBadge": "Has a plan",
+      "noPlanBadge": "No plan",
+      "start": "Start growing",
+      "starting": "Starting…",
+      "cancel": "Cancel",
+      "createError": "Could not start the crop. Please try again.",
+      "plantedOn": "Planted",
+      "harvestBy": "Harvest by",
+      "window": "{from} → {to}",
+      "progress": "<highlight>{done, number}</highlight> of {total, number} tasks done",
+      "emptyPlan": "This crop has no ready-made plan yet.",
+      "emptyPlanHint": "Its cycle is being tracked — check back later.",
+      "dayWindow": "Day {start}–{end}",
+      "status": {
+        "PENDING": "Not started",
+        "PARTIAL": "In progress",
+        "DONE": "Completed"
+      },
+      "milestoneProgress": "{done, number} of {total, number} tasks",
+      "planError": "Could not load the growing plan. Please try again."
+    },
+    "stats": {
+      "activeCrops": "Crops in the field",
+      "count": "{value, number}",
+      "onFields": "{fields, plural, =0 {No fields yet} one {on # field} other {across # fields}}",
+      "seeCrops": "See crop records",
+      "expenses": "Total costs",
+      "income": "Total income",
+      "allTime": "All time",
+      "profit": "Profit",
+      "loss": "Loss",
+      "profitFormula": "Income minus costs",
+      "seeAnalytics": "See analytics",
+      "loading": "Loading your numbers…",
+      "loadError": "Could not load your numbers. Please refresh the page."
+    },
+    "diagnose": {
+      "previewAlt": "Selected plant photo",
+      "analyze": "Check photo",
+      "analyzing": "Checking…",
+      "retake": "Another photo",
+      "resultHealthy": "Looks healthy",
+      "resultDisease": "Possible problem",
+      "healthy": "Healthy",
+      "confidenceLabel": "Certainty",
+      "confidenceLevels": {
+        "high": "high",
+        "medium": "medium",
+        "low": "low"
+      },
+      "advice": "What to do",
+      "lowConfidence": "The AI is not sure. Try a closer, sharper photo, or show the plant to an agriculture officer.",
+      "disclaimer": "This is an AI estimate. Ask your local Upazila Agriculture Officer before spraying.",
+      "errors": {
+        "badImage": "Please choose an image file.",
+        "tooLarge": "The photo is too large (max 8 MB).",
+        "notConfigured": "Disease check is not set up on the server yet.",
+        "busy": "Too many checks right now. Please wait a minute and try again.",
+        "upstream": "Could not get a result. Please try again.",
+        "network": "Check your internet connection and try again."
+      },
+      "notPlant": "No clear plant could be seen in this photo. Take a close, sharp photo of the affected part in daylight.",
+      "cropLinkLabel": "Which crop is this? (optional)",
+      "cropLinkNone": "Not one of my crops",
+      "cropLinkOption": "{crop}, {field}",
+      "saving": "Saving to your history…",
+      "saved": "Saved to your history.",
+      "saveError": "Couldn't save to your history.",
+      "retrySave": "Try again",
+      "addPhoto": "Add a photo of the plant",
+      "addPhotoHint": "A clear, close photo of the leaf, fruit or stem.",
+      "dropHint": "You can also drag a photo here.",
+      "upload": "Upload a photo",
+      "takePhoto": "Take a photo"
+    },
+    "diagnosePage": {
+      "title": "Crop disease check",
+      "intro": "Add a photo of the affected part of the plant. The AI names the crop and the likely problem, and tells you what to do.",
+      "tipsTitle": "Tips for a good photo",
+      "tips": {
+        "daylight": "Shoot in daylight; avoid deep shade and flash.",
+        "close": "Get close to the affected spot so marks or pests are clearly visible.",
+        "sharp": "Hold the camera steady; blurry photos can give wrong results.",
+        "onePart": "Keep one part per photo: a single leaf, fruit or stem."
+      },
+      "steps": {
+        "photo": {
+          "title": "Take a photo",
+          "text": "Take or upload a photo of a leaf, fruit, stem, root or the whole plant."
+        },
+        "check": {
+          "title": "Check it",
+          "text": "The AI reads the photo and names the crop, the problem and the signs."
+        },
+        "act": {
+          "title": "Take action",
+          "text": "Follow the suggested steps, and ask an agriculture officer before spraying."
+        }
+      },
+      "history": {
+        "title": "Earlier checks",
+        "empty": "Your checks will be kept here.",
+        "loading": "Loading…",
+        "loadError": "Could not load your earlier checks.",
+        "linkedTo": "{crop}, {field}",
+        "openPhoto": "Open the photo",
+        "delete": "Delete",
+        "confirmDelete": "Delete this check and its photo?",
+        "deleteError": "Could not delete. Please try again.",
+        "loadMore": "Show more ({count, number} left)"
+      }
+    },
+    "storiesPage": {
+      "title": "My success story",
+      "intro": "Has Agromate helped your farm? Share your story. Once our team reviews it, it may be shown to other farmers on the home page.",
+      "formTitle": "Share your story",
+      "editTitle": "Edit your story",
+      "editNote": "Saving changes sends your story for review again.",
+      "photo": {
+        "label": "Your photo",
+        "choose": "Choose a photo",
+        "change": "Change photo",
+        "hint": "A clear photo of you on your farm. JPG or PNG, up to 5 MB.",
+        "alt": "Photo for your story"
+      },
+      "fields": {
+        "role": "What you farm",
+        "rolePlaceholder": "e.g. Rice farmer",
+        "location": "District / area",
+        "locationPlaceholder": "e.g. Bogura",
+        "quote": "Your story",
+        "quotePlaceholder": "How did Agromate help you? What changed on your farm?",
+        "quoteCount": "{count, number} / 200 characters (at least 60)"
+      },
+      "results": {
+        "title": "Results this season",
+        "yield": "Yield",
+        "cost": "Farming cost",
+        "income": "Income",
+        "amountsHint": "Write what you had before using Agromate and what you have now. We work out the change.",
+        "percentHint": "Write the change in percent. If it went down, put a minus first, e.g. -20.",
+        "before": "Before",
+        "after": "Now",
+        "beforeLabel": "{what} before",
+        "afterLabel": "{what} now",
+        "unitLabel": "Unit",
+        "units": {
+          "MAUND": "maund",
+          "KG": "kg",
+          "TON": "ton"
+        },
+        "summary": {
+          "up": "{what} up {percent}%",
+          "down": "{what} down {percent}%",
+          "same": "{what} stayed the same"
+        },
+        "usePercent": "I know the percentages",
+        "useAmounts": "Write the amounts instead",
+        "errors": {
+          "notNumber": "Please write a number.",
+          "beforeZero": "The amount before must be more than 0.",
+          "tooBig": "That's more than 11 times as much. Please check the numbers."
+        }
+      },
+      "consent": "I agree that Agromate may show my name, photo and story on its website.",
+      "submit": "Send for review",
+      "update": "Save changes",
+      "saving": "Sending…",
+      "cancel": "Cancel",
+      "notices": {
+        "submitted": "Thank you! Your story was sent for review.",
+        "updated": "Saved. Your story was sent for review again."
+      },
+      "errors": {
+        "photoMissing": "Please add a photo.",
+        "notImage": "Please choose an image file.",
+        "photoTooBig": "That photo is larger than 5 MB.",
+        "photoError": "Could not upload the photo. Please try again.",
+        "invalid": "Please check the fields. Your story must be 60–200 characters.",
+        "error": "Could not send your story. Please try again."
+      },
+      "listTitle": "My stories",
+      "loading": "Loading your stories…",
+      "loadError": "Could not load your stories. Please refresh the page.",
+      "empty": "You have not shared a story yet.",
+      "status": {
+        "PENDING": "Under review",
+        "APPROVED": "Approved",
+        "REJECTED": "Not approved"
+      },
+      "featured": "Shown on the home page",
+      "rejectedReason": "Reason: {reason}",
+      "sentOn": "Sent {date}",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "confirmDelete": "Delete this story? This cannot be undone.",
+      "deleteError": "Could not delete the story. Please try again."
+    },
+    "checkingAccess": "Checking your access…",
+    "loadError": "Could not open your dashboard. Please refresh the page.",
+    "pager": {
+      "label": "Pages",
+      "previous": "Previous page",
+      "next": "Next page",
+      "position": "Page {page} of {pageCount}"
+    },
+    "cropsPage": {
+      "title": "Crop guide",
+      "intro": "Find what to plant and when: pick a period to see the crops you can plant in it, with the soil and temperature each one needs.",
+      "searchLabel": "Search crops",
+      "searchPlaceholder": "e.g. rice, potato",
+      "periodLabel": "Planting time",
+      "fromLabel": "From",
+      "toLabel": "To",
+      "anyMonth": "Any month",
+      "loading": "Loading crops…",
+      "loadError": "Could not load crops. Please refresh the page.",
+      "empty": "No crops match your search for this period.",
+      "details": {
+        "category": "Type",
+        "sowing": "Planting time",
+        "soil": "Best soil",
+        "temp": "Ideal temperature",
+        "rainfall": "Rainfall",
+        "duration": "Grows in"
+      },
+      "tempValue": "{value}°C",
+      "rainfallValue": "{value} mm",
+      "durationValue": "{days} days"
+    },
+    "farmsPage": {
+      "title": "My fields",
+      "intro": "Keep a record of the places you farm and every field in them. Crops, costs and harvests will be tracked against these fields.",
+      "addFarm": "New place",
+      "addFarmTitle": "Add a place",
+      "editFarmTitle": "Edit place",
+      "farmFields": {
+        "name": "Place name",
+        "location": "Location",
+        "area": "Area (acres)",
+        "soil": "Soil type"
+      },
+      "fieldFields": {
+        "name": "Field name",
+        "area": "Area (acres)",
+        "soil": "Soil type"
+      },
+      "placeholders": {
+        "farmName": "e.g. East para, Boro beel",
+        "location": "e.g. Shibganj, Bogura",
+        "fieldName": "e.g. Field by the pond"
+      },
+      "areaHint": "1 acre = 100 decimals",
+      "optional": "optional",
+      "soilNotSet": "Not sure",
+      "soils": {
+        "CLAY": "Clay",
+        "CLAY_LOAM": "Clay loam",
+        "LOAM": "Loam",
+        "SANDY_LOAM": "Sandy loam",
+        "SANDY": "Sandy",
+        "SILT": "Silt (alluvial)"
+      },
+      "acres": "{value} acres",
+      "fieldCount": "{count, plural, =0 {No fields} one {# field} other {# fields}}",
+      "fieldsTitle": "Fields",
+      "addField": "Add field",
+      "noFields": "No fields in this place yet.",
+      "add": "Add",
+      "adding": "Adding…",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "confirmDeleteFarm": "Delete the place “{name}”? All its fields, crops, costs and harvests will be deleted too. This can't be undone.",
+      "confirmDeleteField": "Delete the field “{name}”? Its crops and harvests will be deleted too. This can't be undone.",
+      "saveError": "Could not save. Check the fields and try again.",
+      "notices": {
+        "farmAdded": "Place added.",
+        "farmUpdated": "Place updated.",
+        "farmDeleted": "Place deleted.",
+        "fieldAdded": "Field added.",
+        "fieldUpdated": "Field updated.",
+        "fieldDeleted": "Field deleted.",
+        "deleteError": "Could not delete. Please try again.",
+        "boundarySaved": "Field outline saved."
+      },
+      "loading": "Loading your fields…",
+      "loadError": "Could not load your fields. Please refresh the page.",
+      "emptyTitle": "No places yet",
+      "emptyText": "Add a place first, then the fields there.",
+      "boundary": {
+        "draw": "Draw on map",
+        "change": "Change on map",
+        "onMap": "On the map",
+        "title": "Outline “{name}”",
+        "howTo": "Tap each corner of the field on the map, one after another. Zoom in to see the field's edges clearly.",
+        "close": "Close the map",
+        "cornersSoFar": "{count, plural, =0 {No corners yet} one {# corner. Add at least 3} other {# corners. Add at least 3}}",
+        "area": "About {acres} acres ({decimals} decimals)",
+        "areaWillBeSaved": "This area will also be saved as the field's size.",
+        "myPosition": "My position",
+        "undo": "Undo last corner",
+        "startOver": "Start over",
+        "remove": "Remove outline",
+        "confirmRemove": "Remove this field's outline from the map?",
+        "save": "Save outline",
+        "saving": "Saving…",
+        "saveError": "Could not save the outline. Please try again.",
+        "noGps": "Couldn't get your position. Allow location access, or find the field by moving the map.",
+        "noKey": "The satellite map isn't set up yet (missing map key)."
+      }
+    },
+    "myCropsPage": {
+      "title": "Crop records",
+      "intro": "What you planted on which field, when you planted it and when it should be ready, all in one place.",
+      "guideLink": "Open the crop guide",
+      "noFieldsTitle": "Add a field first",
+      "noFieldsText": "Every crop is planted on a field, so add a place and its fields before adding crops.",
+      "goToFields": "Go to My fields",
+      "addButton": "Add crop",
+      "addTitle": "Add a crop",
+      "editTitle": "Edit crop",
+      "form": {
+        "field": "Field",
+        "crop": "Crop",
+        "plantingDate": "Planting date",
+        "status": "Status",
+        "expectedHarvestDate": "Expected harvest",
+        "actualHarvestDate": "Harvested on",
+        "notes": "Notes"
+      },
+      "pickField": "Choose a field",
+      "pickCrop": "Choose a crop",
+      "cropGroups": {
+        "inSeason": "Good to plant in {month}",
+        "otherSeason": "Planted at other times",
+        "unknown": "Planting time not set"
+      },
+      "sowingHint": "Usual planting time: {months}",
+      "offSeasonWarning": "Usually planted in {months}, not {month}. You can still add it.",
+      "expectedHint": "Leave empty to work it out from the crop's growing days.",
+      "notesPlaceholder": "e.g. seed variety, when fertilizer was given",
+      "optional": "optional",
+      "statuses": {
+        "PLANNED": "Planned",
+        "PLANTED": "Planted",
+        "GROWING": "Growing",
+        "HARVESTED": "Harvested",
+        "FAILED": "Failed"
+      },
+      "filterLabel": "Show by status",
+      "filters": {
+        "ACTIVE": "In the field",
+        "HARVESTED": "Harvested",
+        "FAILED": "Failed",
+        "ALL": "All"
+      },
+      "card": {
+        "planted": "Planted {date}",
+        "plannedFor": "Planting on {date}",
+        "expected": "Expected harvest {date}",
+        "harvested": "Harvested {date}",
+        "daysLeft": "{days, plural, =0 {Ready to harvest today} one {# day to harvest} other {# days to harvest}}",
+        "overdue": "{days, plural, one {Harvest is # day late} other {Harvest is # days late}}",
+        "progress": "Growth progress"
+      },
+      "fieldAt": "{field}, {farm}",
+      "add": "Add crop",
+      "adding": "Adding…",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "confirmDelete": "Delete “{crop}” on {field}? Its costs and harvests will be deleted too. This can't be undone.",
+      "saveError": "Could not save. Check the fields and try again.",
+      "notices": {
+        "added": "Crop added.",
+        "updated": "Crop updated.",
+        "deleted": "Crop deleted.",
+        "deleteError": "Could not delete. Please try again."
+      },
+      "loading": "Loading your crops…",
+      "loadError": "Could not load your crops. Please refresh the page.",
+      "empty": "No crops to show here.",
+      "ledger": {
+        "show": "Costs & harvest",
+        "hide": "Hide costs & harvest",
+        "sectionLabel": "Costs or harvest",
+        "sections": {
+          "expenses": "Costs",
+          "harvests": "Harvest & sales"
+        },
+        "totals": {
+          "cost": "Total cost",
+          "income": "Total income",
+          "profit": "Profit",
+          "loss": "Loss"
+        },
+        "categories": {
+          "SEEDS": "Seeds",
+          "FERTILIZER": "Fertilizer",
+          "PESTICIDE": "Pesticide",
+          "LABOR": "Labour",
+          "IRRIGATION": "Irrigation",
+          "EQUIPMENT": "Equipment",
+          "TRANSPORT": "Transport",
+          "OTHER": "Other"
+        },
+        "units": {
+          "KG": "kg",
+          "MAUND": "maund",
+          "TON": "ton"
+        },
+        "fields": {
+          "category": "Cost for",
+          "amount": "Amount (৳)",
+          "date": "Date",
+          "note": "Note",
+          "quantity": "Quantity",
+          "unit": "Unit",
+          "pricePerUnit": "Price per unit (৳)"
+        },
+        "notePlaceholder": "e.g. 2 bags of urea",
+        "priceHint": "Put 0 if you kept it for home use.",
+        "optional": "optional",
+        "harvestLine": "{quantity, number} {unit} × {price}",
+        "addExpense": "Add cost",
+        "addHarvest": "Add harvest",
+        "add": "Add",
+        "adding": "Adding…",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "confirmDelete": "Delete this entry?",
+        "noExpenses": "No costs recorded yet.",
+        "noHarvests": "No harvest recorded yet.",
+        "saveError": "Could not save. Check the fields and try again.",
+        "deleteError": "Could not delete. Please try again.",
+        "loading": "Loading…",
+        "loadError": "Could not load costs and harvest.",
+        "edit": "Edit",
+        "save": "Save",
+        "saving": "Saving…"
+      }
+    },
+    "accountsPage": {
+      "title": "Account book",
+      "intro": "Every cost and every sale across your places, for a year or a month. Correct or remove entries here.",
+      "yearLabel": "Year",
+      "monthLabel": "Month",
+      "wholeYear": "Whole year",
+      "totals": {
+        "expenses": "Costs",
+        "income": "Income",
+        "profit": "Profit",
+        "loss": "Loss"
+      },
+      "sectionLabel": "Costs or income",
+      "sections": {
+        "expenses": "Costs",
+        "harvests": "Income from harvests"
+      },
+      "addPlaceCost": "Add a place cost",
+      "placeLabel": "Which place",
+      "cropCostHint": "For a cost of one crop (seeds, fertiliser…), add it on that crop's card under Crop records.",
+      "wholePlace": "Whole place · {place}",
+      "noExpenses": "No costs in this period.",
+      "noHarvests": "No harvest income in this period.",
+      "loading": "Loading…",
+      "loadError": "Could not load the account book. Please refresh the page.",
+      "deleteError": "Could not delete. Please try again.",
+      "reportLink": "Farm report (print / PDF)"
+    },
+    "finance": {
+      "eyebrow": "Money in {year}",
+      "title": "Income vs costs",
+      "income": "Income",
+      "expenses": "Costs",
+      "chartLabel": "Monthly income and costs in {year} (taka)",
+      "month": "Month"
+    },
+    "upcoming": {
+      "title": "Coming up",
+      "loading": "Loading…",
+      "loadError": "Could not load what's coming up.",
+      "empty": "Nothing planned in the next {days} days.",
+      "inDays": "{days, plural, =0 {Today} =1 {Tomorrow} other {In # days}}",
+      "kinds": {
+        "plant": "Plant {title}",
+        "harvest": "Harvest {title}",
+        "reminder": "{title}"
+      },
+      "deleteReminder": "Delete “{title}”",
+      "confirmDelete": "Delete this reminder?",
+      "deleteError": "Could not delete. Please try again.",
+      "editReminder": "Edit “{title}”"
+    },
+    "notificationsMenu": {
+      "title": "Notifications",
+      "markAllRead": "Mark all read",
+      "loading": "Loading…",
+      "loadError": "Could not load notifications.",
+      "empty": "No notifications yet.",
+      "unread": "Unread",
+      "delete": "Delete"
+    },
+    "analyticsPage": {
+      "title": "Analytics",
+      "intro": "How much you spent and earned each year, where the money went, and what's growing on your land now.",
+      "yearLabel": "Year",
+      "loading": "Loading…",
+      "loadError": "Could not load analytics. Please refresh the page.",
+      "totals": {
+        "income": "Income in {year}",
+        "expenses": "Costs in {year}",
+        "profit": "Profit in {year}",
+        "loss": "Loss in {year}"
+      },
+      "expensesByCategory": "Costs by type, {year}",
+      "noExpenses": "No costs recorded this year.",
+      "cropMix": "Crops in the field now",
+      "noCrops": "No crops in the field right now.",
+      "cropMixValue": "{fields, plural, one {# field} other {# fields}} · {acres, number} acres"
+    },
+    "expertsPage": {
+      "title": "Experts",
+      "intro": "Agriculture experts verified by Agromate. See their profile and message them directly for advice.",
+      "search": "Search by name or subject",
+      "allCategories": "All",
+      "loading": "Loading experts…",
+      "loadError": "Couldn't load the experts.",
+      "retry": "Try again",
+      "empty": "No verified experts yet.",
+      "noMatch": "No expert matches your search.",
+      "count": "{count, plural, one {# expert} other {# experts}}",
+      "experience": "{years, plural, =0 {New expert} one {# year of experience} other {# years of experience}}",
+      "verified": "Verified",
+      "viewProfile": "View profile",
+      "message": "Message",
+      "opening": "Opening…",
+      "messageError": "Couldn't open the chat. Try again.",
+      "profile": {
+        "about": "About",
+        "qualifications": "Qualifications",
+        "organization": "Organization",
+        "location": "Area",
+        "subjects": "Subjects",
+        "close": "Close"
+      }
+    }
+  },
+  "admin": {
+    "login": {
+      "title": "Admin & expert log in",
+      "subtitle": "Sign in with your work email. You'll go straight to your own dashboard.",
+      "email": "Email",
+      "remember": "Keep me logged in",
+      "submit": "Log in",
+      "submitting": "Logging in…",
+      "error": "Could not log in. Check your email and password, then try again.",
+      "farmerAccount": "This is a farmer account. Please use the <link>farmer login</link> with your phone number."
+    },
+    "home": {
+      "greeting": "Welcome, {name}",
+      "error": "Could not load the numbers. Please refresh the page.",
+      "stats": {
+        "totalUsers": "Users",
+        "totalFarms": "Farms",
+        "totalCropCycles": "Crop cycles",
+        "totalDiseaseDetections": "Disease checks"
+      }
+    },
+    "experts": {
+      "title": "Expert applications",
+      "loading": "Loading…",
+      "empty": "No applications waiting.",
+      "error": "Something went wrong. Please refresh the page.",
+      "years": "{count, plural, =0 {New} one {# year} other {# years}}",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "badge": "Admin & expert area",
+    "users": {
+      "title": "Users",
+      "loading": "Loading users…",
+      "error": "Something went wrong. Please refresh the page.",
+      "columns": {
+        "name": "Name",
+        "contact": "Phone / email",
+        "role": "Role",
+        "joined": "Joined",
+        "access": "Access"
+      },
+      "ban": "Block",
+      "unban": "Unblock"
+    },
+    "stories": {
+      "title": "Success stories",
+      "intro": "Check what farmers have shared, fill in both languages, then approve the stories to show on the home page.",
+      "filterLabel": "Filter by status",
+      "filters": {
+        "PENDING": "Waiting",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "ALL": "All"
+      },
+      "loading": "Loading stories…",
+      "loadError": "Could not load stories. Please refresh the page.",
+      "empty": "No stories here.",
+      "pickHint": "Choose a story from the list to review it.",
+      "sentBy": "Sent by {name} · {date}",
+      "photo": {
+        "title": "Photo focus",
+        "hint": "Click the farmer's face so cropped photos on the home page keep it in view.",
+        "alt": "Story photo",
+        "preview": "Crop preview"
+      },
+      "text": {
+        "title": "Story text",
+        "hint": "Both languages are needed to approve. The farmer wrote in one; AI fills the other. Check it and correct anything wrong.",
+        "bn": "Bangla",
+        "en": "English",
+        "name": "Name",
+        "role": "Farming type",
+        "location": "Location",
+        "quote": "Quote (60–200 characters)"
+      },
+      "homePage": {
+        "title": "Home page",
+        "featured": "Show on the home page",
+        "featuredHint": "Only approved stories are shown.",
+        "sortOrder": "Order (lower shows first)"
+      },
+      "rejectionReason": "Reason for rejecting",
+      "rejectionHint": "The farmer sees this reason.",
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "save": "Save changes",
+        "delete": "Delete",
+        "saving": "Saving…"
+      },
+      "confirmDelete": "Delete this story and its photo? This cannot be undone.",
+      "notices": {
+        "APPROVED": "Story approved.",
+        "REJECTED": "Story rejected.",
+        "saved": "Changes saved.",
+        "deleted": "Story deleted."
+      },
+      "errors": {
+        "reasonMissing": "Write a reason before rejecting.",
+        "invalid": "Check the fields. Quotes must be 60–200 characters, and approving needs both languages.",
+        "error": "Something went wrong. Please try again."
+      },
+      "ai": {
+        "translating": "AI is translating the missing language…",
+        "done": "Boxes marked AI were filled by AI. Check them before approving; you can edit anything.",
+        "failed": "AI couldn't translate. Fill the boxes yourself, or",
+        "retry": "try again",
+        "tag": "AI"
+      }
+    },
+    "crops": {
+      "addTitle": "Add a crop",
+      "editTitle": "Edit crop",
+      "listTitle": "Crop catalog",
+      "intro": "Farmers see this list in their crop guide, and it feeds the crop choices for market prices.",
+      "fields": {
+        "name": "Name (English)",
+        "nameBn": "Name (Bangla)",
+        "category": "Type",
+        "sowingStartMonth": "Planting starts",
+        "sowingEndMonth": "Planting ends",
+        "idealSoil": "Best soil",
+        "optimalTemp": "Ideal temperature (°C)",
+        "optimalRainfall": "Rainfall (mm)",
+        "durationDays": "Days to harvest",
+        "description": "Description (English)",
+        "descriptionBn": "Description (Bangla)"
+      },
+      "placeholders": {
+        "name": "e.g. Rice (Aman)",
+        "nameBn": "যেমন আমন ধান",
+        "category": "e.g. Cereal",
+        "idealSoil": "e.g. Clay Loam"
+      },
+      "optional": "optional",
+      "noMonth": "Not set",
+      "add": "Add crop",
+      "adding": "Adding…",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "confirmDelete": "Delete this crop? This can't be undone.",
+      "searchLabel": "Search crops",
+      "searchPlaceholder": "Search by name",
+      "formErrors": {
+        "duplicate": "A crop with this name already exists.",
+        "error": "Could not save the crop. Check the fields and try again.",
+        "monthsIncomplete": "Pick both the start and end month, or leave both empty."
+      },
+      "notices": {
+        "created": "Crop added.",
+        "updated": "Crop updated.",
+        "deleted": "Crop deleted.",
+        "inUse": "This crop is used by market prices, crop cycles or questions, so it can't be deleted.",
+        "deleteError": "Could not delete the crop. Please try again."
+      },
+      "loading": "Loading crops…",
+      "loadError": "Could not load crops. Please refresh the page.",
+      "empty": "No crops found.",
+      "daysShort": "{days} days"
+    },
+    "prices": {
+      "title": "Market prices",
+      "intro": "Crop prices come from TCB every day by themselves. Set the fertilizer rates and pesticide MRPs here.",
+      "import": "Fetch from TCB now",
+      "importing": "Fetching…",
+      "importDone": "Added {days, plural, one {# new day} other {# new days}} (latest {date}).",
+      "importNone": "Already up to date (latest {date}).",
+      "importError": "Couldn't reach TCB. It will try again within the hour.",
+      "addTitle": "Add an item",
+      "fields": {
+        "category": "Type",
+        "nameBn": "Name (Bangla)",
+        "nameEn": "Name (English)",
+        "unitBn": "Unit (Bangla)",
+        "unitEn": "Unit (English)",
+        "unitHint": "e.g. 100 ml bottle, kg",
+        "details": "Details",
+        "detailsHint": "Active ingredient, company…"
+      },
+      "add": "Add item",
+      "adding": "Adding…",
+      "addError": "Couldn't add the item. Fill in every field.",
+      "table": {
+        "item": "Item",
+        "latest": "Latest price",
+        "none": "No price",
+        "setPrice": "Set price",
+        "min": "Lowest",
+        "max": "Highest",
+        "date": "Date",
+        "save": "Save",
+        "saving": "Saving…",
+        "cancel": "Cancel",
+        "hidden": "Hidden",
+        "hide": "Hide",
+        "show": "Show",
+        "saveError": "Couldn't save. Check the prices."
+      }
+    }
+  },
+  "roles": {
+    "FARMER": "Farmer",
+    "EXPERT": "Expert",
+    "ADMIN": "Admin"
+  },
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December",
+    "yearRound": "Year-round",
+    "range": "{start} – {end}"
+  },
+  "expertDashboard": {
+    "greeting": "Welcome, {name}",
+    "loadError": "Some information could not be loaded. Please refresh the page.",
+    "stats": {
+      "status": "Verification",
+      "unread": "Unread messages",
+      "chats": "Conversations"
+    },
+    "status": {
+      "VERIFIED": "Verified",
+      "PENDING": "Pending review",
+      "REJECTED": "Not approved",
+      "NONE": "No profile yet"
+    },
+    "statusNote": {
+      "PENDING": "An admin is reviewing your application. Once you are verified, farmers can find you and message you.",
+      "REJECTED": "Your application was not approved. Update your profile to apply again.",
+      "NONE": "Fill in your profile so an admin can verify you. Then farmers can find you and message you."
+    },
+    "profile": {
+      "title": "My expert profile",
+      "loading": "Loading your profile…",
+      "rejected": "Your last application was not approved. Reason: {reason}. Saving sends it for review again.",
+      "fields": {
+        "specialization": "Area of expertise",
+        "organization": "Organisation",
+        "qualifications": "Qualifications",
+        "bio": "About you",
+        "experienceYears": "Years of experience",
+        "categories": "Topics you advise on"
+      },
+      "categoriesHint": "Farmers find you by these topics. You can pick more than one.",
+      "save": "Save profile",
+      "saving": "Saving…",
+      "saved": "Saved.",
+      "error": "Could not save. Please try again."
+    },
+    "recent": {
+      "title": "Recent messages",
+      "empty": "No messages yet. When farmers message you, they'll show up here.",
+      "viewAll": "See all messages"
+    }
+  },
+  "accountProfile": {
+    "title": "My profile",
+    "loading": "Loading your profile…",
+    "loadError": "Could not load your profile. Please refresh the page.",
+    "photoAlt": "Your profile picture",
+    "photo": {
+      "change": "Change photo",
+      "uploading": "Uploading…",
+      "hint": "JPG or PNG, up to 5 MB",
+      "tooBig": "That photo is larger than 5 MB.",
+      "notImage": "Please choose an image file.",
+      "error": "Could not upload the photo. Please try again."
+    },
+    "fields": {
+      "name": "Full name",
+      "phone": "Mobile number",
+      "phoneHint": "You log in with this number. Changing it changes your login.",
+      "location": "District / area",
+      "locationPlaceholder": "e.g. Bogura"
+    },
+    "save": "Save changes",
+    "saving": "Saving…",
+    "saved": "Saved.",
+    "errors": {
+      "phoneTaken": "This number is already used by another account.",
+      "invalid": "Check the name and enter an 11-digit mobile number, e.g. 017XXXXXXXX.",
+      "error": "Could not save. Please try again."
+    }
+  },
+  "chat": {
+    "title": "Messages",
+    "newChat": "New message",
+    "loading": "Loading…",
+    "loadError": "Couldn't load your messages.",
+    "retry": "Try again",
+    "youPrefix": "You:",
+    "photos": "{count, plural, one {Photo} other {# photos}}",
+    "emptyList": {
+      "FARMER": "No messages yet. Ask an expert about your crops.",
+      "EXPERT": "No messages yet. Farmers' questions will show up here.",
+      "ADMIN": "No messages yet. Experts' messages will show up here."
+    },
+    "pickConversation": "Choose a conversation to read it here.",
+    "contacts": {
+      "title": {
+        "FARMER": "Ask an expert",
+        "EXPERT": "Message an admin",
+        "ADMIN": "Message an expert"
+      },
+      "search": "Search by name",
+      "empty": {
+        "FARMER": "No verified experts yet.",
+        "EXPERT": "No admins found.",
+        "ADMIN": "No experts have signed up yet."
+      },
+      "noMatch": "No one matches “{query}”.",
+      "loadError": "Couldn't load the list.",
+      "startError": "Couldn't open the chat. Try again.",
+      "back": "Back to messages"
+    },
+    "thread": {
+      "back": "Back to messages",
+      "loadOlder": "Show earlier messages",
+      "loadOlderError": "Couldn't load earlier messages.",
+      "empty": "No messages yet. Write the first one.",
+      "typing": "typing…",
+      "placeholder": "Write a message…",
+      "send": "Send",
+      "sendError": "Message not sent. Try again.",
+      "tooLong": "A message can be at most {max} characters.",
+      "sending": "Sending",
+      "sent": "Sent",
+      "read": "Read",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "attachPhoto": "Send photos",
+      "removePhoto": "Remove photo {number}",
+      "photoPreview": "Photo {number} to send",
+      "captionPlaceholder": "Add a caption (optional)…",
+      "photoError": "A photo couldn't be opened. Please pick another one.",
+      "photoCount": "{count, plural, one {# photo} other {# photos}} picked (up to {max})",
+      "tooManyPhotos": "You can send up to {max} photos at a time.",
+      "photoAlt": "Photo {number} of {total}",
+      "morePhotos": "See {count} more photos",
+      "viewer": {
+        "title": "Photo viewer",
+        "counter": "{number} / {total}",
+        "original": "Open original",
+        "close": "Close",
+        "previous": "Previous photo",
+        "next": "Next photo"
+      }
+    },
+    "toast": {
+      "newMessage": "Message from {name}",
+      "close": "Close"
+    }
+  },
+  "prices": {
+    "title": "Market prices",
+    "intro": "Today's prices of crops, fertilizer and pesticides, and what farmers near you are paying.",
+    "tabs": {
+      "CROP": "Crops & produce",
+      "FERTILIZER": "Fertilizer",
+      "PESTICIDE": "Pesticides"
+    },
+    "search": "Search an item",
+    "loading": "Loading prices…",
+    "loadError": "Couldn't load the prices.",
+    "retry": "Try again",
+    "empty": {
+      "CROP": "No prices yet.",
+      "FERTILIZER": "No prices yet.",
+      "PESTICIDE": "An admin hasn't added pesticide prices yet."
+    },
+    "noMatch": "Nothing matches your search.",
+    "yourCrop": "Your crop",
+    "per": "/ {unit}",
+    "source": {
+      "TCB": "TCB, Dhaka retail market",
+      "GOVERNMENT": "Government-fixed price",
+      "ADMIN": "Price set by Agromate (MRP)"
+    },
+    "noOfficial": "No official price yet",
+    "reports": {
+      "none": "No farmer has reported a price yet"
+    },
+    "trendButton": "30-day trend",
+    "report": {
+      "button": "Report a price",
+      "titleSell": "What price did you sell {item} for today?",
+      "titleBuy": "What price did you pay for {item} today?",
+      "price": "Price (Tk)",
+      "perUnit": "per {unit}",
+      "perBag": "per 50 kg bag",
+      "submit": "Send",
+      "sending": "Sending…",
+      "cancel": "Cancel",
+      "thanks": "Thanks! Your price has been added.",
+      "error": "Couldn't send the price. Try again.",
+      "invalid": "That's far from the market price. Check the amount and the unit.",
+      "districtNote": "It counts towards {district}, the district in your profile.",
+      "noDistrict": "Add your district in your profile to see your district's prices.",
+      "close": "Close"
+    },
+    "trend": {
+      "title": "Last 30 days: {item}",
+      "empty": "Not enough data yet.",
+      "low": "Lowest",
+      "high": "Highest",
+      "close": "Close"
+    },
+    "district": {
+      "label": "District",
+      "mine": "My district ({district})",
+      "choose": "All districts (choose one)"
+    },
+    "table": {
+      "item": "Item",
+      "price": "Price",
+      "change": "This week",
+      "source": "Source & date",
+      "farmers": "Farmers report",
+      "actions": "Actions",
+      "reporters": "{count, plural, one {# farmer} other {# farmers}}",
+      "nationwide": "whole country",
+      "noneIn": "none yet in {district}"
+    }
+  },
+  "assistant": {
+    "title": "AI assistant",
+    "intro": "Ask anything about your crops, fertilizer, pests, weather or prices. It knows your fields, crops and local weather.",
+    "newChat": "New question",
+    "history": "Earlier questions",
+    "noHistory": "Nothing asked yet.",
+    "delete": "Delete",
+    "placeholder": "Ask in Bangla or English…",
+    "send": "Ask",
+    "thinking": "Thinking…",
+    "error": "Couldn't get an answer. Try again.",
+    "tooMany": "You've asked a lot this hour. Try again a little later.",
+    "tooLong": "A question can be at most {max} characters.",
+    "loadError": "Couldn't load the conversation.",
+    "startersTitle": "Try asking",
+    "starters": [
+      "What should I do on my field this week?",
+      "How much urea does my crop need now?",
+      "The leaves of my crop are turning yellow. What could it be?",
+      "Is this a good time to sell my harvest?"
+    ],
+    "note": "AI can make mistakes. For serious problems, message an expert."
+  },
+  "advice": {
+    "title": "Crop & fertilizer advice",
+    "intro": "Which crops suit your land this month, and how much fertilizer a crop needs, with the cost at today's prices.",
+    "tabs": {
+      "crop": "Which crop to grow",
+      "fertilizer": "How much fertilizer"
+    },
+    "field": "Field",
+    "noField": "No field (choose soil and area)",
+    "soil": "Soil type",
+    "soilUnknown": "Don't know",
+    "month": "Month",
+    "submit": "Show advice",
+    "working": "Working it out…",
+    "error": "Couldn't get the advice. Try again.",
+    "crop": {
+      "summary": "{month} · soil: {soil} · this week's average {temp}",
+      "summaryNoTemp": "{month} · soil: {soil}",
+      "timing": {
+        "NOW": "Plant now",
+        "SOON": "From next month",
+        "LATER": "Later"
+      },
+      "groups": {
+        "NOW": "Good to plant now",
+        "SOON": "Get ready: next month",
+        "LATER": "Not this season"
+      },
+      "soilFit": {
+        "GOOD": "Soil suits it well",
+        "FAIR": "Soil is okay",
+        "POOR": "Soil isn't ideal",
+        "UNKNOWN": "Soil not known"
+      },
+      "tempFit": {
+        "GOOD": "Weather suits it",
+        "FAIR": "Weather is okay",
+        "POOR": "Too hot or cold now",
+        "UNKNOWN": ""
+      },
+      "window": "Planting: {from}–{to}",
+      "harvest": "Harvest around {date}",
+      "price": "Market: ৳{min, number}–{max, number}/{unit}",
+      "empty": "No crops in the crop list yet."
+    },
+    "fertilizer": {
+      "crop": "Crop",
+      "area": "Land (acres)",
+      "areaHint": "1 bigha ≈ 0.33 acre",
+      "fertility": "Soil fertility",
+      "fertilityLevels": {
+        "LOW": "Poor",
+        "MEDIUM": "Medium",
+        "HIGH": "Good"
+      },
+      "noGuide": "There's no recommendation for this crop yet.",
+      "needArea": "Choose a field or enter the land in acres.",
+      "resultTitle": "{crop} · {area, number} acres",
+      "table": {
+        "fertilizer": "Fertilizer",
+        "total": "For your land",
+        "bags": "50 kg bags",
+        "perBigha": "Per bigha",
+        "cost": "Cost"
+      },
+      "names": {
+        "urea": "Urea",
+        "tsp": "TSP",
+        "mop": "MoP (potash)",
+        "gypsum": "Gypsum",
+        "zinc": "Zinc sulphate",
+        "boric": "Boric acid"
+      },
+      "kg": "{value} kg",
+      "noPrice": "—",
+      "totalCost": "Total cost (priced fertilizers)",
+      "organic": "Also add compost / cow dung: about {total, number} tonnes for this land",
+      "timing": "When to apply",
+      "source": "Source",
+      "note": "A general recommendation without a soil test. A soil test (Upazila Agriculture Office / SRDI) gives the exact dose."
+    }
+  },
+  "reports": {
+    "title": "Farm report",
+    "intro": "Costs, harvests, sales and profit for a year or for one crop. Print it or save it as PDF.",
+    "year": "Year",
+    "crop": "Crop",
+    "allCrops": "Whole year",
+    "print": "Print / save PDF",
+    "loading": "Preparing the report…",
+    "error": "Couldn't load the report.",
+    "empty": "No crops in {year} yet.",
+    "generated": "Prepared on {date}",
+    "totals": {
+      "cost": "Total cost",
+      "revenue": "Total sales",
+      "profit": "Profit",
+      "loss": "Loss"
+    },
+    "costsByCategory": "Costs by type",
+    "crops": "Crops",
+    "otherCosts": "Farm costs not tied to a crop",
+    "columns": {
+      "crop": "Crop",
+      "field": "Field",
+      "planted": "Planted",
+      "status": "Status",
+      "cost": "Cost",
+      "revenue": "Sales",
+      "profit": "Profit",
+      "perAcre": "Profit per acre",
+      "date": "Date",
+      "type": "Type",
+      "amount": "Amount",
+      "note": "Note",
+      "quantity": "Quantity",
+      "price": "Price"
+    },
+    "expenses": "Expenses",
+    "harvests": "Harvests & sales",
+    "noLines": "Nothing recorded.",
+    "harvestedQuantity": "Harvested"
+  }
+}
