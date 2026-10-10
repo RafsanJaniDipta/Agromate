@@ -60,7 +60,7 @@ export default function LiveToasts() {
       id: message.id,
       kind: "message",
       title: t("newMessage", { name: senderName }),
-      body: preview(messagePreview(message, tChat("photo"))),
+      body: preview(messagePreview(message, (count) => tChat("photos", { count }))),
       href: `${messagesPage}?c=${conversationId}`,
     });
   });

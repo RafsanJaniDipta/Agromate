@@ -110,8 +110,8 @@ export default function ExpertOverview() {
                   <span className={`block truncate text-sm ${unreadCount ? "text-white" : "text-white/60"}`}>
                     {lastMessage &&
                       (lastMessage.senderId === user.id
-                        ? `${tChat("youPrefix")} ${messagePreview(lastMessage, tChat("photo"))}`
-                        : messagePreview(lastMessage, tChat("photo")))}
+                        ? `${tChat("youPrefix")} ${messagePreview(lastMessage, (count) => tChat("photos", { count }))}`
+                        : messagePreview(lastMessage, (count) => tChat("photos", { count })))}
                   </span>
                 </span>
                 {lastMessage && (

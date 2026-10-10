@@ -10,6 +10,7 @@ import {
 } from "./chat.controller.js";
 import { authenticate } from "../../middlewares/auth.middleware.js";
 import { upload } from "../../middlewares/upload.middleware.js";
+import { CHAT_PHOTOS_MAX } from "./chat.service.js";
 
 export const chatRouter = Router();
 
@@ -21,6 +22,6 @@ chatRouter.get("/unread-count", getUnreadCount);
 chatRouter.get("/conversations", getConversations);
 chatRouter.post("/conversations", startConversation);
 chatRouter.get("/conversations/:id/messages", getMessages);
-// A photo comes as multipart; plain JSON text passes through upload untouched
-chatRouter.post("/conversations/:id/messages", upload.single("photo"), sendMessage);
+// Photos come as multipart; plain JSON text passes through upload untouched
+chatRouter.post("/conversations/:id/messages", upload.array("photos", CHAT_PHOTOS_MAX), sendMessage);
 chatRouter.patch("/conversations/:id/read", markConversationRead);

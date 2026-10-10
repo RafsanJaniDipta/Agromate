@@ -1407,7 +1407,7 @@
     "loadError": "Couldn't load your messages.",
     "retry": "Try again",
     "youPrefix": "You:",
-    "photo": "Photo",
+    "photos": "{count, plural, one {Photo} other {# photos}}",
     "emptyList": {
       "FARMER": "No messages yet. Ask an expert about your crops.",
       "EXPERT": "No messages yet. Farmers' questions will show up here.",
@@ -1446,13 +1446,23 @@
       "read": "Read",
       "today": "Today",
       "yesterday": "Yesterday",
-      "attachPhoto": "Send a photo",
-      "removePhoto": "Remove photo",
-      "photoPreview": "Photo to send",
+      "attachPhoto": "Send photos",
+      "removePhoto": "Remove photo {number}",
+      "photoPreview": "Photo {number} to send",
       "captionPlaceholder": "Add a caption (optional)…",
-      "photoError": "This photo couldn't be opened. Please pick another one.",
-      "photo": "Sent photo",
-      "openPhoto": "Open the full-size photo"
+      "photoError": "A photo couldn't be opened. Please pick another one.",
+      "photoCount": "{count, plural, one {# photo} other {# photos}} picked (up to {max})",
+      "tooManyPhotos": "You can send up to {max} photos at a time.",
+      "photoAlt": "Photo {number} of {total}",
+      "morePhotos": "See {count} more photos",
+      "viewer": {
+        "title": "Photo viewer",
+        "counter": "{number} / {total}",
+        "original": "Open original",
+        "close": "Close",
+        "previous": "Previous photo",
+        "next": "Next photo"
+      }
     },
     "toast": {
       "newMessage": "Message from {name}",
