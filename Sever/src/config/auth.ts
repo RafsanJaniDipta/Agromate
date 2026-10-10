@@ -59,9 +59,13 @@ export const auth = betterAuth({
   advanced: {
     // Lets the client read cross-origin cookies in local dev.
     useSecureCookies: process.env.NODE_ENV === "production",
+    // In production the site and this API are on different domains, so the session cookie is
+    // a third-party one. Browsers that block those (every iPhone browser, Chrome with tracking
+    // protection) still accept it when it is Partitioned: kept per site, useless for tracking.
+    // Without it, logging in on such a browser bounces straight back to the login page.
     defaultCookieAttributes:
       process.env.NODE_ENV === "production"
-        ? { sameSite: "none", secure: true }
+        ? { sameSite: "none", secure: true, partitioned: true }
         : { sameSite: "lax" },
 
     database: {
