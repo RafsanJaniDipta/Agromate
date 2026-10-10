@@ -3,7 +3,9 @@ import {
   getAllUsers,
   updateUserStatus,
   getStatistics,
-  getDeliveryAgents,
+  getSupportTickets,
+  updateSupportTicketStatus,
+  broadcastNotification,
   getExpertApplications,
   reviewExpertApplication,
 } from "./admin.controller.js";
@@ -17,6 +19,8 @@ adminRouter.use(authenticate, adminOnly);
 adminRouter.get("/users", getAllUsers);
 adminRouter.patch("/users/:id", updateUserStatus);
 adminRouter.get("/statistics", getStatistics);
-adminRouter.get("/delivery-agents", getDeliveryAgents);
+adminRouter.get("/support-tickets", getSupportTickets);
+adminRouter.patch("/support-tickets/:id", updateSupportTicketStatus);
+adminRouter.post("/notifications/broadcast", broadcastNotification);
 adminRouter.get("/experts", getExpertApplications);
 adminRouter.patch("/experts/:userId", reviewExpertApplication);
