@@ -5,6 +5,7 @@ import { AppError } from "../../utils/AppError.js";
 import { DISTRICT_NAMES } from "../../utils/bdDistricts.js";
 import {
   getCurrentWeather as getCurrentWeatherService,
+  getPublicWeather as getPublicWeatherService,
   getWeatherForecast as getWeatherForecastService,
   locatePlace as locatePlaceService,
   type WeatherQuery,
@@ -43,6 +44,17 @@ export const locatePlace = asyncHandler(async (req: Request, res: Response): Pro
   sendSuccess(res, 200, "Place located successfully", data);
 });
 
+// Public, for the home page: ?lat=…&lon=… from the visitor's browser; Dhaka when left out
+export const getPublicWeather = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { lat, lon } = req.query;
+  // NaN (a missing or malformed number) fails the range check in the service
+  const data = await getPublicWeatherService(
+    typeof lat === "string" ? Number(lat) : undefined,
+    typeof lon === "string" ? Number(lon) : undefined,
+  );
+  sendSuccess(res, 200, "Weather fetched successfully", data);
+});
+
 // Bangladesh's 64 districts, for a location picker; either name works as ?location=
 export const getDistricts = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
   const districts = Object.entries(DISTRICT_NAMES).map(([nameBn, nameEn]) => ({ nameBn, nameEn }));
@@ -53,5 +65,6 @@ export const WeatherController = {
   getCurrentWeather,
   getWeatherForecast,
   getDistricts,
+  getPublicWeather,
   locatePlace,
 };

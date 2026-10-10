@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { api, API_URL } from "@/lib/api";
 import { normalizeCode } from "@/lib/normalizeCode";
 
 // Sky codes the server sends; the UI translates them
@@ -76,4 +76,70 @@ export async function getWeatherForecast(query = ownPlace) {
 export async function getDistricts() {
   const { data } = await api<{ data: District[] }>("/api/weather/districts");
   return data;
+}
+
+// ---- Home page (public, no account needed) ----
+
+// Weather for the hero: right now, plus today and the next few days
+export type HomeWeather = {
+  current: {
+    temperatureC: number;
+    condition: WeatherCondition;
+    humidityPercent: number;
+    windKmh: number;
+    uvIndex: number;
+    rainChancePercent: number;
+  };
+  // Today first
+  days: DayForecast[];
+};
+
+const withKnownConditions = (weather: HomeWeather): HomeWeather => ({
+  current: { ...weather.current, condition: normalizeCode(weather.current.condition, WEATHER_CONDITIONS, "cloudy") },
+  days: weather.days.map((day) => ({
+    ...day,
+    condition: normalizeCode(day.condition, WEATHER_CONDITIONS, "cloudy"),
+  })),
+});
+
+// Called on the server: Dhaka's weather, cached for a while, which the hero shows until the
+// visitor's own position is known. Null when the API is down, so the page still renders.
+export async function getHomeWeather(): Promise<HomeWeather | null> {
+  try {
+    const res = await fetch(`${API_URL}/api/weather/public`, { next: { revalidate: 900 } });
+    if (!res.ok) return null;
+    return withKnownConditions(((await res.json()) as { data: HomeWeather }).data);
+  } catch {
+    return null;
+  }
+}
+
+// Called from the browser once it has shared the visitor's position. Two decimals (about a
+// kilometre) is plenty for weather, and keeps the exact spot off the network.
+export async function getWeatherAt(lat: number, lon: number) {
+  const params = new URLSearchParams({ lat: lat.toFixed(2), lon: lon.toFixed(2) });
+  const { data } = await api<{ data: HomeWeather }>(`/api/weather/public?${params}`);
+  return withKnownConditions(data);
+}
+
+const PLACE_NAME_URL = "https://api.bigdatacloud.net/data/reverse-geocode-client";
+const PLACE_NAME_TIMEOUT_MS = 8000;
+
+// The name of the place at this position in the page's language, e.g. "বগুড়া" or
+// "শিবগঞ্জ উপজেলা, বগুড়া"; null when it can't be found. BigDataCloud's free endpoint is
+// made for this: a browser asking about its own position, no key needed.
+export async function getPlaceName(lat: number, lon: number, locale: string): Promise<string | null> {
+  const params = new URLSearchParams({
+    latitude: lat.toFixed(2),
+    longitude: lon.toFixed(2),
+    localityLanguage: locale,
+  });
+  try {
+    const res = await fetch(`${PLACE_NAME_URL}?${params}`, { signal: AbortSignal.timeout(PLACE_NAME_TIMEOUT_MS) });
+    if (!res.ok) return null;
+    const place = (await res.json()) as { locality?: string; city?: string };
+    return place.locality || place.city || null;
+  } catch {
+    return null;
+  }
 }

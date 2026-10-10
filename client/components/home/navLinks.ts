@@ -7,6 +7,7 @@ export const navLinks = [
   { href: "/", key: "home" },
   { href: homeSection("services"), key: "services" },
   { href: homeSection("stories"), key: "stories" },
+  { href: "/experts", key: "experts" },
   { href: "/about", key: "about" },
   { href: "/support", key: "support" },
 ] as const;
