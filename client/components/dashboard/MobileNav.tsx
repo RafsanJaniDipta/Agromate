@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { CloseIcon, MenuIcon } from "@/components/icons";
-import { Link, usePathname } from "@/i18n/navigation";
+import { CloseIcon, LogoutIcon, MenuIcon } from "@/components/icons";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { dashboardNav } from "@/components/dashboard/dashboardNav";
 import UnreadBadge from "@/components/chat/UnreadBadge";
 import { useChatUnread } from "@/components/chat/ChatUnread";
-import type { Role } from "@/lib/session";
+import { signOut, type Role } from "@/lib/session";
 
 type MobileNavProps = {
   role: Role;
@@ -16,9 +16,12 @@ type MobileNavProps = {
 };
 
 // Phones have no room for the sidebar, so a menu button opens the same links in a drawer.
+// Log out sits at the bottom, so it is always in reach on a small screen.
 export default function MobileNav({ role, buttonClassName }: MobileNavProps) {
   const t = useTranslations("dashboard.sidebar");
+  const tAccount = useTranslations("nav.account");
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const { links, footerLinks } = dashboardNav[role];
   const { count: unreadMessages } = useChatUnread();
@@ -34,6 +37,14 @@ export default function MobileNav({ role, buttonClassName }: MobileNavProps) {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
+
+  async function handleSignOut() {
+    setIsOpen(false);
+    // Leave even if the server call fails; the session expires on its own
+    await signOut().catch(() => {});
+    // Every role goes back to the home page after logging out
+    router.replace("/");
+  }
 
   const linkList = (items: typeof links) => (
     <ul className="flex flex-col gap-2">
@@ -98,7 +109,17 @@ export default function MobileNav({ role, buttonClassName }: MobileNavProps) {
               </button>
               {linkList(links)}
             </div>
-            <div className="mt-6">{linkList(footerLinks)}</div>
+            <div className="mt-6 flex flex-col gap-2">
+              {linkList(footerLinks)}
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="flex h-12 items-center gap-4 rounded-2xl px-3 text-sm font-medium text-red-300 transition hover:bg-white/10"
+              >
+                <LogoutIcon className="size-6 shrink-0" />
+                {tAccount("signOut")}
+              </button>
+            </div>
           </nav>
         </div>
       )}

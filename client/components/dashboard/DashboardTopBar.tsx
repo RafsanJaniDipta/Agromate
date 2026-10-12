@@ -16,6 +16,7 @@ const roundButton =
 
 // Top bar: menu button (phones only), logo, language toggle, search, notifications and the
 // account avatar (profile, website, log out). Page links live in the sidebar.
+// On a phone everything must fit in about 300px, so the logo drops its name and search is hidden.
 export default function DashboardTopBar({ role }: { role: Role }) {
   const t = useTranslations("dashboard");
   const tAccount = useTranslations("nav.account");
@@ -33,7 +34,7 @@ export default function DashboardTopBar({ role }: { role: Role }) {
     <header className="flex items-center justify-between gap-4">
       <div className="flex items-center gap-3">
         <MobileNav role={role} buttonClassName={roundButton} />
-        <Logo className="text-lg" />
+        <Logo className="text-lg" compactOnPhones />
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">

@@ -64,8 +64,9 @@ export default function AccountMenu({ user, links, onSignedOut, circleClassName 
     onSignedOut();
   }
 
+  // shrink-0: in a crowded bar the picture would otherwise be squeezed to nothing
   return (
-    <div ref={menuRef} className="relative">
+    <div ref={menuRef} className="relative shrink-0">
       <button
         type="button"
         onClick={() => setIsOpen((open) => !open)}
