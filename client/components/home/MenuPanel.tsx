@@ -41,7 +41,8 @@ type MenuPanelProps = {
   onSignedOut: () => void;
 };
 
-// Site menu for every screen size: the bar button drops a dark panel from the top; the cross closes it.
+// Site menu for phones (desktop has the pill menu in the header): the bar button drops a dark
+// panel from the top; the cross closes it.
 // Visitors get Log in / Create account; signed-in members get their dashboard and Log out instead.
 export default function MenuPanel({ user, onSignedOut }: MenuPanelProps) {
   const t = useTranslations("nav");
@@ -87,7 +88,7 @@ export default function MenuPanel({ user, onSignedOut }: MenuPanelProps) {
         aria-label={t("openMenu")}
         aria-expanded={isOpen}
         aria-controls="site-menu"
-        className="flex size-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20"
+        className="flex size-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 md:hidden"
       >
         <MenuIcon className="size-5" />
       </button>
