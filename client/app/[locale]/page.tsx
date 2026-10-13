@@ -7,6 +7,7 @@ import SuccessStoriesSection from "@/components/home/SuccessStoriesSection";
 import WhyChooseSection from "@/components/home/WhyChooseSection";
 import { getPublicExperts } from "@/lib/expert";
 import { getHomeStories } from "@/lib/successStories";
+import ExpertChatWidget from "@/components/home/ExpertChatWidget";
 
 export default async function Home({ params }: PageProps<"/[locale]">) {
   const locale = await resolveLocale(params);
@@ -24,6 +25,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
       <WhyChooseSection />
       <ExpertsSection experts={experts} />
       <SuccessStoriesSection stories={approvedStories} />
+      <ExpertChatWidget initialExperts={experts} />
     </>
   );
 }
