@@ -4,7 +4,6 @@ import type {
   DiagnoseError,
   Diagnosis,
   Envelope,
-  PaginatedResponse,
   SavedDiagnosis,
 } from "@/types";
 import { CONFIDENCE_LEVELS, DIAGNOSE_ERRORS } from "@/types";

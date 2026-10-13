@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale } from "next-intl";
 import Image from "next/image";
 import {
@@ -27,6 +27,11 @@ import {
 import { categoryName, getVerifiedExperts, type VerifiedExpert } from "@/lib/expert";
 import { useSignedInUser } from "@/lib/session";
 
+type SelectedPhoto = {
+  file: File;
+  previewUrl: string;
+};
+
 type ExpertChatWidgetProps = {
   initialExperts?: VerifiedExpert[];
 };
@@ -49,8 +54,7 @@ export default function ExpertChatWidget({ initialExperts = [] }: ExpertChatWidg
   const [chatError, setChatError] = useState<string | null>(null);
   const [messageText, setMessageText] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
-  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const [selectedPhotos, setSelectedPhotos] = useState<SelectedPhoto[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -82,24 +86,23 @@ export default function ExpertChatWidget({ initialExperts = [] }: ExpertChatWidg
     }
   }, [messages, selectedExpert]);
 
-  // Manage photo previews
+  // Clean up object URLs on unmount
+  const selectedPhotosRef = useRef(selectedPhotos);
+  selectedPhotosRef.current = selectedPhotos;
   useEffect(() => {
-    if (selectedPhotos.length === 0) {
-      setPhotoPreviews([]);
-      return;
-    }
-    const urls = selectedPhotos.map((file) => URL.createObjectURL(file));
-    setPhotoPreviews(urls);
     return () => {
-      urls.forEach((url) => URL.revokeObjectURL(url));
+      selectedPhotosRef.current.forEach((p) => URL.revokeObjectURL(p.previewUrl));
     };
-  }, [selectedPhotos]);
+  }, []);
 
   // Open chat with a specific expert
   const handleSelectExpert = async (expert: VerifiedExpert) => {
     setSelectedExpert(expert);
     setChatError(null);
-    setSelectedPhotos([]);
+    setSelectedPhotos((prev) => {
+      prev.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+      return [];
+    });
 
     // If visitor is not logged in or not a farmer, we only show the profile view
     if (!currentUser || currentUser.role !== "FARMER") {
@@ -168,7 +171,9 @@ export default function ExpertChatWidget({ initialExperts = [] }: ExpertChatWidg
     setIsSending(true);
 
     try {
-      const sentMsg = await sendMessage(conversation.id, content, photosToSend);
+      const files = photosToSend.map((p) => p.file);
+      const sentMsg = await sendMessage(conversation.id, content, files);
+      photosToSend.forEach((p) => URL.revokeObjectURL(p.previewUrl));
       setMessages((prev) => [...prev, sentMsg]);
     } catch {
       setChatError(
@@ -184,12 +189,29 @@ export default function ExpertChatWidget({ initialExperts = [] }: ExpertChatWidg
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
-    setSelectedPhotos((prev) => [...prev, ...files].slice(0, 5));
+    const newItems: SelectedPhoto[] = files.map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
+    setSelectedPhotos((prev) => {
+      const merged = [...prev, ...newItems];
+      if (merged.length > 5) {
+        merged.slice(5).forEach((p) => URL.revokeObjectURL(p.previewUrl));
+        return merged.slice(0, 5);
+      }
+      return merged;
+    });
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const removePhoto = (index: number) => {
-    setSelectedPhotos((prev) => prev.filter((_, i) => i !== index));
+    setSelectedPhotos((prev) => {
+      const target = prev[index];
+      if (target) {
+        URL.revokeObjectURL(target.previewUrl);
+      }
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const filteredExperts = experts.filter((expert) => {
@@ -616,11 +638,11 @@ export default function ExpertChatWidget({ initialExperts = [] }: ExpertChatWidg
                     </div>
 
                     {/* Photo Previews */}
-                    {photoPreviews.length > 0 && (
+                    {selectedPhotos.length > 0 && (
                       <div className="flex gap-2 border-t border-zinc-200 bg-white p-2 overflow-x-auto">
-                        {photoPreviews.map((src, i) => (
-                          <div key={i} className="relative size-12 shrink-0 rounded-lg border border-zinc-200 overflow-hidden">
-                            <Image src={src} alt="Preview" fill className="object-cover" />
+                        {selectedPhotos.map((photo, i) => (
+                          <div key={photo.previewUrl} className="relative size-12 shrink-0 rounded-lg border border-zinc-200 overflow-hidden">
+                            <Image src={photo.previewUrl} alt="Preview" fill className="object-cover" />
                             <button
                               type="button"
                               onClick={() => removePhoto(i)}
