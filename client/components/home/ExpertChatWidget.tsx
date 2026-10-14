@@ -87,8 +87,11 @@ export default function ExpertChatWidget({ initialExperts = [] }: ExpertChatWidg
   }, [messages, selectedExpert]);
 
   // Clean up object URLs on unmount
+  // The ref is kept in step from an effect: refs mustn't be written during render
   const selectedPhotosRef = useRef(selectedPhotos);
-  selectedPhotosRef.current = selectedPhotos;
+  useEffect(() => {
+    selectedPhotosRef.current = selectedPhotos;
+  }, [selectedPhotos]);
   useEffect(() => {
     return () => {
       selectedPhotosRef.current.forEach((p) => URL.revokeObjectURL(p.previewUrl));
@@ -398,8 +401,8 @@ export default function ExpertChatWidget({ initialExperts = [] }: ExpertChatWidg
                   </span>
                 </div>
 
-                {/* Experts List */}
-                <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
+                {/* Experts List; data-lenis-prevent lets the wheel scroll this list instead of the page */}
+                <div data-lenis-prevent className="flex-1 overflow-y-auto overscroll-contain p-3 space-y-2.5">
                   {filteredExperts.length === 0 ? (
                     <div className="py-12 text-center text-zinc-400 text-xs">
                       {isBn ? "কোনো বিশেষজ্ঞ পাওয়া যায়নি" : "No verified experts match your search"}
@@ -545,8 +548,8 @@ export default function ExpertChatWidget({ initialExperts = [] }: ExpertChatWidg
                       </div>
                     )}
 
-                    {/* Messages Container */}
-                    <div className="flex-1 overflow-y-auto p-3.5 space-y-3">
+                    {/* Messages Container; data-lenis-prevent lets the wheel scroll the messages instead of the page */}
+                    <div data-lenis-prevent className="flex-1 overflow-y-auto overscroll-contain p-3.5 space-y-3">
                       {loadingChat ? (
                         <div className="flex h-full items-center justify-center text-xs text-zinc-400">
                           <span className="flex items-center gap-2">
